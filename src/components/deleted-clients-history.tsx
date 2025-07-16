@@ -16,13 +16,34 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useClients } from '@/context/app-context';
+import { Button } from './ui/button';
+import { MoreHorizontal, Eye, Undo } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export function DeletedClientsHistory() {
-  const { deletedClients } = useClients();
+  const { deletedClients, restoreClient } = useClients();
+  const { toast } = useToast();
 
   if (deletedClients.length === 0) {
     return null;
   }
+
+  const handleRestore = (clientId: string) => {
+    restoreClient(clientId);
+    toast({
+        title: 'Cliente Restaurado!',
+        description: 'O cliente foi movido de volta para a lista de clientes ativos.',
+    });
+  };
 
   return (
     <Card>
@@ -39,6 +60,7 @@ export function DeletedClientsHistory() {
               <TableHead>Nome do Cliente</TableHead>
               <TableHead>E-mail de Contato</TableHead>
               <TableHead>CPF/CNPJ</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -47,6 +69,28 @@ export function DeletedClientsHistory() {
                 <TableCell className="font-medium">{client.name}</TableCell>
                 <TableCell>{client.contact.email}</TableCell>
                 <TableCell>{client.cpfCnpj}</TableCell>
+                <TableCell className="text-right">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link href={`/clients/${client.id}`}>
+                              <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleRestore(client.id)}>
+                             <Undo className="mr-2 h-4 w-4" /> Restaurar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
