@@ -24,10 +24,13 @@ export default function Home() {
   const { invoices } = useInvoices();
   const { clients } = useClients();
 
-  const totalDue = invoices.reduce((acc, inv) => inv.status === 'pending' || inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
-  const totalReceived = invoices.reduce((acc, inv) => inv.status === 'paid' ? acc + inv.originalAmount : acc, 0);
-  const totalRefunds = invoices.reduce((acc, inv) => inv.status === 'refunded' ? acc + inv.originalAmount : acc, 0);
-  const totalOverdue = invoices.reduce((acc, inv) => inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
+  const activeClientIds = new Set(clients.map(c => c.id));
+  const activeInvoices = invoices.filter(inv => activeClientIds.has(inv.clientId));
+  
+  const totalDue = activeInvoices.reduce((acc, inv) => inv.status === 'pending' || inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
+  const totalReceived = activeInvoices.reduce((acc, inv) => inv.status === 'paid' ? acc + inv.originalAmount : acc, 0);
+  const totalRefunds = activeInvoices.reduce((acc, inv) => inv.status === 'refunded' ? acc + inv.originalAmount : acc, 0);
+  const totalOverdue = activeInvoices.reduce((acc, inv) => inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
 
@@ -127,7 +130,7 @@ export default function Home() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.slice(0, 5).map((invoice) => (
+              {activeInvoices.slice(0, 5).map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell>
                     <div className="font-medium">{getClientName(invoice.clientId)}</div>
