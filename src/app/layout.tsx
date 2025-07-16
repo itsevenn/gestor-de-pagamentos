@@ -47,7 +47,6 @@ export default function RootLayout({
             <SidebarProvider>
               <Sidebar>
                 <SidebarHeader className="p-4 flex flex-col gap-4">
-                   <UserNav />
                   <Logo />
                 </SidebarHeader>
                 <SidebarContent>
