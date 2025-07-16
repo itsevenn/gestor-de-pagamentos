@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, FileText } from 'lucide-react';
+import { Home, Users, FileText, LineChart } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -16,6 +16,7 @@ export function MainNav() {
     { href: '/', label: 'Dashboard', icon: Home, tooltip: 'Dashboard' },
     { href: '/clients', label: 'Clients', icon: Users, tooltip: 'Clients' },
     { href: '/invoices', label: 'Invoices', icon: FileText, tooltip: 'Invoices' },
+    { href: '/reports', label: 'Reports', icon: LineChart, tooltip: 'Reports' },
   ];
 
   return (
