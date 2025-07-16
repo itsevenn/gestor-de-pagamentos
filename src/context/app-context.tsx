@@ -20,6 +20,7 @@ interface AppContextType {
     deleteClient: (clientId: string, reason: string) => void;
     restoreClient: (clientId: string) => void;
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
+    addInvoice: (invoiceData: Omit<Invoice, 'id'>) => void;
     updateInvoice: (updatedInvoice: Invoice, auditDetails?: string) => void;
 }
 
@@ -95,6 +96,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             });
         }
     };
+    
+    const addInvoice = (invoiceData: Omit<Invoice, 'id'>) => {
+        const newInvoice: Invoice = {
+            id: `inv-${Date.now()}`,
+            ...invoiceData,
+        };
+        setInvoices(prevInvoices => [newInvoice, ...prevInvoices]);
+        const clientName = clients.find(c => c.id === newInvoice.clientId)?.nomeCiclista || 'Desconhecido';
+        addAuditLog({
+            user: 'Admin',
+            action: 'Fatura Criada',
+            details: `Fatura ${newInvoice.id.toUpperCase()} criada para ${clientName}.`,
+        });
+    };
 
     const updateInvoice = (updatedInvoice: Invoice, auditDetails?: string) => {
         const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
@@ -128,6 +143,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         deleteClient,
         restoreClient,
         addAuditLog,
+        addInvoice,
         updateInvoice
     };
 
@@ -160,6 +176,7 @@ export const useInvoices = () => {
     }
     return { 
         invoices: context.invoices,
+        addInvoice: context.addInvoice,
         updateInvoice: context.updateInvoice 
     };
 };

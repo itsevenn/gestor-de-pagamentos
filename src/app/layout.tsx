@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { AppProvider } from '@/context/app-context';
 import { Logo } from '@/components/logo';
 import { ThemeProvider } from '@/hooks/use-theme';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'GESTOR DO CICLISTA',
@@ -66,9 +67,11 @@ export default function RootLayout({
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <Button>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Nova Fatura
+                    <Button asChild>
+                      <Link href="/invoices/new">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Nova Fatura
+                      </Link>
                     </Button>
                     <UserNav />
                   </div>
