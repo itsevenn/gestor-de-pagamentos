@@ -1,0 +1,69 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { Button } from './ui/button';
+import { Upload } from 'lucide-react';
+
+const LOGO_STORAGE_KEY = 'app-logo';
+const DEFAULT_LOGO_URL = 'https://placehold.co/40x40.png';
+
+export function Logo() {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const storedLogo = localStorage.getItem(LOGO_STORAGE_KEY);
+    setLogoUrl(storedLogo || DEFAULT_LOGO_URL);
+  }, []);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setLogoUrl(result);
+        localStorage.setItem(LOGO_STORAGE_KEY, result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+  
+  if (logoUrl === null) {
+    return null; // ou um esqueleto de carregamento
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <Image
+          src={logoUrl}
+          alt="Logo Gestor do Ciclista"
+          width={40}
+          height={40}
+          className="rounded-md object-cover"
+          data-ai-hint="logo company"
+        />
+        <h1 className="text-xl font-bold font-headline text-sidebar-foreground">
+            GESTOR DO CICLISTA
+        </h1>
+      </div>
+      <Button variant="outline" size="sm" onClick={handleUploadClick}>
+        <Upload className="mr-2 h-4 w-4" />
+        Carregar Logo
+      </Button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+    </div>
+  );
+}

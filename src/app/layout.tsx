@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AppProvider } from '@/context/app-context';
-import Image from 'next/image';
+import { Logo } from '@/components/logo';
 
 export const metadata: Metadata = {
   title: 'GESTOR DO CICLISTA',
@@ -43,13 +43,7 @@ export default function RootLayout({
           <SidebarProvider>
             <Sidebar>
               <SidebarHeader className="p-4">
-                <Image
-                  src="https://placehold.co/150x40.png"
-                  alt="Logo Gestor do Ciclista"
-                  width={150}
-                  height={40}
-                  data-ai-hint="logo company"
-                />
+                <Logo />
               </SidebarHeader>
               <SidebarContent>
                 <MainNav />
