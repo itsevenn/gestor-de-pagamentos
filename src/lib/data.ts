@@ -1,3 +1,6 @@
+import { db } from './firebase';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+
 export type Client = {
   id: string;
   photoUrl?: string;
@@ -20,15 +23,15 @@ export type Client = {
   cep: string;
   estado: string;
   celular: string;
-  telefoneResidencial: string;
-  outrosContatos: string;
-  referencia: string;
+  telefoneResidencial?: string;
+  outrosContatos?: string;
+  referencia?: string;
   cnpj?: string;
   notaFiscal: string;
   marcaModelo: string;
   numeroSerie: string;
   dataAquisicao: string;
-  observacoes: string;
+  observacoes?: string;
   nomeConselheiro: string;
   localData: string;
   deletionReason?: string;
@@ -57,65 +60,82 @@ export type AuditLog = {
     details: string;
 }
 
-const mockClients: Client[] = [
-  {
-    id: 'cli-1',
-    photoUrl: 'https://placehold.co/150x150.png',
-    matricula: '001',
-    dataAdvento: '2023-01-01',
-    nomeCiclista: 'Innovate Corp (Exemplo)',
-    tipoSanguineo: 'A+',
-    dataNascimento: '1990-01-15',
-    idade: '34',
-    nacionalidade: 'Brasileiro',
-    naturalidade: 'São Paulo',
-    uf: 'SP',
-    rg: '12.345.678-9',
-    cpf: '123.456.789-00',
-    pai: 'Pai do Innovate',
-    mae: 'Mãe do Innovate',
-    endereco: 'Rua da Inovação, 123',
-    bairro: 'Centro',
-    cidade: 'São Paulo',
-    cep: '01000-000',
-    estado: 'SP',
-    celular: '11987654321',
-    telefoneResidencial: '1123456789',
-    outrosContatos: '-',
-    referencia: '-',
-    cnpj: '12.345.678/0001-90',
-    notaFiscal: 'NF-123',
-    marcaModelo: 'Caloi/Elite',
-    numeroSerie: 'SN12345',
-    dataAquisicao: '2022-12-01',
-    observacoes: 'Cliente antigo adaptado para novo modelo.',
-    nomeConselheiro: 'Conselheiro A',
-    localData: 'São Paulo, 2024-01-01',
-  },
-];
+// Client Functions
+export const getClients = async (): Promise<Client[]> => {
+  const querySnapshot = await getDocs(collection(db, "clients"));
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+};
 
-const mockInvoices: Invoice[] = [
-  { id: 'inv-001', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-05-01', dueDate: '2024-05-30', paymentDate: '2024-05-28', paymentMethod: 'Credit Card', status: 'paid', paymentHistory: 'Pagamentos consistentes em dia.' },
-  { id: 'inv-002', clientId: 'cli-2', originalAmount: 750, currentAmount: 750, issueDate: '2024-05-05', dueDate: '2024-06-04', paymentMethod: 'PayPal', status: 'pending', paymentHistory: 'Cliente de primeira viagem.' },
-  { id: 'inv-003', clientId: 'cli-3', originalAmount: 3000, currentAmount: 3250, issueDate: '2024-04-10', dueDate: '2024-05-10', paymentMethod: 'Bank Transfer', status: 'overdue', paymentHistory: 'Geralmente paga em dia, esta é uma rara exceção.' },
-  { id: 'inv-004', clientId: 'cli-1', originalAmount: 200, currentAmount: 200, issueDate: '2024-05-15', dueDate: '2024-06-14', paymentMethod: 'Credit Card', status: 'pending', paymentHistory: 'Pagamentos consistentes em dia.' },
-  { id: 'inv-005', clientId: 'cli-2', originalAmount: 500, currentAmount: 0, issueDate: '2024-04-20', dueDate: '2025-05-20', paymentMethod: 'PayPal', status: 'refunded', paymentHistory: 'Cliente de primeira viagem.' },
-  { id: 'inv-006', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-06-01', dueDate: '2024-07-01', paymentMethod: 'Credit Card', status: 'pending', paymentHistory: 'Pagamentos consistentes em dia.' },
-];
+export const getDeletedClients = async (): Promise<Client[]> => {
+    const querySnapshot = await getDocs(collection(db, "deletedClients"));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+};
 
-const mockAuditLogs: AuditLog[] = [
-    { id: 'log-1', date: '2024-05-11', user: 'Admin', action: 'Taxa de Atraso Adicionada', details: 'Adicionada uma taxa de atraso de R$250 à fatura INV-003.'},
-    { id: 'log-2', date: '2024-05-05', user: 'Admin', action: 'Fatura Criada', details: 'Fatura INV-002 criada para Solutions Inc.'},
-    { id: 'log-3', date: '2024-05-02', user: 'Sistema', action: 'Pagamento Processado', details: 'Pagamento processado para a fatura INV-001.'}
-];
+export const addClientDb = async (clientData: Omit<Client, 'id'>) => {
+    const docRef = await addDoc(collection(db, "clients"), clientData);
+    return docRef.id;
+}
 
-const mockDeletedClients: Client[] = [];
+export const updateClientDb = async (client: Client) => {
+    const { id, ...clientData } = client;
+    await updateDoc(doc(db, "clients", id), clientData);
+}
 
-// Simulate API calls
-const simulateApiCall = <T>(data: T): Promise<T> => 
-    new Promise(resolve => setTimeout(() => resolve(data), 500));
+export const deleteClientDb = async (clientId: string, reason: string) => {
+    const clientRef = doc(db, "clients", clientId);
+    const clientSnap = await getDoc(clientRef);
+    if (clientSnap.exists()) {
+        const clientData = clientSnap.data();
+        const deletedClientData = {
+            ...clientData,
+            deletionReason: reason,
+            deletionDate: new Date().toISOString().split('T')[0],
+        };
+        const batch = writeBatch(db);
+        batch.set(doc(db, "deletedClients", clientId), deletedClientData);
+        batch.delete(clientRef);
+        await batch.commit();
+    }
+}
 
-export const getClients = (): Promise<Client[]> => simulateApiCall(mockClients);
-export const getInvoices = (): Promise<Invoice[]> => simulateApiCall(mockInvoices);
-export const getAuditLogs = (): Promise<AuditLog[]> => simulateApiCall(mockAuditLogs);
-export const getDeletedClients = (): Promise<Client[]> => simulateApiCall(mockDeletedClients);
+export const restoreClientDb = async (clientId: string) => {
+    const clientRef = doc(db, "deletedClients", clientId);
+    const clientSnap = await getDoc(clientRef);
+     if (clientSnap.exists()) {
+        const clientData = clientSnap.data();
+        const { deletionReason, deletionDate, ...restoredClientData } = clientData;
+
+        const batch = writeBatch(db);
+        batch.set(doc(db, "clients", clientId), restoredClientData);
+        batch.delete(clientRef);
+        await batch.commit();
+    }
+}
+
+
+// Invoice Functions
+export const getInvoices = async (): Promise<Invoice[]> => {
+    const querySnapshot = await getDocs(collection(db, "invoices"));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Invoice));
+};
+
+export const addInvoiceDb = async (invoiceData: Omit<Invoice, 'id'>) => {
+    const docRef = await addDoc(collection(db, "invoices"), invoiceData);
+    return docRef.id;
+}
+
+export const updateInvoiceDb = async (invoice: Invoice) => {
+    const { id, ...invoiceData } = invoice;
+    await updateDoc(doc(db, "invoices", id), invoiceData);
+}
+
+// AuditLog Functions
+export const getAuditLogs = async (): Promise<AuditLog[]> => {
+    const querySnapshot = await getDocs(collection(db, "auditLogs"));
+    const logs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLog));
+    return logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+export const addAuditLogDb = async (logData: Omit<AuditLog, 'id'>) => {
+    await addDoc(collection(db, "auditLogs"), logData);
+}
