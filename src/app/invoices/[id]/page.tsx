@@ -22,8 +22,10 @@ import { ArrowLeft, CreditCard, Calendar, FileText, User, Bell, DollarSign, User
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationGenerator } from '@/components/notification-generator';
+import { use } from 'react';
 
-export default function InvoiceDetailPage({ params: { id } }: { params: { id: string } }) {
+export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
+  const id = use(params).id;
   const { invoices } = useInvoices();
   const { clients, deletedClients } = useClients();
   const { auditLogs } = useAuditLogs();

@@ -62,7 +62,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const deleteClient = (clientId: string, reason: string) => {
         const clientToDelete = clients.find(c => c.id === clientId);
         if (clientToDelete) {
-            const deletedClient = {
+            const deletedClient: Client = {
                 ...clientToDelete,
                 deletionReason: reason,
                 deletionDate: new Date().toISOString().split('T')[0],

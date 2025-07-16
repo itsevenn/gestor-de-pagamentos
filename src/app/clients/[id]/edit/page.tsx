@@ -25,7 +25,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useClients } from '@/context/app-context';
-import { useEffect } from 'react';
+import { useEffect, use } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -39,7 +39,7 @@ const formSchema = z.object({
 });
 
 export default function EditClientPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+  const id = use(params).id;
   const { toast } = useToast();
   const router = useRouter();
   const { clients, updateClient } = useClients();
