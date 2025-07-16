@@ -163,8 +163,8 @@ export default function ReportsPage() {
             <CardTitle>Relatório de Ciclista</CardTitle>
             <CardDescription>Gere um arquivo PDF com o perfil completo de um ciclista.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-              <div className="max-w-sm space-y-2">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+              <div className="space-y-2">
                 <Label htmlFor="client-select">Selecione um Ciclista</Label>
                 <Select onValueChange={setSelectedProfileClientId}>
                     <SelectTrigger id="client-select">
@@ -177,7 +177,7 @@ export default function ReportsPage() {
                     </SelectContent>
                 </Select>
               </div>
-              <Button onClick={handleGenerateProfilePdf} disabled={!selectedProfileClientId || isGeneratingProfile}>
+              <Button onClick={handleGenerateProfilePdf} disabled={!selectedProfileClientId || isGeneratingProfile} variant="secondary">
                 {isGeneratingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                 {isGeneratingProfile ? 'Gerando...' : 'Exportar Perfil para PDF'}
               </Button>
@@ -189,8 +189,8 @@ export default function ReportsPage() {
             <CardTitle>Comprovante de Pagamento</CardTitle>
             <CardDescription>Gere um comprovante em PDF para uma fatura paga.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-              <div className="max-w-sm space-y-2">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+              <div className="space-y-2">
                 <Label htmlFor="invoice-select">Selecione uma Fatura Paga</Label>
                 <Select onValueChange={setSelectedReceiptInvoiceId}>
                     <SelectTrigger id="invoice-select">
