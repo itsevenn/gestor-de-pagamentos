@@ -67,12 +67,12 @@ export default function RootLayout({
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <Link href="/invoices/new" legacyBehavior passHref>
-                      <Button as="a">
+                    <Button asChild>
+                      <Link href="/invoices/new">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Nova Fatura
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                     <UserNav />
                   </div>
                 </header>
