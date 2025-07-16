@@ -104,7 +104,6 @@ export default function NewClientPage() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     addClient({
-      id: `cli-${Date.now()}`,
       ...values,
     });
 
@@ -140,7 +139,7 @@ export default function NewClientPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <FormField control={form.control} name="matricula" render={({ field }) => ( <FormItem><FormLabel>Matrícula</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="dataAdvento" render={({ field }) => ( <FormItem><FormLabel>Data do Advento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                  <FormField control={form.control} name="nomeCiclista" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Nome do Ciclista</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="nomeCiclista" render={({ field }) => ( <FormItem className="md:col-span-2 lg:col-span-2"><FormLabel>Nome do Ciclista</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="tipoSanguineo" render={({ field }) => ( <FormItem><FormLabel>Tipo Sanguíneo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="dataNascimento" render={({ field }) => ( <FormItem><FormLabel>Data de Nascimento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="idade" render={({ field }) => ( <FormItem><FormLabel>Idade</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
