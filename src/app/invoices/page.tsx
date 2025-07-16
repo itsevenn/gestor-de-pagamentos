@@ -18,16 +18,23 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useInvoices, useClients } from '@/context/app-context';
 import Link from 'next/link';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function InvoicesPage() {
   const { invoices } = useInvoices();
-  const { clients } = useClients();
+  const { clients, deletedClients } = useClients();
+  const allClients = [...clients, ...deletedClients];
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
-  const getClientName = (clientId: string) => {
-    return clients.find(c => c.id === clientId)?.name || 'Cliente Desconhecido';
+  
+  const getClientInfo = (clientId: string) => {
+    const client = allClients.find(c => c.id === clientId);
+    const isDeleted = deletedClients.some(c => c.id === clientId);
+    return {
+        name: client?.name || 'Cliente Desconhecido',
+        isDeleted: isDeleted
+    };
   };
   
   const statusConfig = {
@@ -65,24 +72,37 @@ export default function InvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell className="font-medium">{invoice.id.toUpperCase()}</TableCell>
-                  <TableCell>{getClientName(invoice.clientId)}</TableCell>
-                  <TableCell>{formatCurrency(invoice.currentAmount)}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusConfig[invoice.status].variant} className={cn('capitalize', statusConfig[invoice.status].className)}>
-                      {statusConfig[invoice.status].label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{invoice.dueDate}</TableCell>
-                  <TableCell className="text-right">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/invoices/${invoice.id}`}>Ver Detalhes</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {invoices.map((invoice) => {
+                const clientInfo = getClientInfo(invoice.clientId);
+                return (
+                    <TableRow key={invoice.id}>
+                        <TableCell className="font-medium">{invoice.id.toUpperCase()}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-2">
+                                {clientInfo.name}
+                                {clientInfo.isDeleted && (
+                                    <Badge variant="destructive" className="flex items-center gap-1">
+                                        <UserX className="h-3 w-3" />
+                                        Excluído
+                                    </Badge>
+                                )}
+                            </div>
+                        </TableCell>
+                        <TableCell>{formatCurrency(invoice.currentAmount)}</TableCell>
+                        <TableCell>
+                            <Badge variant={statusConfig[invoice.status].variant} className={cn('capitalize', statusConfig[invoice.status].className)}>
+                            {statusConfig[invoice.status].label}
+                            </Badge>
+                        </TableCell>
+                        <TableCell>{invoice.dueDate}</TableCell>
+                        <TableCell className="text-right">
+                            <Button asChild variant="outline" size="sm">
+                            <Link href={`/invoices/${invoice.id}`}>Ver Detalhes</Link>
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                );
+            })}
             </TableBody>
           </Table>
         </CardContent>
