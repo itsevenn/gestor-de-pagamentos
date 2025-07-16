@@ -18,8 +18,8 @@ import { Input } from '@/components/ui/input';
 import { AppProvider } from '@/context/app-context';
 
 export const metadata: Metadata = {
-  title: 'BIILFLOW PAGAMENTOS',
-  description: 'Gerencie seus pagamentos com facilidade.',
+  title: 'GESTOR DO CICLISTA',
+  description: 'Gerencie seus ciclistas com facilidade.',
 };
 
 export default function RootLayout({
@@ -42,7 +42,7 @@ export default function RootLayout({
           <SidebarProvider>
             <Sidebar>
               <SidebarHeader className="p-4">
-                <h1 className="text-2xl font-headline font-bold text-primary-foreground">BIILFLOW</h1>
+                <h1 className="text-2xl font-headline font-bold text-primary-foreground">GESTOR DO CICLISTA</h1>
               </SidebarHeader>
               <SidebarContent>
                 <MainNav />
