@@ -22,12 +22,14 @@ import {
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useClients } from '@/context/app-context';
-import { useEffect, use } from 'react';
+import { useEffect, use, useState, useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import Image from 'next/image';
+
 
 const formSchema = z.object({
   photoUrl: z.any().optional(),
@@ -69,6 +71,9 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { clients, updateClient } = useClients();
   const client = clients.find((c) => c.id === id);
+  
+  const [photoPreview, setPhotoPreview] = useState<string | null>(client?.photoUrl || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -112,19 +117,47 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
       form.reset({
         ...client,
       });
+      setPhotoPreview(client.photoUrl || null);
     }
   }, [client, form]);
+  
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      form.setValue('photoUrl', file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoPreview(null);
+    form.setValue('photoUrl', null);
+     if(fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!client) return;
     
-    // In a real app, you would handle file upload here.
-    // For now, we'll just use a placeholder if a new file is selected.
     const finalValues = { ...values };
-    if (values.photoUrl && typeof values.photoUrl !== 'string') { // A new file was selected or a File object exists
-      finalValues.photoUrl = 'https://placehold.co/150x150.png';
-    } else {
-      finalValues.photoUrl = client.photoUrl; // Keep the old one if it's a string URL
+    
+    // Check if a new file was selected (it will be a File object)
+    if (values.photoUrl && typeof values.photoUrl !== 'string') {
+      finalValues.photoUrl = photoPreview || 'https://placehold.co/150x150.png';
+    } 
+    // Check if photo was removed (it will be null)
+    else if (values.photoUrl === null) {
+      finalValues.photoUrl = '';
+    }
+    // Otherwise, keep the old one
+    else {
+      finalValues.photoUrl = client.photoUrl;
     }
 
     updateClient({
@@ -165,8 +198,44 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
               {/* Dados Pessoais */}
               <div>
                 <h2 className="text-xl font-semibold mb-4">Dados Pessoais</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <FormField control={form.control} name="photoUrl" render={({ field }) => ( <FormItem className="md:col-span-4"><FormLabel>Foto do Ciclista</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)} /></FormControl><FormMessage /></FormItem> )} />
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="md:col-span-4">
+                    <FormLabel>Foto do Ciclista</FormLabel>
+                    <div className="flex items-center gap-4 mt-2">
+                        <Image
+                            src={photoPreview || 'https://placehold.co/150x150.png'}
+                            alt="Pré-visualização da foto"
+                            width={150}
+                            height={150}
+                            className="rounded-lg object-cover"
+                            data-ai-hint="cyclist photo"
+                        />
+                        <div className="flex flex-col gap-2">
+                            <Button type="button" onClick={() => fileInputRef.current?.click()}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Carregar Nova Foto
+                            </Button>
+                            <Button type="button" variant="outline" onClick={handleRemovePhoto}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Remover Foto
+                            </Button>
+                            <FormField control={form.control} name="photoUrl" render={({ field }) => (
+                                <FormItem>
+                                <FormControl>
+                                    <Input 
+                                      type="file" 
+                                      className="hidden" 
+                                      ref={fileInputRef} 
+                                      onChange={handlePhotoChange}
+                                      accept="image/*"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )} />
+                        </div>
+                    </div>
+                  </div>
                   <FormField control={form.control} name="matricula" render={({ field }) => ( <FormItem><FormLabel>Matrícula</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="dataAdvento" render={({ field }) => ( <FormItem><FormLabel>Data do Advento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="nomeCiclista" render={({ field }) => ( <FormItem className="md:col-span-2 lg:col-span-2"><FormLabel>Nome do Ciclista</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
