@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -39,17 +40,25 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { DeletedClientsHistory } from '@/components/deleted-clients-history';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ClientsPage() {
   const { clients, deleteClient } = useClients();
   const { toast } = useToast();
+  const [deletionReason, setDeletionReason] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
-  const handleDelete = (clientId: string) => {
-    deleteClient(clientId);
-    toast({
-      title: 'Cliente Excluído!',
-      description: 'O cliente foi movido para o histórico.',
-    });
+  const handleDelete = () => {
+    if (selectedClientId) {
+      deleteClient(selectedClientId, deletionReason || 'Nenhum motivo fornecido.');
+      toast({
+        title: 'Cliente Excluído!',
+        description: 'O cliente foi movido para o histórico.',
+      });
+      setDeletionReason('');
+      setSelectedClientId(null);
+    }
   };
 
   return (
@@ -90,7 +99,6 @@ export default function ClientsPage() {
                   <TableCell>{client.serviceType}</TableCell>
                   <TableCell>{client.serviceStartDate}</TableCell>
                   <TableCell className="text-right">
-                    <AlertDialog>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -112,29 +120,15 @@ export default function ClientsPage() {
                             </Link>
                           </DropdownMenuItem>
                           <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-red-100 dark:focus:bg-red-900/50">
-                              <Trash2 className="mr-2 h-4 w-4" /> Excluir
-                            </DropdownMenuItem>
+                             <DropdownMenuItem
+                                onSelect={() => setSelectedClientId(client.id)}
+                                className="text-destructive focus:text-destructive focus:bg-red-100 dark:focus:bg-red-900/50"
+                              >
+                               <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                             </DropdownMenuItem>
                           </AlertDialogTrigger>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Você tem certeza absoluta?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Essa ação não pode ser desfeita. Isso irá mover o cliente para o histórico de clientes excluídos.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(client.id)}>
-                            Confirmar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
@@ -143,6 +137,34 @@ export default function ClientsPage() {
         </CardContent>
       </Card>
       
+      <AlertDialog onOpenChange={(open) => !open && setSelectedClientId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Você tem certeza absoluta?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser desfeita. Isso irá mover o cliente para o histórico de clientes excluídos. Por favor, informe o motivo da exclusão.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid w-full gap-1.5">
+            <Label htmlFor="reason">Motivo da Exclusão</Label>
+            <Textarea 
+              placeholder="Digite o motivo aqui..." 
+              id="reason"
+              value={deletionReason}
+              onChange={(e) => setDeletionReason(e.target.value)} 
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <DeletedClientsHistory />
     </div>
   );

@@ -58,8 +58,8 @@ export function DeletedClientsHistory() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome do Cliente</TableHead>
-              <TableHead>E-mail de Contato</TableHead>
-              <TableHead>CPF/CNPJ</TableHead>
+              <TableHead>Data da Exclusão</TableHead>
+              <TableHead>Motivo da Exclusão</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -67,8 +67,8 @@ export function DeletedClientsHistory() {
             {deletedClients.map((client) => (
               <TableRow key={client.id} className="bg-muted/50">
                 <TableCell className="font-medium">{client.name}</TableCell>
-                <TableCell>{client.contact.email}</TableCell>
-                <TableCell>{client.cpfCnpj}</TableCell>
+                <TableCell>{client.deletionDate}</TableCell>
+                <TableCell>{client.deletionReason}</TableCell>
                 <TableCell className="text-right">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

@@ -14,6 +14,8 @@ export type Client = {
   };
   serviceStartDate: string;
   serviceType: 'Subscription' | 'One-Time' | 'Consulting';
+  deletionReason?: string;
+  deletionDate?: string;
 };
 
 export type Invoice = {

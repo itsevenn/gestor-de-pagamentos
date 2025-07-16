@@ -17,7 +17,7 @@ interface AppContextType {
     deletedClients: Client[];
     addClient: (client: Client) => void;
     updateClient: (updatedClient: Client) => void;
-    deleteClient: (clientId: string) => void;
+    deleteClient: (clientId: string, reason: string) => void;
     restoreClient: (clientId: string) => void;
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
 }
@@ -59,15 +59,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         });
     };
 
-    const deleteClient = (clientId: string) => {
+    const deleteClient = (clientId: string, reason: string) => {
         const clientToDelete = clients.find(c => c.id === clientId);
         if (clientToDelete) {
+            const deletedClient = {
+                ...clientToDelete,
+                deletionReason: reason,
+                deletionDate: new Date().toISOString().split('T')[0],
+            };
             setClients(prevClients => prevClients.filter(client => client.id !== clientId));
-            setDeletedClients(prevDeleted => [...prevDeleted, clientToDelete]);
+            setDeletedClients(prevDeleted => [...prevDeleted, deletedClient]);
             addAuditLog({
                 user: 'Admin',
                 action: 'Cliente Excluído',
-                details: `Cliente ${clientToDelete.name} foi excluído.`,
+                details: `Cliente ${clientToDelete.name} foi excluído. Motivo: ${reason}`,
             });
         }
     };
@@ -75,8 +80,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const restoreClient = (clientId: string) => {
         const clientToRestore = deletedClients.find(c => c.id === clientId);
         if (clientToRestore) {
+            const { deletionReason, deletionDate, ...restoredClient } = clientToRestore;
             setDeletedClients(prevDeleted => prevDeleted.filter(client => client.id !== clientId));
-            setClients(prevClients => [...prevClients, clientToRestore]);
+            setClients(prevClients => [...prevClients, restoredClient]);
             addAuditLog({
                 user: 'Admin',
                 action: 'Cliente Restaurado',
