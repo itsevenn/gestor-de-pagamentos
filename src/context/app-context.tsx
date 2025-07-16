@@ -17,6 +17,7 @@ import {
     type Invoice,
     type AuditLog
 } from '@/lib/data';
+import { v4 as uuidv4 } from 'uuid';
 
 interface AppContextType {
     clients: Client[];
@@ -57,7 +58,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 setAuditLogs(auditLogsData);
                 setDeletedClients(deletedClientsData);
             } catch (error) {
-                console.error("Falha ao buscar dados iniciais do Firestore:", error);
+                console.error("Falha ao buscar dados iniciais:", error);
             } finally {
                 setLoading(false);
             }
@@ -72,7 +73,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             date: new Date().toISOString(),
         };
         await addAuditLogDb(newLog);
-        setAuditLogs(prevLogs => [{...newLog, id: `log-${Date.now()}`}, ...prevLogs]);
+        const auditLogs = await getAuditLogs();
+        setAuditLogs(auditLogs);
     };
 
     const addClient = async (clientData: Omit<Client, 'id'>) => {

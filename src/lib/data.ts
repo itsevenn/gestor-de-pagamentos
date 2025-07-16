@@ -1,5 +1,5 @@
-import { db } from './firebase';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { db } from './db';
+import { v4 as uuidv4 } from 'uuid';
 
 export type Client = {
   id: string;
@@ -60,82 +60,142 @@ export type AuditLog = {
     details: string;
 }
 
+// NOTE: You will need to create the corresponding tables in your Postgres database.
+// Example SQL for creating the clients table:
+/*
+CREATE TABLE clients (
+    id UUID PRIMARY KEY,
+    photoUrl TEXT,
+    matricula TEXT,
+    dataAdvento TEXT,
+    nomeCiclista TEXT,
+    tipoSanguineo TEXT,
+    dataNascimento TEXT,
+    idade TEXT,
+    nacionalidade TEXT,
+    naturalidade TEXT,
+    uf TEXT,
+    rg TEXT,
+    cpf TEXT,
+    pai TEXT,
+    mae TEXT,
+    endereco TEXT,
+    bairro TEXT,
+    cidade TEXT,
+    cep TEXT,
+    estado TEXT,
+    celular TEXT,
+    telefoneResidencial TEXT,
+    outrosContatos TEXT,
+    referencia TEXT,
+    cnpj TEXT,
+    notaFiscal TEXT,
+    marcaModelo TEXT,
+    numeroSerie TEXT,
+    dataAquisicao TEXT,
+    observacoes TEXT,
+    nomeConselheiro TEXT,
+    localData TEXT
+);
+*/
+
 // Client Functions
 export const getClients = async (): Promise<Client[]> => {
-  const querySnapshot = await getDocs(collection(db, "clients"));
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+  const result = await db.query('SELECT * FROM clients');
+  return result.rows as Client[];
 };
 
 export const getDeletedClients = async (): Promise<Client[]> => {
-    const querySnapshot = await getDocs(collection(db, "deletedClients"));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client));
+    const result = await db.query('SELECT * FROM deleted_clients');
+    return result.rows as Client[];
 };
 
 export const addClientDb = async (clientData: Omit<Client, 'id'>) => {
-    const docRef = await addDoc(collection(db, "clients"), clientData);
-    return docRef.id;
+    const newId = uuidv4();
+    const newClient = { id: newId, ...clientData };
+    const columns = Object.keys(newClient).join(', ');
+    const placeholders = Object.keys(newClient).map((_, i) => `$${i + 1}`).join(', ');
+    const values = Object.values(newClient);
+    await db.query(`INSERT INTO clients (${columns}) VALUES (${placeholders})`, values);
+    return newId;
 }
 
 export const updateClientDb = async (client: Client) => {
     const { id, ...clientData } = client;
-    await updateDoc(doc(db, "clients", id), clientData);
+    const setClause = Object.keys(clientData).map((key, i) => `${key} = $${i + 2}`).join(', ');
+    const values = [id, ...Object.values(clientData)];
+    await db.query(`UPDATE clients SET ${setClause} WHERE id = $1`, values);
 }
 
 export const deleteClientDb = async (clientId: string, reason: string) => {
-    const clientRef = doc(db, "clients", clientId);
-    const clientSnap = await getDoc(clientRef);
-    if (clientSnap.exists()) {
-        const clientData = clientSnap.data();
+    // This assumes you have a separate `deleted_clients` table
+    const clientResult = await db.query('SELECT * FROM clients WHERE id = $1', [clientId]);
+    if (clientResult.rows.length > 0) {
+        const clientData = clientResult.rows[0];
         const deletedClientData = {
             ...clientData,
             deletionReason: reason,
             deletionDate: new Date().toISOString().split('T')[0],
         };
-        const batch = writeBatch(db);
-        batch.set(doc(db, "deletedClients", clientId), deletedClientData);
-        batch.delete(clientRef);
-        await batch.commit();
+
+        const columns = Object.keys(deletedClientData).join(', ');
+        const placeholders = Object.keys(deletedClientData).map((_, i) => `$${i + 1}`).join(', ');
+        const values = Object.values(deletedClientData);
+
+        await db.query(`INSERT INTO deleted_clients (${columns}) VALUES (${placeholders})`, values);
+        await db.query('DELETE FROM clients WHERE id = $1', [clientId]);
     }
 }
 
 export const restoreClientDb = async (clientId: string) => {
-    const clientRef = doc(db, "deletedClients", clientId);
-    const clientSnap = await getDoc(clientRef);
-     if (clientSnap.exists()) {
-        const clientData = clientSnap.data();
-        const { deletionReason, deletionDate, ...restoredClientData } = clientData;
+    const deletedClientResult = await db.query('SELECT * FROM deleted_clients WHERE id = $1', [clientId]);
+    if (deletedClientResult.rows.length > 0) {
+        const { deletionReason, deletionDate, ...restoredClientData } = deletedClientResult.rows[0];
+        
+        const columns = Object.keys(restoredClientData).join(', ');
+        const placeholders = Object.keys(restoredClientData).map((_, i) => `$${i + 1}`).join(', ');
+        const values = Object.values(restoredClientData);
 
-        const batch = writeBatch(db);
-        batch.set(doc(db, "clients", clientId), restoredClientData);
-        batch.delete(clientRef);
-        await batch.commit();
+        await db.query(`INSERT INTO clients (${columns}) VALUES (${placeholders})`, values);
+        await db.query('DELETE FROM deleted_clients WHERE id = $1', [clientId]);
     }
 }
 
 
 // Invoice Functions
 export const getInvoices = async (): Promise<Invoice[]> => {
-    const querySnapshot = await getDocs(collection(db, "invoices"));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Invoice));
+    const result = await db.query('SELECT * FROM invoices');
+    return result.rows as Invoice[];
 };
 
 export const addInvoiceDb = async (invoiceData: Omit<Invoice, 'id'>) => {
-    const docRef = await addDoc(collection(db, "invoices"), invoiceData);
-    return docRef.id;
+    const newId = uuidv4();
+    const newInvoice = { id: newId, ...invoiceData };
+    const columns = Object.keys(newInvoice).join(', ');
+    const placeholders = Object.keys(newInvoice).map((_, i) => `$${i + 1}`).join(', ');
+    const values = Object.values(newInvoice);
+    await db.query(`INSERT INTO invoices (${columns}) VALUES (${placeholders})`, values);
+    return newId;
 }
 
 export const updateInvoiceDb = async (invoice: Invoice) => {
     const { id, ...invoiceData } = invoice;
-    await updateDoc(doc(db, "invoices", id), invoiceData);
+    const setClause = Object.keys(invoiceData).map((key, i) => `${key} = $${i + 2}`).join(', ');
+    const values = [id, ...Object.values(invoiceData)];
+    await db.query(`UPDATE invoices SET ${setClause} WHERE id = $1`, values);
 }
 
 // AuditLog Functions
 export const getAuditLogs = async (): Promise<AuditLog[]> => {
-    const querySnapshot = await getDocs(collection(db, "auditLogs"));
-    const logs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLog));
-    return logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const result = await db.query('SELECT * FROM audit_logs ORDER BY date DESC');
+    return result.rows as AuditLog[];
 };
 
 export const addAuditLogDb = async (logData: Omit<AuditLog, 'id'>) => {
-    await addDoc(collection(db, "auditLogs"), logData);
+    const newId = uuidv4();
+    const newLog = { id: newId, ...logData };
+    const columns = Object.keys(newLog).join(', ');
+    const placeholders = Object.keys(newLog).map((_, i) => `$${i + 1}`).join(', ');
+    const values = Object.values(newLog);
+    await db.query(`INSERT INTO audit_logs (${columns}) VALUES (${placeholders})`, values);
 }
