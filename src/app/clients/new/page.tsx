@@ -27,7 +27,7 @@ import { useRouter } from 'next/navigation';
 import { useClients } from '@/context/app-context';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
 const formSchema = z.object({
@@ -67,7 +67,7 @@ const formSchema = z.object({
 export default function NewClientPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const { addClient } = useClients();
+  const { clients, addClient } = useClients();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -107,6 +107,16 @@ export default function NewClientPage() {
       localData: '',
     },
   });
+
+  useEffect(() => {
+    if (clients.length > 0) {
+      const maxMatricula = Math.max(...clients.map(c => parseInt(c.matricula, 10)));
+      const newMatricula = (maxMatricula + 1).toString().padStart(3, '0');
+      form.setValue('matricula', newMatricula);
+    } else {
+      form.setValue('matricula', '001');
+    }
+  }, [clients, form]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -207,7 +217,7 @@ export default function NewClientPage() {
                         </div>
                     </div>
                   </div>
-                  <FormField control={form.control} name="matricula" render={({ field }) => ( <FormItem><FormLabel>Matrícula</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="matricula" render={({ field }) => ( <FormItem><FormLabel>Matrícula</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="dataAdvento" render={({ field }) => ( <FormItem><FormLabel>Data do Advento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="nomeCiclista" render={({ field }) => ( <FormItem className="md:col-span-2 lg:col-span-2"><FormLabel>Nome do Ciclista</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="tipoSanguineo" render={({ field }) => ( <FormItem><FormLabel>Tipo Sanguíneo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
