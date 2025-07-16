@@ -46,9 +46,6 @@ export default function RootLayout({
             <SidebarProvider>
               <Sidebar>
                 <SidebarHeader className="p-4 flex flex-col gap-4">
-                  <div className="flex justify-end">
-                    <UserNav />
-                  </div>
                   <Logo />
                 </SidebarHeader>
                 <SidebarContent>
@@ -73,9 +70,7 @@ export default function RootLayout({
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Nova Fatura
                     </Button>
-                    <div className="md:hidden">
-                      <UserNav />
-                    </div>
+                    <UserNav />
                   </div>
                 </header>
                 <main className="flex-1 p-4 sm:p-6">{children}</main>
