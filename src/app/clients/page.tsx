@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import {
@@ -62,82 +63,82 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold font-headline">Clientes</h1>
-        <Button asChild>
-          <Link href="/clients/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Adicionar Cliente
-          </Link>
-        </Button>
-      </div>
+    <AlertDialog onOpenChange={(open) => !open && setSelectedClientId(null)}>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold font-headline">Clientes</h1>
+          <Button asChild>
+            <Link href="/clients/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Cliente
+            </Link>
+          </Button>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Clientes</CardTitle>
-          <CardDescription>
-            Gerencie seus clientes e veja seus detalhes.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome do Cliente</TableHead>
-                <TableHead>E-mail de Contato</TableHead>
-                <TableHead>Tipo de Serviço</TableHead>
-                <TableHead>Data de Início</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {clients.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.contact.email}</TableCell>
-                  <TableCell>{client.serviceType}</TableCell>
-                  <TableCell>{client.serviceStartDate}</TableCell>
-                  <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link href={`/clients/${client.id}`}>
-                              <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/clients/${client.id}/edit`}>
-                              <Edit className="mr-2 h-4 w-4" /> Editar
-                            </Link>
-                          </DropdownMenuItem>
-                          <AlertDialogTrigger asChild>
-                             <DropdownMenuItem
-                                onSelect={() => setSelectedClientId(client.id)}
-                                className="text-destructive focus:text-destructive focus:bg-red-100 dark:focus:bg-red-900/50"
-                              >
-                               <Trash2 className="mr-2 h-4 w-4" /> Excluir
-                             </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                  </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>Lista de Clientes</CardTitle>
+            <CardDescription>
+              Gerencie seus clientes e veja seus detalhes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome do Cliente</TableHead>
+                  <TableHead>E-mail de Contato</TableHead>
+                  <TableHead>Tipo de Serviço</TableHead>
+                  <TableHead>Data de Início</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
-      <AlertDialog onOpenChange={(open) => !open && setSelectedClientId(null)}>
+              </TableHeader>
+              <TableBody>
+                {clients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell>{client.contact.email}</TableCell>
+                    <TableCell>{client.serviceType}</TableCell>
+                    <TableCell>{client.serviceStartDate}</TableCell>
+                    <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                              <Link href={`/clients/${client.id}`}>
+                                <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/clients/${client.id}/edit`}>
+                                <Edit className="mr-2 h-4 w-4" /> Editar
+                              </Link>
+                            </DropdownMenuItem>
+                            <AlertDialogTrigger asChild>
+                               <DropdownMenuItem
+                                  onSelect={(e) => { e.preventDefault(); setSelectedClientId(client.id) }}
+                                  className="text-destructive focus:text-destructive focus:bg-red-100 dark:focus:bg-red-900/50"
+                                >
+                                 <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                               </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -163,9 +164,9 @@ export default function ClientsPage() {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
 
-      <DeletedClientsHistory />
-    </div>
+        <DeletedClientsHistory />
+      </div>
+    </AlertDialog>
   );
 }
