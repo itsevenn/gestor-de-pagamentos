@@ -70,6 +70,8 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
       currentAmount: 0,
       issueDate: '',
       dueDate: '',
+      paymentMethod: 'Pix',
+      status: 'pending',
       observations: '',
       valueCorrectionReason: '',
     },
@@ -113,7 +115,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
     if (isAmountChanged) {
         const originalAmountDiff = values.originalAmount !== invoice.originalAmount ? `Valor original alterado de ${invoice.originalAmount} para ${values.originalAmount}.` : '';
         const currentAmountDiff = values.currentAmount !== invoice.currentAmount ? `Valor atual alterado de ${invoice.currentAmount} para ${values.currentAmount}.` : '';
-        auditDetails = `Valores da fatura ${invoice.id.toUpperCase()} atualizados. ${originalAmountDiff} ${currentAmountDiff} Motivo: ${values.valueCorrectionReason}`;
+        auditDetails = `Valores da fatura atualizados. ${originalAmountDiff} ${currentAmountDiff} Motivo: ${values.valueCorrectionReason}`;
     }
 
     updateInvoice({

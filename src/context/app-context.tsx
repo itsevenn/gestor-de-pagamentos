@@ -98,15 +98,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     const updateInvoice = (updatedInvoice: Invoice, auditDetails?: string) => {
         const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
+        const allClients = [...clients, ...deletedClients];
+        const client = allClients.find(c => c.id === updatedInvoice.clientId);
+        
         setInvoices(prevInvoices => 
             prevInvoices.map(invoice => invoice.id === updatedInvoice.id ? updatedInvoice : invoice)
         );
 
-        let details = `Fatura ${updatedInvoice.id.toUpperCase()} foi atualizada.`;
+        let details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${client?.nomeCiclista || 'Ciclista Desconhecido'} foi atualizada.`;
         if (auditDetails) {
-            details = `Fatura ${updatedInvoice.id.toUpperCase()} ${auditDetails}`;
+            details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${client?.nomeCiclista || 'Ciclista Desconhecido'} ${auditDetails}`;
         } else if (originalInvoice && originalInvoice.status !== updatedInvoice.status) {
-            details = `Status da fatura ${updatedInvoice.id.toUpperCase()} alterado para ${updatedInvoice.status}.`;
+            details = `Status da fatura ${updatedInvoice.id.toUpperCase()} para ${client?.nomeCiclista || 'Ciclista Desconhecido'} alterado para ${updatedInvoice.status}.`;
         }
         addAuditLog({
             user: 'Admin',
