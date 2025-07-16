@@ -19,10 +19,14 @@ import { AlertCircle, ArrowRight, DollarSign, Receipt, RefreshCw } from 'lucide-
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { differenceInDays, parseISO } from 'date-fns';
 
 export default function Home() {
   const { invoices } = useInvoices();
   const { clients } = useClients();
+  const { toast } = useToast();
 
   const activeClientIds = new Set(clients.map(c => c.id));
   const activeInvoices = invoices.filter(inv => activeClientIds.has(inv.clientId));
@@ -31,6 +35,41 @@ export default function Home() {
   const totalReceived = activeInvoices.reduce((acc, inv) => inv.status === 'paid' ? acc + inv.originalAmount : acc, 0);
   const totalRefunds = activeInvoices.reduce((acc, inv) => inv.status === 'refunded' ? acc + inv.originalAmount : acc, 0);
   const totalOverdue = activeInvoices.reduce((acc, inv) => inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
+
+  useEffect(() => {
+    const today = new Date();
+    activeInvoices.forEach(invoice => {
+      if (invoice.status === 'overdue') {
+        toast({
+          variant: 'destructive',
+          title: 'Fatura Atrasada!',
+          description: `A fatura ${invoice.id.toUpperCase()} para ${getClientName(invoice.clientId)} está atrasada.`,
+          action: (
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/invoices/${invoice.id}`}>Ver Fatura</Link>
+            </Button>
+          )
+        });
+      } else if (invoice.status === 'pending') {
+        const dueDate = parseISO(invoice.dueDate);
+        const daysUntilDue = differenceInDays(dueDate, today);
+
+        if (daysUntilDue >= 0 && daysUntilDue <= 7) {
+            toast({
+              title: 'Vencimento Próximo',
+              description: `A fatura ${invoice.id.toUpperCase()} para ${getClientName(invoice.clientId)} vence em ${daysUntilDue} dia(s).`,
+              action: (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/invoices/${invoice.id}`}>Ver Fatura</Link>
+                </Button>
+              )
+            });
+        }
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
 
