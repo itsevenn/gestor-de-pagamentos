@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Upload } from 'lucide-react';
 
 const LOGO_STORAGE_KEY = 'app-logo';
-const DEFAULT_LOGO_URL = 'https://placehold.co/50x50.png';
+const DEFAULT_LOGO_URL = 'https://placehold.co/70x70.png';
 
 export function Logo() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -43,8 +43,8 @@ export function Logo() {
       <Image
         src={logoUrl}
         alt="Logo Gestor do Ciclista"
-        width={50}
-        height={50}
+        width={70}
+        height={70}
         className="rounded-md object-cover"
         data-ai-hint="logo company"
       />
