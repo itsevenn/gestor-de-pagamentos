@@ -39,10 +39,11 @@ const formSchema = z.object({
 });
 
 export default function EditClientPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { toast } = useToast();
   const router = useRouter();
   const { clients, updateClient } = useClients();
-  const client = clients.find((c) => c.id === params.id);
+  const client = clients.find((c) => c.id === id);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

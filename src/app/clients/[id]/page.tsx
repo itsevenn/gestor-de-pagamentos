@@ -22,11 +22,12 @@ import { ArrowLeft, Mail, Phone, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { clients } = useClients();
   const { invoices } = useInvoices();
 
-  const client = clients.find((c) => c.id === params.id);
-  const clientInvoices = invoices.filter((inv) => inv.clientId === params.id);
+  const client = clients.find((c) => c.id === id);
+  const clientInvoices = invoices.filter((inv) => inv.clientId === id);
 
   if (!client) {
     return <div>Cliente não encontrado</div>;

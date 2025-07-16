@@ -24,11 +24,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationGenerator } from '@/components/notification-generator';
 
 export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { invoices } = useInvoices();
   const { clients } = useClients();
   const { auditLogs } = useAuditLogs();
 
-  const invoice = invoices.find((inv) => inv.id === params.id);
+  const invoice = invoices.find((inv) => inv.id === id);
 
   if (!invoice) {
     return <div>Fatura não encontrada</div>;
