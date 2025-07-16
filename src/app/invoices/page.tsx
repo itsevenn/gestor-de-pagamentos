@@ -18,13 +18,23 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useInvoices, useClients } from '@/context/app-context';
 import Link from 'next/link';
-import { PlusCircle, UserX } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, UserX, Edit, Eye, CheckCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 export default function InvoicesPage() {
-  const { invoices } = useInvoices();
+  const { invoices, updateInvoice } = useInvoices();
   const { clients, deletedClients } = useClients();
   const allClients = [...clients, ...deletedClients];
+  const { toast } = useToast();
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
   
@@ -35,6 +45,17 @@ export default function InvoicesPage() {
         name: client?.nomeCiclista || 'Ciclista Desconhecido',
         isDeleted: isDeleted
     };
+  };
+
+  const handleStatusChange = (invoiceId: string, newStatus: 'paid' | 'pending') => {
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    if(invoice) {
+      updateInvoice({ ...invoice, status: newStatus });
+      toast({
+        title: 'Status da Fatura Atualizado!',
+        description: `A fatura ${invoice.id.toUpperCase()} foi marcada como ${newStatus === 'paid' ? 'paga' : 'pendente'}.`,
+      });
+    }
   };
   
   const statusConfig = {
@@ -96,9 +117,39 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell>{invoice.dueDate}</TableCell>
                         <TableCell className="text-right">
-                            <Button asChild variant="outline" size="sm">
-                            <Link href={`/invoices/${invoice.id}`}>Ver Detalhes</Link>
-                            </Button>
+                           <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Abrir menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/invoices/${invoice.id}`}>
+                                    <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/invoices/${invoice.id}/edit`}>
+                                    <Edit className="mr-2 h-4 w-4" /> Editar Fatura
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                {(invoice.status === 'pending' || invoice.status === 'overdue') && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>
+                                    <CheckCircle className="mr-2 h-4 w-4" /> Marcar como Paga
+                                  </DropdownMenuItem>
+                                )}
+                                {invoice.status === 'paid' && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>
+                                    <Clock className="mr-2 h-4 w-4" /> Marcar como Pendente
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                     </TableRow>
                 );

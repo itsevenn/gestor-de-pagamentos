@@ -20,6 +20,7 @@ interface AppContextType {
     deleteClient: (clientId: string, reason: string) => void;
     restoreClient: (clientId: string) => void;
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
+    updateInvoice: (updatedInvoice: Invoice) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -95,6 +96,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const updateInvoice = (updatedInvoice: Invoice) => {
+        const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
+        setInvoices(prevInvoices => 
+            prevInvoices.map(invoice => invoice.id === updatedInvoice.id ? updatedInvoice : invoice)
+        );
+
+        let details = `Fatura ${updatedInvoice.id.toUpperCase()} foi atualizada.`;
+        if (originalInvoice && originalInvoice.status !== updatedInvoice.status) {
+            details = `Status da fatura ${updatedInvoice.id.toUpperCase()} alterado para ${updatedInvoice.status}.`;
+        }
+        addAuditLog({
+            user: 'Admin',
+            action: 'Fatura Atualizada',
+            details: details,
+        });
+    }
+
     const contextValue = {
         clients,
         invoices,
@@ -104,7 +122,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         updateClient,
         deleteClient,
         restoreClient,
-        addAuditLog
+        addAuditLog,
+        updateInvoice
     };
 
     return (
@@ -134,7 +153,10 @@ export const useInvoices = () => {
     if (context === undefined) {
         throw new Error('useInvoices must be used within an AppProvider');
     }
-    return { invoices: context.invoices };
+    return { 
+        invoices: context.invoices,
+        updateInvoice: context.updateInvoice 
+    };
 };
 
 export const useAuditLogs = () => {
