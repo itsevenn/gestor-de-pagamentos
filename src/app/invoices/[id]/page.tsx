@@ -23,8 +23,7 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationGenerator } from '@/components/notification-generator';
 
-export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function InvoiceDetailPage({ params: { id } }: { params: { id: string } }) {
   const { invoices } = useInvoices();
   const { clients, deletedClients } = useClients();
   const { auditLogs } = useAuditLogs();
