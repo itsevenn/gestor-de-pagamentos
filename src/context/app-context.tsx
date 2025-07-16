@@ -18,6 +18,7 @@ interface AppContextType {
     addClient: (client: Client) => void;
     updateClient: (updatedClient: Client) => void;
     deleteClient: (clientId: string) => void;
+    restoreClient: (clientId: string) => void;
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
 }
 
@@ -71,6 +72,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const restoreClient = (clientId: string) => {
+        const clientToRestore = deletedClients.find(c => c.id === clientId);
+        if (clientToRestore) {
+            setDeletedClients(prevDeleted => prevDeleted.filter(client => client.id !== clientId));
+            setClients(prevClients => [...prevClients, clientToRestore]);
+            addAuditLog({
+                user: 'Admin',
+                action: 'Cliente Restaurado',
+                details: `Cliente ${clientToRestore.name} foi restaurado.`,
+            });
+        }
+    };
+
     const contextValue = {
         clients,
         invoices,
@@ -79,6 +93,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         addClient,
         updateClient,
         deleteClient,
+        restoreClient,
         addAuditLog
     };
 
@@ -99,6 +114,7 @@ export const useClients = () => {
         addClient: context.addClient,
         updateClient: context.updateClient,
         deleteClient: context.deleteClient,
+        restoreClient: context.restoreClient,
         deletedClients: context.deletedClients,
      };
 };
