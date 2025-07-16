@@ -38,6 +38,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { DeletedClientsHistory } from '@/components/deleted-clients-history';
 
 export default function ClientsPage() {
   const { clients, deleteClient } = useClients();
@@ -141,6 +142,8 @@ export default function ClientsPage() {
           </Table>
         </CardContent>
       </Card>
+      
+      <DeletedClientsHistory />
     </div>
   );
 }
