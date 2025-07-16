@@ -51,7 +51,7 @@ export function Logo() {
       <h1 className="text-xl font-bold text-center font-headline text-sidebar-foreground">
           GESTOR DO CICLISTA
       </h1>
-      <Button variant="outline" size="sm" onClick={handleUploadClick} className="w-full">
+      <Button variant="default" size="sm" onClick={handleUploadClick} className="w-full h-8">
         <Upload className="mr-2 h-4 w-4" />
         Carregar Logo
       </Button>
