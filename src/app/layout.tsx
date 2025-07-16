@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -44,14 +45,17 @@ export default function RootLayout({
           <AppProvider>
             <SidebarProvider>
               <Sidebar>
-                <SidebarHeader className="p-4">
+                <SidebarHeader className="p-4 flex flex-col gap-4">
+                  <div className="flex justify-end">
+                    <UserNav />
+                  </div>
                   <Logo />
                 </SidebarHeader>
                 <SidebarContent>
                   <MainNav />
                 </SidebarContent>
                 <SidebarFooter className="p-4">
-                  <UserNav />
+                  {/* UserNav was moved to the header */}
                 </SidebarFooter>
               </Sidebar>
               <SidebarInset>
