@@ -158,59 +158,61 @@ export default function ReportsPage() {
         </Card>
       </div>
 
-       <Card>
-          <CardHeader>
-            <CardTitle>Relatório de Ciclista</CardTitle>
-            <CardDescription>Gere um arquivo PDF com o perfil completo de um ciclista.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-              <div className="space-y-2">
-                <Label htmlFor="client-select">Selecione um Ciclista</Label>
-                <Select onValueChange={setSelectedProfileClientId}>
-                    <SelectTrigger id="client-select">
-                        <SelectValue placeholder="Escolha um ciclista..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {clients.map(client => (
-                            <SelectItem key={client.id} value={client.id}>{client.nomeCiclista}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleGenerateProfilePdf} disabled={!selectedProfileClientId || isGeneratingProfile} variant="secondary">
-                {isGeneratingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                {isGeneratingProfile ? 'Gerando...' : 'Exportar Perfil para PDF'}
-              </Button>
-          </CardContent>
-        </Card>
-
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Comprovante de Pagamento</CardTitle>
-            <CardDescription>Gere um comprovante em PDF para uma fatura paga.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-              <div className="space-y-2">
-                <Label htmlFor="invoice-select">Selecione uma Fatura Paga</Label>
-                <Select onValueChange={setSelectedReceiptInvoiceId}>
-                    <SelectTrigger id="invoice-select">
-                        <SelectValue placeholder="Escolha uma fatura..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {paidInvoices.map(invoice => (
-                            <SelectItem key={invoice.id} value={invoice.id}>
-                                {`Fatura ${invoice.id.toUpperCase()} - ${getClientName(invoice.clientId)} - ${formatCurrency(invoice.currentAmount)}`}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleGenerateReceiptPdf} disabled={!selectedReceiptInvoiceId || isGeneratingReceipt}>
-                {isGeneratingReceipt ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                {isGeneratingReceipt ? 'Gerando...' : 'Exportar Comprovante para PDF'}
-              </Button>
-          </CardContent>
-        </Card>
+            <CardHeader>
+              <CardTitle>Relatório de Ciclista</CardTitle>
+              <CardDescription>Gere um arquivo PDF com o perfil completo de um ciclista.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div className="space-y-2">
+                  <Label htmlFor="client-select">Selecione um Ciclista</Label>
+                  <Select onValueChange={setSelectedProfileClientId}>
+                      <SelectTrigger id="client-select">
+                          <SelectValue placeholder="Escolha um ciclista..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {clients.map(client => (
+                              <SelectItem key={client.id} value={client.id}>{client.nomeCiclista}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleGenerateProfilePdf} disabled={!selectedProfileClientId || isGeneratingProfile} variant="secondary">
+                  {isGeneratingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  {isGeneratingProfile ? 'Gerando...' : 'Exportar Perfil para PDF'}
+                </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Comprovante de Pagamento</CardTitle>
+              <CardDescription>Gere um comprovante em PDF para uma fatura paga.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div className="space-y-2">
+                  <Label htmlFor="invoice-select">Selecione uma Fatura Paga</Label>
+                  <Select onValueChange={setSelectedReceiptInvoiceId}>
+                      <SelectTrigger id="invoice-select">
+                          <SelectValue placeholder="Escolha uma fatura..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {paidInvoices.map(invoice => (
+                              <SelectItem key={invoice.id} value={invoice.id}>
+                                  {`Fatura ${invoice.id.toUpperCase()} - ${getClientName(invoice.clientId)} - ${formatCurrency(invoice.currentAmount)}`}
+                              </SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleGenerateReceiptPdf} disabled={!selectedReceiptInvoiceId || isGeneratingReceipt}>
+                  {isGeneratingReceipt ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  {isGeneratingReceipt ? 'Gerando...' : 'Exportar Comprovante para PDF'}
+                </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Hidden components for PDF generation */}
         <div className="absolute -left-[9999px] top-auto w-[800px] bg-white">
