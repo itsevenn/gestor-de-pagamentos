@@ -12,9 +12,20 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon, Laptop } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useState, useEffect } from 'react';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Garante que o componente seja montado no cliente antes de renderizar o conteúdo dependente do tema
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // Ou um esqueleto de carregamento
+  }
 
   return (
     <div className="flex flex-col gap-6">
