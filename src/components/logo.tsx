@@ -40,14 +40,16 @@ export function Logo() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <Image
-        src={logoUrl}
-        alt="Logo Gestor do Ciclista"
-        width={70}
-        height={70}
-        className="rounded-md object-cover"
-        data-ai-hint="logo company"
-      />
+      <div className="w-[70px] h-[70px] rounded-md overflow-hidden">
+        <Image
+            src={logoUrl}
+            alt="Logo Gestor do Ciclista"
+            width={70}
+            height={70}
+            className="object-cover w-full h-full"
+            data-ai-hint="logo company"
+        />
+      </div>
       <h1 className="text-xl font-bold text-center font-headline text-sidebar-foreground">
           GESTOR DO CICLISTA
       </h1>
