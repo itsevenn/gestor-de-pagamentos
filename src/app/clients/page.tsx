@@ -16,11 +16,41 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, Edit, Eye } from 'lucide-react';
 import { useClients } from '@/context/app-context';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ClientsPage() {
-  const { clients } = useClients();
+  const { clients, deleteClient } = useClients();
+  const { toast } = useToast();
+
+  const handleDelete = (clientId: string) => {
+    deleteClient(clientId);
+    toast({
+      title: 'Cliente Excluído!',
+      description: 'O cliente foi movido para o histórico.',
+    });
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -36,7 +66,9 @@ export default function ClientsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Clientes</CardTitle>
-          <CardDescription>Gerencie seus clientes e veja seus detalhes.</CardDescription>
+          <CardDescription>
+            Gerencie seus clientes e veja seus detalhes.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -57,9 +89,51 @@ export default function ClientsPage() {
                   <TableCell>{client.serviceType}</TableCell>
                   <TableCell>{client.serviceStartDate}</TableCell>
                   <TableCell className="text-right">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/clients/${client.id}`}>Ver Detalhes</Link>
-                    </Button>
+                    <AlertDialog>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link href={`/clients/${client.id}`}>
+                              <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/clients/${client.id}/edit`}>
+                              <Edit className="mr-2 h-4 w-4" /> Editar
+                            </Link>
+                          </DropdownMenuItem>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-red-100 dark:focus:bg-red-900/50">
+                              <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Você tem certeza absoluta?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Essa ação não pode ser desfeita. Isso irá mover o cliente para o histórico de clientes excluídos.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(client.id)}>
+                            Confirmar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}

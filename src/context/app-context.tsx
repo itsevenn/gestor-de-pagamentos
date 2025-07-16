@@ -14,22 +14,76 @@ interface AppContextType {
     clients: Client[];
     invoices: Invoice[];
     auditLogs: AuditLog[];
+    deletedClients: Client[];
     addClient: (client: Client) => void;
+    updateClient: (updatedClient: Client) => void;
+    deleteClient: (clientId: string) => void;
+    addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [clients, setClients] = useState<Client[]>(initialClients);
+    const [deletedClients, setDeletedClients] = useState<Client[]>([]);
     const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
 
+    const addAuditLog = (log: Omit<AuditLog, 'id' | 'date'>) => {
+        const newLog: AuditLog = {
+            ...log,
+            id: `log-${Date.now()}`,
+            date: new Date().toISOString().split('T')[0],
+        };
+        setAuditLogs(prevLogs => [newLog, ...prevLogs]);
+    };
+
     const addClient = (client: Client) => {
         setClients(prevClients => [...prevClients, client]);
+        addAuditLog({
+            user: 'Admin',
+            action: 'Cliente Criado',
+            details: `Cliente ${client.name} foi adicionado.`,
+        });
+    };
+
+    const updateClient = (updatedClient: Client) => {
+        setClients(prevClients => 
+            prevClients.map(client => client.id === updatedClient.id ? updatedClient : client)
+        );
+        addAuditLog({
+            user: 'Admin',
+            action: 'Cliente Atualizado',
+            details: `Dados do cliente ${updatedClient.name} foram atualizados.`,
+        });
+    };
+
+    const deleteClient = (clientId: string) => {
+        const clientToDelete = clients.find(c => c.id === clientId);
+        if (clientToDelete) {
+            setClients(prevClients => prevClients.filter(client => client.id !== clientId));
+            setDeletedClients(prevDeleted => [...prevDeleted, clientToDelete]);
+            addAuditLog({
+                user: 'Admin',
+                action: 'Cliente Excluído',
+                details: `Cliente ${clientToDelete.name} foi excluído.`,
+            });
+        }
+    };
+
+    const contextValue = {
+        clients,
+        invoices,
+        auditLogs,
+        deletedClients,
+        addClient,
+        updateClient,
+        deleteClient,
+        addAuditLog
     };
 
     return (
-        <AppContext.Provider value={{ clients, invoices, auditLogs, addClient }}>
+        <AppContext.Provider value={contextValue}>
             {children}
         </AppContext.Provider>
     );
@@ -40,7 +94,13 @@ export const useClients = () => {
     if (context === undefined) {
         throw new Error('useClients must be used within an AppProvider');
     }
-    return { clients: context.clients, addClient: context.addClient };
+    return { 
+        clients: context.clients, 
+        addClient: context.addClient,
+        updateClient: context.updateClient,
+        deleteClient: context.deleteClient,
+        deletedClients: context.deletedClients,
+     };
 };
 
 export const useInvoices = () => {
