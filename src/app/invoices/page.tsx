@@ -83,7 +83,8 @@ export default function InvoicesPage() {
       updateInvoice({ 
           ...selectedInvoice, 
           status: 'paid', 
-          paymentMethod: paymentMethod as PaymentMethod 
+          paymentMethod: paymentMethod as PaymentMethod,
+          paymentDate: new Date().toISOString().split('T')[0],
       }, `marcada como paga com ${paymentMethod}. Valor: ${formatCurrency(selectedInvoice.currentAmount)}`);
       toast({
         title: 'Status da Fatura Atualizado!',
@@ -102,7 +103,8 @@ export default function InvoicesPage() {
   const handleMarkAsPending = (invoiceId: string) => {
     const invoice = invoices.find(inv => inv.id === invoiceId);
     if(invoice) {
-      updateInvoice({ ...invoice, status: 'pending' }, 'marcada como pendente.');
+      const { paymentDate, ...invoiceWithoutPaymentDate } = invoice;
+      updateInvoice({ ...invoiceWithoutPaymentDate, status: 'pending' }, 'marcada como pendente.');
       toast({
         title: 'Status da Fatura Atualizado!',
         description: `A fatura ${invoice.id.toUpperCase()} foi marcada como pendente.`,

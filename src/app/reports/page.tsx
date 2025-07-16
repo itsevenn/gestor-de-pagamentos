@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useInvoices, useClients } from '@/context/app-context';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -23,15 +23,24 @@ import { Download, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ClientProfilePDF } from '@/components/client-profile-pdf';
-import type { Client } from '@/lib/data';
+import { PaymentReceiptPDF } from '@/components/payment-receipt-pdf';
+import type { Client, Invoice } from '@/lib/data';
 
 export default function ReportsPage() {
   const { invoices } = useInvoices();
   const { clients } = useClients();
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
+  const [selectedProfileClientId, setSelectedProfileClientId] = useState<string | null>(null);
+  const [isGeneratingProfile, setIsGeneratingProfile] = useState(false);
+  const selectedProfileClient = useMemo(() => clients.find(c => c.id === selectedProfileClientId) || null, [clients, selectedProfileClientId]);
+
+  const [selectedReceiptInvoiceId, setSelectedReceiptInvoiceId] = useState<string | null>(null);
+  const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
+  
+  const paidInvoices = useMemo(() => invoices.filter(inv => inv.status === 'paid'), [invoices]);
+  const selectedReceiptInvoice = useMemo(() => paidInvoices.find(inv => inv.id === selectedReceiptInvoiceId) || null, [paidInvoices, selectedReceiptInvoiceId]);
+  const receiptClient = useMemo(() => clients.find(c => c.id === selectedReceiptInvoice?.clientId) || null, [clients, selectedReceiptInvoice]);
+  
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
   
   const getClientName = (clientId: string) => {
@@ -49,17 +58,8 @@ export default function ReportsPage() {
 
   const overdueInvoices = invoices.filter(inv => inv.status === 'overdue');
 
-  const handleClientChange = (clientId: string) => {
-      setSelectedClientId(clientId);
-      const client = clients.find(c => c.id === clientId);
-      setSelectedClient(client || null);
-  }
-
-  const handleGeneratePdf = async () => {
-    if (!selectedClient) return;
-
-    setIsGenerating(true);
-    const pdfContainer = document.getElementById('pdf-container');
+  const generatePdf = async (elementId: string, fileName: string) => {
+    const pdfContainer = document.getElementById(elementId);
     if (pdfContainer) {
         const canvas = await html2canvas(pdfContainer, { scale: 2 });
         const imgData = canvas.toDataURL('image/png');
@@ -75,20 +75,30 @@ export default function ReportsPage() {
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
         const ratio = canvasWidth / canvasHeight;
-        const newHeight = pdfWidth / ratio;
+        let newHeight = pdfWidth / ratio;
         
-        // Se a altura for maior que a página, precisará de múltiplas páginas
-        // Esta implementação é simplificada para uma página.
-        if (newHeight <= pdfHeight) {
-           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, newHeight);
-        } else {
-           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        if (newHeight > pdfHeight) {
+           newHeight = pdfHeight;
         }
 
-        pdf.save(`perfil_${selectedClient.nomeCiclista.replace(/ /g, '_')}.pdf`);
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, newHeight);
+        pdf.save(fileName);
     }
-    setIsGenerating(false);
+  }
+
+  const handleGenerateProfilePdf = async () => {
+    if (!selectedProfileClient) return;
+    setIsGeneratingProfile(true);
+    await generatePdf('profile-pdf-container', `perfil_${selectedProfileClient.nomeCiclista.replace(/ /g, '_')}.pdf`);
+    setIsGeneratingProfile(false);
   };
+
+  const handleGenerateReceiptPdf = async () => {
+    if (!selectedReceiptInvoice) return;
+    setIsGeneratingReceipt(true);
+    await generatePdf('receipt-pdf-container', `recibo_${selectedReceiptInvoice.id.toUpperCase()}.pdf`);
+    setIsGeneratingReceipt(false);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -156,7 +166,7 @@ export default function ReportsPage() {
           <CardContent className="space-y-4">
               <div className="max-w-sm space-y-2">
                 <Label htmlFor="client-select">Selecione um Ciclista</Label>
-                <Select onValueChange={handleClientChange}>
+                <Select onValueChange={setSelectedProfileClientId}>
                     <SelectTrigger id="client-select">
                         <SelectValue placeholder="Escolha um ciclista..." />
                     </SelectTrigger>
@@ -167,16 +177,45 @@ export default function ReportsPage() {
                     </SelectContent>
                 </Select>
               </div>
-              <Button onClick={handleGeneratePdf} disabled={!selectedClientId || isGenerating}>
-                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                {isGenerating ? 'Gerando...' : 'Exportar Perfil para PDF'}
+              <Button onClick={handleGenerateProfilePdf} disabled={!selectedProfileClientId || isGeneratingProfile}>
+                {isGeneratingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                {isGeneratingProfile ? 'Gerando...' : 'Exportar Perfil para PDF'}
               </Button>
           </CardContent>
         </Card>
 
-        {/* Hidden component for PDF generation */}
-        <div className="absolute -left-[9999px] top-auto w-[800px]">
-           {selectedClient && <div id="pdf-container"><ClientProfilePDF client={selectedClient} /></div>}
+        <Card>
+          <CardHeader>
+            <CardTitle>Comprovante de Pagamento</CardTitle>
+            <CardDescription>Gere um comprovante em PDF para uma fatura paga.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+              <div className="max-w-sm space-y-2">
+                <Label htmlFor="invoice-select">Selecione uma Fatura Paga</Label>
+                <Select onValueChange={setSelectedReceiptInvoiceId}>
+                    <SelectTrigger id="invoice-select">
+                        <SelectValue placeholder="Escolha uma fatura..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {paidInvoices.map(invoice => (
+                            <SelectItem key={invoice.id} value={invoice.id}>
+                                {`Fatura ${invoice.id.toUpperCase()} - ${getClientName(invoice.clientId)} - ${formatCurrency(invoice.currentAmount)}`}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleGenerateReceiptPdf} disabled={!selectedReceiptInvoiceId || isGeneratingReceipt}>
+                {isGeneratingReceipt ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                {isGeneratingReceipt ? 'Gerando...' : 'Exportar Comprovante para PDF'}
+              </Button>
+          </CardContent>
+        </Card>
+
+        {/* Hidden components for PDF generation */}
+        <div className="absolute -left-[9999px] top-auto w-[800px] bg-white">
+           {selectedProfileClient && <div id="profile-pdf-container"><ClientProfilePDF client={selectedProfileClient} /></div>}
+           {selectedReceiptInvoice && receiptClient && <div id="receipt-pdf-container"><PaymentReceiptPDF invoice={selectedReceiptInvoice} client={receiptClient} /></div>}
         </div>
     </div>
   );

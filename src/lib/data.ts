@@ -42,6 +42,7 @@ export type Invoice = {
   currentAmount: number;
   dueDate: string;
   issueDate: string;
+  paymentDate?: string;
   paymentMethod: 'Credit Card' | 'Bank Transfer' | 'PayPal' | 'Pix' | 'Boleto';
   status: 'pending' | 'paid' | 'overdue' | 'refunded';
   paymentHistory?: string;
@@ -96,7 +97,7 @@ export const clients: Client[] = [
 
 
 export const invoices: Invoice[] = [
-  { id: 'inv-001', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-05-01', dueDate: '2024-05-30', paymentMethod: 'Credit Card', status: 'paid', paymentHistory: 'Pagamentos consistentes em dia.' },
+  { id: 'inv-001', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-05-01', dueDate: '2024-05-30', paymentDate: '2024-05-28', paymentMethod: 'Credit Card', status: 'paid', paymentHistory: 'Pagamentos consistentes em dia.' },
   { id: 'inv-002', clientId: 'cli-2', originalAmount: 750, currentAmount: 750, issueDate: '2024-05-05', dueDate: '2024-06-04', paymentMethod: 'PayPal', status: 'pending', paymentHistory: 'Cliente de primeira viagem.' },
   { id: 'inv-003', clientId: 'cli-3', originalAmount: 3000, currentAmount: 3250, issueDate: '2024-04-10', dueDate: '2024-05-10', paymentMethod: 'Bank Transfer', status: 'overdue', paymentHistory: 'Geralmente paga em dia, esta é uma rara exceção.' },
   { id: 'inv-004', clientId: 'cli-1', originalAmount: 200, currentAmount: 200, issueDate: '2024-05-15', dueDate: '2024-06-14', paymentMethod: 'Credit Card', status: 'pending', paymentHistory: 'Pagamentos consistentes em dia.' },
