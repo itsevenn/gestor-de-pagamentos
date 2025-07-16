@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -159,13 +160,13 @@ export default function ReportsPage() {
       </div>
 
        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Relatório de Ciclista</CardTitle>
               <CardDescription>Gere um arquivo PDF com o perfil completo de um ciclista.</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                <div className="space-y-2">
+            <CardContent className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="space-y-2 w-full">
                   <Label htmlFor="client-select">Selecione um Ciclista</Label>
                   <Select onValueChange={setSelectedProfileClientId}>
                       <SelectTrigger id="client-select">
@@ -178,9 +179,9 @@ export default function ReportsPage() {
                       </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleGenerateProfilePdf} disabled={!selectedProfileClientId || isGeneratingProfile} variant="secondary">
+                <Button onClick={handleGenerateProfilePdf} disabled={!selectedProfileClientId || isGeneratingProfile} variant="secondary" className="w-full md:w-auto flex-shrink-0">
                   {isGeneratingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                  {isGeneratingProfile ? 'Gerando...' : 'Exportar Perfil para PDF'}
+                  {isGeneratingProfile ? 'Gerando...' : 'Exportar Perfil'}
                 </Button>
             </CardContent>
           </Card>
@@ -190,8 +191,8 @@ export default function ReportsPage() {
               <CardTitle>Comprovante de Pagamento</CardTitle>
               <CardDescription>Gere um comprovante em PDF para uma fatura paga.</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                <div className="space-y-2">
+            <CardContent className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="space-y-2 w-full">
                   <Label htmlFor="invoice-select">Selecione uma Fatura Paga</Label>
                   <Select onValueChange={setSelectedReceiptInvoiceId}>
                       <SelectTrigger id="invoice-select">
@@ -206,9 +207,9 @@ export default function ReportsPage() {
                       </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleGenerateReceiptPdf} disabled={!selectedReceiptInvoiceId || isGeneratingReceipt}>
+                <Button onClick={handleGenerateReceiptPdf} disabled={!selectedReceiptInvoiceId || isGeneratingReceipt} className="w-full md:w-auto flex-shrink-0">
                   {isGeneratingReceipt ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                  {isGeneratingReceipt ? 'Gerando...' : 'Exportar Comprovante para PDF'}
+                  {isGeneratingReceipt ? 'Gerando...' : 'Exportar Comprovante'}
                 </Button>
             </CardContent>
           </Card>
