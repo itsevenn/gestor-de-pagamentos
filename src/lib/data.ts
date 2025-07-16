@@ -57,8 +57,7 @@ export type AuditLog = {
     details: string;
 }
 
-// Adapting existing clients to the new structure with placeholder data
-export const clients: Client[] = [
+const mockClients: Client[] = [
   {
     id: 'cli-1',
     photoUrl: 'https://placehold.co/150x150.png',
@@ -95,8 +94,7 @@ export const clients: Client[] = [
   },
 ];
 
-
-export const invoices: Invoice[] = [
+const mockInvoices: Invoice[] = [
   { id: 'inv-001', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-05-01', dueDate: '2024-05-30', paymentDate: '2024-05-28', paymentMethod: 'Credit Card', status: 'paid', paymentHistory: 'Pagamentos consistentes em dia.' },
   { id: 'inv-002', clientId: 'cli-2', originalAmount: 750, currentAmount: 750, issueDate: '2024-05-05', dueDate: '2024-06-04', paymentMethod: 'PayPal', status: 'pending', paymentHistory: 'Cliente de primeira viagem.' },
   { id: 'inv-003', clientId: 'cli-3', originalAmount: 3000, currentAmount: 3250, issueDate: '2024-04-10', dueDate: '2024-05-10', paymentMethod: 'Bank Transfer', status: 'overdue', paymentHistory: 'Geralmente paga em dia, esta é uma rara exceção.' },
@@ -105,8 +103,19 @@ export const invoices: Invoice[] = [
   { id: 'inv-006', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-06-01', dueDate: '2024-07-01', paymentMethod: 'Credit Card', status: 'pending', paymentHistory: 'Pagamentos consistentes em dia.' },
 ];
 
-export const auditLogs: AuditLog[] = [
+const mockAuditLogs: AuditLog[] = [
     { id: 'log-1', date: '2024-05-11', user: 'Admin', action: 'Taxa de Atraso Adicionada', details: 'Adicionada uma taxa de atraso de R$250 à fatura INV-003.'},
     { id: 'log-2', date: '2024-05-05', user: 'Admin', action: 'Fatura Criada', details: 'Fatura INV-002 criada para Solutions Inc.'},
     { id: 'log-3', date: '2024-05-02', user: 'Sistema', action: 'Pagamento Processado', details: 'Pagamento processado para a fatura INV-001.'}
 ];
+
+const mockDeletedClients: Client[] = [];
+
+// Simulate API calls
+const simulateApiCall = <T>(data: T): Promise<T> => 
+    new Promise(resolve => setTimeout(() => resolve(data), 500));
+
+export const getClients = (): Promise<Client[]> => simulateApiCall(mockClients);
+export const getInvoices = (): Promise<Invoice[]> => simulateApiCall(mockInvoices);
+export const getAuditLogs = (): Promise<AuditLog[]> => simulateApiCall(mockAuditLogs);
+export const getDeletedClients = (): Promise<Client[]> => simulateApiCall(mockDeletedClients);

@@ -1,13 +1,14 @@
 
 'use client';
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
-    clients as initialClients, 
-    invoices as initialInvoices, 
-    auditLogs as initialAuditLogs,
-    Client,
-    Invoice,
-    AuditLog
+    getClients,
+    getInvoices,
+    getAuditLogs,
+    getDeletedClients,
+    type Client,
+    type Invoice,
+    type AuditLog
 } from '@/lib/data';
 
 interface AppContextType {
@@ -22,15 +23,40 @@ interface AppContextType {
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
     addInvoice: (invoiceData: Omit<Invoice, 'id'>) => void;
     updateInvoice: (updatedInvoice: Invoice, auditDetails?: string) => void;
+    loading: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-    const [clients, setClients] = useState<Client[]>(initialClients);
+    const [clients, setClients] = useState<Client[]>([]);
     const [deletedClients, setDeletedClients] = useState<Client[]>([]);
-    const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
-    const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [clientsData, invoicesData, auditLogsData, deletedClientsData] = await Promise.all([
+                    getClients(),
+                    getInvoices(),
+                    getAuditLogs(),
+                    getDeletedClients()
+                ]);
+                setClients(clientsData);
+                setInvoices(invoicesData);
+                setAuditLogs(auditLogsData);
+                setDeletedClients(deletedClientsData);
+            } catch (error) {
+                console.error("Failed to fetch initial data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const addAuditLog = (log: Omit<AuditLog, 'id' | 'date'>) => {
         const newLog: AuditLog = {
@@ -144,7 +170,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         restoreClient,
         addAuditLog,
         addInvoice,
-        updateInvoice
+        updateInvoice,
+        loading
     };
 
     return (
@@ -166,6 +193,7 @@ export const useClients = () => {
         deleteClient: context.deleteClient,
         restoreClient: context.restoreClient,
         deletedClients: context.deletedClients,
+        loading: context.loading
      };
 };
 
@@ -177,7 +205,8 @@ export const useInvoices = () => {
     return { 
         invoices: context.invoices,
         addInvoice: context.addInvoice,
-        updateInvoice: context.updateInvoice 
+        updateInvoice: context.updateInvoice,
+        loading: context.loading
     };
 };
 
@@ -186,5 +215,5 @@ export const useAuditLogs = () => {
     if (context === undefined) {
         throw new Error('useAuditLogs must be used within an AppProvider');
     }
-    return { auditLogs: context.auditLogs };
+    return { auditLogs: context.auditLogs, loading: context.loading };
 };
