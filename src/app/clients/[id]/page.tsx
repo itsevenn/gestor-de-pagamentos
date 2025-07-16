@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useInvoices, useClients } from '@/context/app-context';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Phone, Calendar } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Calendar, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
@@ -28,6 +28,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
 
   const allClients = [...clients, ...deletedClients];
   const client = allClients.find((c) => c.id === id);
+  const isDeleted = deletedClients.some((c) => c.id === id);
   const clientInvoices = invoices.filter((inv) => inv.clientId === id);
 
   if (!client) {
@@ -50,6 +51,12 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           <Link href="/clients"><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
         <h1 className="text-3xl font-bold font-headline">{client.name}</h1>
+        {isDeleted && (
+            <Badge variant="destructive" className="flex items-center gap-1">
+                <UserX className="h-3 w-3" />
+                Excluído
+            </Badge>
+        )}
       </div>
 
       <Card>
