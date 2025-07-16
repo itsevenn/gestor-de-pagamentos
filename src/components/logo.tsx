@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -39,21 +40,19 @@ export function Logo() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <Image
-          src={logoUrl}
-          alt="Logo Gestor do Ciclista"
-          width={50}
-          height={50}
-          className="rounded-md object-cover"
-          data-ai-hint="logo company"
-        />
-        <h1 className="text-xl font-bold font-headline text-sidebar-foreground">
-            GESTOR DO CICLISTA
-        </h1>
-      </div>
-      <Button variant="outline" size="sm" onClick={handleUploadClick}>
+    <div className="flex flex-col items-center gap-4">
+      <Image
+        src={logoUrl}
+        alt="Logo Gestor do Ciclista"
+        width={50}
+        height={50}
+        className="rounded-md object-cover"
+        data-ai-hint="logo company"
+      />
+      <h1 className="text-xl font-bold text-center font-headline text-sidebar-foreground">
+          GESTOR DO CICLISTA
+      </h1>
+      <Button variant="outline" size="sm" onClick={handleUploadClick} className="w-full">
         <Upload className="mr-2 h-4 w-4" />
         Carregar Logo
       </Button>
