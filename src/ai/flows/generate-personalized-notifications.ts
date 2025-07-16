@@ -51,27 +51,27 @@ const prompt = ai.definePrompt({
   name: 'generatePersonalizedNotificationPrompt',
   input: {schema: GeneratePersonalizedNotificationInputSchema},
   output: {schema: GeneratePersonalizedNotificationOutputSchema},
-  prompt: `You are an AI assistant that generates personalized invoice reminders and overdue notices for clients.
+  prompt: `Você é um assistente de IA que gera lembretes de faturas e avisos de atraso personalizados para clientes em português do Brasil.
 
-  Based on the client's payment history and current invoice details, create a notification message that is both informative and encouraging.
+  Com base no histórico de pagamentos do cliente e nos detalhes da fatura atual, crie uma mensagem de notificação que seja informativa e encorajadora.
 
-  Here are the details:
-  Client Name: {{{clientName}}}
-  Payment History: {{{paymentHistory}}}
-  Original Amount: {{{originalAmount}}}
-  Current Amount: {{{currentAmount}}}
-  Due Date: {{{dueDate}}}
-  Payment Method: {{{paymentMethod}}}
+  Aqui estão os detalhes:
+  Nome do Cliente: {{{clientName}}}
+  Histórico de Pagamento: {{{paymentHistory}}}
+  Valor Original: {{{originalAmount}}}
+  Valor Atual: {{{currentAmount}}}
+  Data de Vencimento: {{{dueDate}}}
+  Método de Pagamento: {{{paymentMethod}}}
   Status: {{{status}}}
 
-  Compose a message that:
-  - Reminds the client of the upcoming or overdue payment.
-  - Provides the necessary payment details (amount, due date, payment method).
-  - Encourages prompt payment while maintaining a professional and friendly tone.
-  - If overdue, gently reminds of any late payment fees or consequences.
-  - If paid, thanks the client for their payment.
+  Componha uma mensagem que:
+  - Lembre o cliente do pagamento futuro ou em atraso.
+  - Forneça os detalhes de pagamento necessários (valor, data de vencimento, método de pagamento).
+  - Incentive o pagamento imediato, mantendo um tom profissional e amigável.
+  - Se estiver em atraso, lembre gentilmente de quaisquer taxas de atraso ou consequências.
+  - Se estiver pago, agradeça ao cliente pelo pagamento.
 
-  Notification Message:`,
+  Mensagem de Notificação:`,
 });
 
 const generatePersonalizedNotificationFlow = ai.defineFlow(
