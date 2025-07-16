@@ -59,11 +59,13 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(notification);
-    toast({
-      title: 'Copiado para a área de transferência!',
-      description: 'A mensagem de notificação foi copiada.',
-    });
+    if (notification) {
+      navigator.clipboard.writeText(notification);
+      toast({
+        title: 'Copiado para a área de transferência!',
+        description: 'A mensagem de notificação foi copiada.',
+      });
+    }
   };
 
   return (

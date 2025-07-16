@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -14,11 +15,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { clients } from '@/lib/data';
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
+import { useClients } from '@/context/app-context';
 
 export default function ClientsPage() {
+  const { clients } = useClients();
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">

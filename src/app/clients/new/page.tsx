@@ -23,6 +23,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useClients } from '@/context/app-context';
 
 const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -37,6 +39,9 @@ const formSchema = z.object({
 
 export default function NewClientPage() {
   const { toast } = useToast();
+  const router = useRouter();
+  const { addClient } = useClients();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,14 +57,29 @@ export default function NewClientPage() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Aqui você adicionaria a lógica para salvar o cliente.
-    // Como estamos usando dados mocados, vamos apenas exibir um toast.
+    addClient({
+        id: `cli-${Date.now()}`,
+        name: values.name,
+        cpfCnpj: values.cpfCnpj,
+        contact: {
+            email: values.email,
+            phone: values.phone,
+        },
+        address: {
+            street: values.street,
+            city: values.city,
+            state: values.state,
+            zipCode: values.zipCode,
+        },
+        serviceStartDate: new Date().toISOString().split('T')[0],
+        serviceType: 'One-Time', // Default value
+    });
+
     toast({
       title: 'Cliente Adicionado!',
       description: `O cliente ${values.name} foi adicionado com sucesso.`,
     });
-    form.reset();
+    router.push('/clients');
   }
 
   return (

@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -13,13 +14,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { invoices, clients } from '@/lib/data';
+import { useInvoices, useClients } from '@/context/app-context';
 import { AlertCircle, ArrowRight, DollarSign, Receipt, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
+  const { invoices } = useInvoices();
+  const { clients } = useClients();
+
   const totalDue = invoices.reduce((acc, inv) => inv.status === 'pending' || inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
   const totalReceived = invoices.reduce((acc, inv) => inv.status === 'paid' ? acc + inv.originalAmount : acc, 0);
   const totalRefunds = invoices.reduce((acc, inv) => inv.status === 'refunded' ? acc + inv.originalAmount : acc, 0);

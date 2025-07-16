@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { invoices, clients, auditLogs } from '@/lib/data';
+import { useInvoices, useClients, useAuditLogs } from '@/context/app-context';
 import Link from 'next/link';
 import { ArrowLeft, CreditCard, Calendar, FileText, User, Bell, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationGenerator } from '@/components/notification-generator';
 
 export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
+  const { invoices } = useInvoices();
+  const { clients } = useClients();
+  const { auditLogs } = useAuditLogs();
+
   const invoice = invoices.find((inv) => inv.id === params.id);
 
   if (!invoice) {
@@ -128,7 +133,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           </Card>
         </TabsContent>
         <TabsContent value="notifications">
-          <NotificationGenerator invoice={invoice} client={client!} />
+          {client && <NotificationGenerator invoice={invoice} client={client} />}
         </TabsContent>
       </Tabs>
     </div>

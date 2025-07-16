@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -15,12 +16,15 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { clients, invoices } from '@/lib/data';
+import { useInvoices, useClients } from '@/context/app-context';
 import Link from 'next/link';
 import { ArrowLeft, Mail, Phone, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
+  const { clients } = useClients();
+  const { invoices } = useInvoices();
+
   const client = clients.find((c) => c.id === params.id);
   const clientInvoices = invoices.filter((inv) => inv.clientId === params.id);
 

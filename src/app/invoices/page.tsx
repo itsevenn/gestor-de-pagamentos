@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -15,12 +16,15 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { invoices, clients } from '@/lib/data';
+import { useInvoices, useClients } from '@/context/app-context';
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function InvoicesPage() {
+  const { invoices } = useInvoices();
+  const { clients } = useClients();
+
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
   const getClientName = (clientId: string) => {
     return clients.find(c => c.id === clientId)?.name || 'Cliente Desconhecido';

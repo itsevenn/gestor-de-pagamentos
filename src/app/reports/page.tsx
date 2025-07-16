@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -13,22 +14,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { invoices, clients } from '@/lib/data';
-import { cn } from '@/lib/utils';
+import { useInvoices, useClients } from '@/context/app-context';
 
 export default function ReportsPage() {
+  const { invoices } = useInvoices();
+  const { clients } = useClients();
+
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
   
   const getClientName = (clientId: string) => {
     return clients.find(c => c.id === clientId)?.name || 'Cliente Desconhecido';
-  };
-
-  const statusConfig = {
-    paid: { variant: 'secondary', className: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-700' },
-    pending: { variant: 'secondary', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700' },
-    overdue: { variant: 'destructive', className: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-700' },
-    refunded: { variant: 'secondary', className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
   };
 
   const monthlyReceivables = invoices.filter(inv => inv.status === 'paid').reduce((acc, inv) => {
