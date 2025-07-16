@@ -35,7 +35,7 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
 
     const input: GeneratePersonalizedNotificationInput = {
       clientName: client.name,
-      paymentHistory: invoice.paymentHistory || 'No previous history.',
+      paymentHistory: invoice.paymentHistory || 'Nenhum histórico anterior.',
       originalAmount: invoice.originalAmount,
       currentAmount: invoice.currentAmount,
       dueDate: invoice.dueDate,
@@ -50,8 +50,8 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Error generating notification',
-        description: 'An unexpected error occurred. Please try again.',
+        title: 'Erro ao gerar notificação',
+        description: 'Ocorreu um erro inesperado. Por favor, tente novamente.',
       });
     } finally {
       setLoading(false);
@@ -61,17 +61,17 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
   const handleCopy = () => {
     navigator.clipboard.writeText(notification);
     toast({
-      title: 'Copied to clipboard!',
-      description: 'The notification message has been copied.',
+      title: 'Copiado para a área de transferência!',
+      description: 'A mensagem de notificação foi copiada.',
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Smart Notification Generator</CardTitle>
+        <CardTitle>Gerador de Notificações Inteligentes</CardTitle>
         <CardDescription>
-          Use AI to generate personalized reminders and notifications for this invoice.
+          Use IA para gerar lembretes e notificações personalizadas para esta fatura.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -81,11 +81,11 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          Generate Notification
+          Gerar Notificação
         </Button>
         <div className="relative">
           <Textarea
-            placeholder="Generated notification will appear here..."
+            placeholder="A notificação gerada aparecerá aqui..."
             value={notification}
             readOnly
             className="min-h-[200px] bg-secondary"
@@ -104,7 +104,7 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
       </CardContent>
       <CardFooter>
         <p className="text-xs text-muted-foreground">
-          Review the generated message for accuracy before sending.
+          Revise a mensagem gerada para precisão antes de enviar.
         </p>
       </CardFooter>
     </Card>

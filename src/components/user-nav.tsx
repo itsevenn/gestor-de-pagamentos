@@ -23,7 +23,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src="https://placehold.co/40x40.png" alt="User" data-ai-hint="person avatar" />
+            <AvatarImage src="https://placehold.co/40x40.png" alt="Usuário" data-ai-hint="person avatar" />
             <AvatarFallback>U</AvatarFallback>
           </Avatar>
         </Button>
@@ -31,7 +31,7 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Admin User</p>
+            <p className="text-sm font-medium leading-none">Usuário Admin</p>
             <p className="text-xs leading-none text-muted-foreground">
               admin@billflow.com
             </p>
@@ -41,17 +41,17 @@ export function UserNav() {
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>Perfil</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+            <span>Configurações</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>Sair</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

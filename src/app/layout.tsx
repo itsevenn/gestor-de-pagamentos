@@ -17,8 +17,8 @@ import { PlusCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 export const metadata: Metadata = {
-  title: 'BIILFLOW PAGAMENTO',
-  description: 'Manage your payments with ease.',
+  title: 'BIILFLOW PAGAMENTOS',
+  description: 'Gerencie seus pagamentos com facilidade.',
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -55,14 +55,14 @@ export default function RootLayout({
                 <SidebarTrigger className="md:hidden" />
                 <div className="relative hidden md:block">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search..." className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[336px]" />
+                  <Input placeholder="Buscar..." className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[336px]" />
                 </div>
               </div>
 
               <div className="flex items-center gap-4">
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  New Invoice
+                  Nova Fatura
                 </Button>
                 <div className="md:hidden">
                   <UserNav />

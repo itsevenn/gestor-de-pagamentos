@@ -22,27 +22,27 @@ export default function ClientsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold font-headline">Clients</h1>
+        <h1 className="text-3xl font-bold font-headline">Clientes</h1>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Client
+          Adicionar Cliente
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Client List</CardTitle>
-          <CardDescription>Manage your clients and view their details.</CardDescription>
+          <CardTitle>Lista de Clientes</CardTitle>
+          <CardDescription>Gerencie seus clientes e veja seus detalhes.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Client Name</TableHead>
-                <TableHead>Contact Email</TableHead>
-                <TableHead>Service Type</TableHead>
-                <TableHead>Start Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Nome do Cliente</TableHead>
+                <TableHead>E-mail de Contato</TableHead>
+                <TableHead>Tipo de Serviço</TableHead>
+                <TableHead>Data de Início</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -54,7 +54,7 @@ export default function ClientsPage() {
                   <TableCell>{client.serviceStartDate}</TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/clients/${client.id}`}>View Details</Link>
+                      <Link href={`/clients/${client.id}`}>Ver Detalhes</Link>
                     </Button>
                   </TableCell>
                 </TableRow>

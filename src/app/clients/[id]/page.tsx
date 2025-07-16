@@ -25,16 +25,16 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   const clientInvoices = invoices.filter((inv) => inv.clientId === params.id);
 
   if (!client) {
-    return <div>Client not found</div>;
+    return <div>Cliente não encontrado</div>;
   }
 
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
   
   const statusConfig = {
-    paid: { variant: 'secondary', className: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-700' },
-    pending: { variant: 'secondary', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700' },
-    overdue: { variant: 'destructive', className: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-700' },
-    refunded: { variant: 'secondary', className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
+    paid: { variant: 'secondary', className: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-700', label: 'Pago' },
+    pending: { variant: 'secondary', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700', label: 'Pendente' },
+    overdue: { variant: 'destructive', className: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-700', label: 'Atrasado' },
+    refunded: { variant: 'secondary', className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300 border-gray-200 dark:border-gray-700', label: 'Reembolsado' },
   };
 
   return (
@@ -48,9 +48,9 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
 
       <Card>
         <CardHeader>
-          <CardTitle>Client Details</CardTitle>
+          <CardTitle>Detalhes do Cliente</CardTitle>
           <CardDescription>
-            {client.serviceType} client since {client.serviceStartDate}.
+            Cliente de {client.serviceType} desde {client.serviceStartDate}.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -64,24 +64,24 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
             </div>
             <div className="flex items-center gap-4 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground"/>
-                <span>Service start date: {client.serviceStartDate}</span>
+                <span>Data de início do serviço: {client.serviceStartDate}</span>
             </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Invoice History</CardTitle>
+          <CardTitle>Histórico de Faturas</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Invoice ID</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>ID da Fatura</TableHead>
+                <TableHead>Valor</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Data de Vencimento</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -91,13 +91,13 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                   <TableCell>{formatCurrency(invoice.currentAmount)}</TableCell>
                   <TableCell>
                     <Badge variant={statusConfig[invoice.status].variant} className={cn('capitalize', statusConfig[invoice.status].className)}>
-                      {invoice.status}
+                      {statusConfig[invoice.status].label}
                     </Badge>
                   </TableCell>
                   <TableCell>{invoice.dueDate}</TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/invoices/${invoice.id}`}>View Invoice</Link>
+                      <Link href={`/invoices/${invoice.id}`}>Ver Fatura</Link>
                     </Button>
                   </TableCell>
                 </TableRow>

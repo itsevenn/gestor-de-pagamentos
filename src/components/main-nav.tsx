@@ -13,10 +13,10 @@ export function MainNav() {
   const pathname = usePathname();
 
   const menuItems = [
-    { href: '/', label: 'Dashboard', icon: Home, tooltip: 'Dashboard' },
-    { href: '/clients', label: 'Clients', icon: Users, tooltip: 'Clients' },
-    { href: '/invoices', label: 'Invoices', icon: FileText, tooltip: 'Invoices' },
-    { href: '/reports', label: 'Reports', icon: LineChart, tooltip: 'Reports' },
+    { href: '/', label: 'Painel', icon: Home, tooltip: 'Painel' },
+    { href: '/clients', label: 'Clientes', icon: Users, tooltip: 'Clientes' },
+    { href: '/invoices', label: 'Faturas', icon: FileText, tooltip: 'Faturas' },
+    { href: '/reports', label: 'Relatórios', icon: LineChart, tooltip: 'Relatórios' },
   ];
 
   return (
