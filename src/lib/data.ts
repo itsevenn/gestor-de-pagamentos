@@ -1,19 +1,50 @@
 export type Client = {
   id: string;
-  name: string;
-  cpfCnpj: string;
-  contact: {
-    email: string;
-    phone: string;
-  };
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-  };
-  serviceStartDate: string;
-  serviceType: 'Subscription' | 'One-Time' | 'Consulting';
+  matricula: string;
+  dataAdvento: string;
+  nomeCiclista: string;
+  tipoSanguineo: string;
+  dataNascimento: string;
+  idade: string;
+  nacionalidade: string;
+  naturalidade: string;
+  uf: string;
+  rg: string;
+  cpf: string;
+  pai: string;
+  mae: string;
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  cep: string;
+  estado: string;
+  celular: string;
+  telefoneResidencial: string;
+  outrosContatos: string;
+  referencia: string;
+  cnpj?: string;
+  notaFiscal: string;
+  marcaModelo: string;
+  numeroSerie: string;
+  dataAquisicao: string;
+  observacoes: string;
+  nomeConselheiro: string;
+  localData: string;
+  // Campos do modelo antigo que serão removidos/adaptados
+  // name: string;
+  // cpfCnpj: string;
+  // contact: {
+  //   email: string;
+  //   phone: string;
+  // };
+  // address: {
+  //   street: string;
+  //   city: string;
+  //   state: string;
+  //   zipCode: string;
+  // };
+  // serviceStartDate: string;
+  // serviceType: 'Subscription' | 'One-Time' | 'Consulting';
   deletionReason?: string;
   deletionDate?: string;
 };
@@ -39,11 +70,43 @@ export type AuditLog = {
     details: string;
 }
 
+// Adapting existing clients to the new structure with placeholder data
 export const clients: Client[] = [
-  { id: 'cli-1', name: 'Innovate Corp', cpfCnpj: '12.345.678/0001-90', contact: { email: 'contact@innovate.com', phone: '123-456-7890' }, address: { street: 'Rua da Inovação, 123', city: 'São Paulo', state: 'SP', zipCode: '01000-000' }, serviceStartDate: '2023-01-15', serviceType: 'Subscription' },
-  { id: 'cli-2', name: 'Solutions Inc', cpfCnpj: '98.765.432/0001-10', contact: { email: 'hello@solutions.io', phone: '987-654-3210' }, address: { street: 'Avenida das Soluções, 456', city: 'Rio de Janeiro', state: 'RJ', zipCode: '20000-000' }, serviceStartDate: '2023-03-22', serviceType: 'One-Time' },
-  { id: 'cli-3', name: 'Quantum Leap', cpfCnpj: '11.222.333/0001-44', contact: { email: 'support@quantum.dev', phone: '555-123-4567' }, address: { street: 'Praça Quântica, 789', city: 'Belo Horizonte', state: 'MG', zipCode: '30000-000' }, serviceStartDate: '2022-11-01', serviceType: 'Consulting' },
+  {
+    id: 'cli-1',
+    matricula: '001',
+    dataAdvento: '2023-01-01',
+    nomeCiclista: 'Innovate Corp (Exemplo)',
+    tipoSanguineo: 'A+',
+    dataNascimento: '1990-01-15',
+    idade: '34',
+    nacionalidade: 'Brasileiro',
+    naturalidade: 'São Paulo',
+    uf: 'SP',
+    rg: '12.345.678-9',
+    cpf: '123.456.789-00',
+    pai: 'Pai do Innovate',
+    mae: 'Mãe do Innovate',
+    endereco: 'Rua da Inovação, 123',
+    bairro: 'Centro',
+    cidade: 'São Paulo',
+    cep: '01000-000',
+    estado: 'SP',
+    celular: '11987654321',
+    telefoneResidencial: '1123456789',
+    outrosContatos: '-',
+    referencia: '-',
+    cnpj: '12.345.678/0001-90',
+    notaFiscal: 'NF-123',
+    marcaModelo: 'Caloi/Elite',
+    numeroSerie: 'SN12345',
+    dataAquisicao: '2022-12-01',
+    observacoes: 'Cliente antigo adaptado para novo modelo.',
+    nomeConselheiro: 'Conselheiro A',
+    localData: 'São Paulo, 2024-01-01',
+  },
 ];
+
 
 export const invoices: Invoice[] = [
   { id: 'inv-001', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-05-01', dueDate: '2024-05-30', paymentMethod: 'Credit Card', status: 'paid', paymentHistory: 'Consistent on-time payments.' },

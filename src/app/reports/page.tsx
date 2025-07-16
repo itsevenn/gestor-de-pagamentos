@@ -23,7 +23,7 @@ export default function ReportsPage() {
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
   
   const getClientName = (clientId: string) => {
-    return clients.find(c => c.id === clientId)?.name || 'Cliente Desconhecido';
+    return clients.find(c => c.id === clientId)?.nomeCiclista || 'Cliente Desconhecido';
   };
 
   const monthlyReceivables = invoices.filter(inv => inv.status === 'paid').reduce((acc, inv) => {

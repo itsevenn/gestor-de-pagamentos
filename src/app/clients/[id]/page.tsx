@@ -18,11 +18,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useInvoices, useClients, useAuditLogs } from '@/context/app-context';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Phone, Calendar, UserX } from 'lucide-react';
+import { ArrowLeft, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Separator } from '@/components/ui/separator';
+
+const DetailItem = ({ label, value }: { label: string; value?: string }) => (
+  <div>
+    <p className="text-sm font-medium text-muted-foreground">{label}</p>
+    <p className="text-base font-semibold">{value || '-'}</p>
+  </div>
+);
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
   const id = use(params).id;
@@ -38,7 +46,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   const client = allClients.find((c) => c.id === id);
   const isDeleted = deletedClients.some((c) => c.id === id);
   const clientInvoices = invoices.filter((inv) => inv.clientId === id);
-  const clientAuditLogs = auditLogs.filter(log => log.details.includes(client?.name || ''));
+  const clientAuditLogs = auditLogs.filter(log => log.details.includes(client?.nomeCiclista || ''));
 
   useEffect(() => {
     setActiveTab(defaultTab);
@@ -63,7 +71,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
         <Button variant="outline" size="icon" asChild>
           <Link href="/clients"><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">{client.name}</h1>
+        <h1 className="text-3xl font-bold font-headline">{client.nomeCiclista}</h1>
         {isDeleted && (
             <Badge variant="destructive" className="flex items-center gap-1">
                 <UserX className="h-3 w-3" />
@@ -82,23 +90,66 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           <Card>
             <CardHeader>
               <CardTitle>Detalhes do Cliente</CardTitle>
-              <CardDescription>
-                Cliente de {client.serviceType} desde {client.serviceStartDate}.
-              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center gap-4 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground"/>
-                    <span>{client.contact.email}</span>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Dados Pessoais</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <DetailItem label="Matrícula" value={client.matricula} />
+                  <DetailItem label="Data do Advento" value={client.dataAdvento} />
+                  <DetailItem label="Tipo Sanguíneo" value={client.tipoSanguineo} />
+                  <DetailItem label="Data de Nascimento" value={client.dataNascimento} />
+                  <DetailItem label="Idade" value={client.idade} />
+                  <DetailItem label="Nacionalidade" value={client.nacionalidade} />
+                  <DetailItem label="Naturalidade" value={client.naturalidade} />
+                  <DetailItem label="UF" value={client.uf} />
+                  <DetailItem label="RG" value={client.rg} />
+                  <DetailItem label="CPF" value={client.cpf} />
                 </div>
-                <div className="flex items-center gap-4 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground"/>
-                    <span>{client.contact.phone}</span>
+              </div>
+              <Separator/>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Filiação</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                   <DetailItem label="Pai" value={client.pai} />
+                   <DetailItem label="Mãe" value={client.mae} />
                 </div>
-                <div className="flex items-center gap-4 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground"/>
-                    <span>Data de início do serviço: {client.serviceStartDate}</span>
+              </div>
+              <Separator/>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Endereço e Contato</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <DetailItem label="Endereço" value={client.endereco} />
+                  <DetailItem label="Bairro" value={client.bairro} />
+                  <DetailItem label="Cidade" value={client.cidade} />
+                  <DetailItem label="CEP" value={client.cep} />
+                  <DetailItem label="Estado" value={client.estado} />
+                  <DetailItem label="Celular" value={client.celular} />
+                  <DetailItem label="Telefone Residencial" value={client.telefoneResidencial} />
+                  <DetailItem label="Outros Contatos" value={client.outrosContatos} />
+                  <DetailItem label="Referência" value={client.referencia} />
                 </div>
+              </div>
+              <Separator/>
+               <div>
+                <h3 className="text-lg font-semibold mb-2">Dados da Bicicleta e Fiscais</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <DetailItem label="CNPJ" value={client.cnpj} />
+                  <DetailItem label="Nota Fiscal" value={client.notaFiscal} />
+                  <DetailItem label="Marca/Modelo" value={client.marcaModelo} />
+                  <DetailItem label="Número de Série" value={client.numeroSerie} />
+                  <DetailItem label="Data da Aquisição" value={client.dataAquisicao} />
+                </div>
+              </div>
+              <Separator/>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Observações e Finalização</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <DetailItem label="Observações" value={client.observacoes} />
+                    <DetailItem label="Nome do Conselheiro" value={client.nomeConselheiro} />
+                    <DetailItem label="Local e Data" value={client.localData} />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

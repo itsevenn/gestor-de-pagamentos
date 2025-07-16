@@ -34,7 +34,7 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
     setNotification('');
 
     const input: GeneratePersonalizedNotificationInput = {
-      clientName: client.name,
+      clientName: client.nomeCiclista,
       paymentHistory: invoice.paymentHistory || 'Nenhum histórico anterior.',
       originalAmount: invoice.originalAmount,
       currentAmount: invoice.currentAmount,

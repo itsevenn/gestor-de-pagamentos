@@ -97,7 +97,7 @@ export default function Home() {
   };
   
   const getClientName = (clientId: string) => {
-    return clients.find(c => c.id === clientId)?.name || 'Cliente Desconhecido';
+    return clients.find(c => c.id === clientId)?.nomeCiclista || 'Cliente Desconhecido';
   };
 
   return (
@@ -173,7 +173,7 @@ export default function Home() {
                 <TableRow key={invoice.id}>
                   <TableCell>
                     <div className="font-medium">{getClientName(invoice.clientId)}</div>
-                    <div className="text-sm text-muted-foreground">{clients.find(c => c.id === invoice.clientId)?.contact.email}</div>
+                    <div className="text-sm text-muted-foreground">{clients.find(c => c.id === invoice.clientId)?.celular}</div>
                   </TableCell>
                   <TableCell>{formatCurrency(invoice.currentAmount)}</TableCell>
                   <TableCell>

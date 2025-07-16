@@ -63,7 +63,11 @@ export default function ClientsPage() {
   };
 
   return (
-    <AlertDialog onOpenChange={(open) => !open && setSelectedClientId(null)}>
+    <AlertDialog onOpenChange={(open) => {
+      if (!open) {
+        setSelectedClientId(null);
+      }
+    }}>
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold font-headline">Clientes</h1>
@@ -86,20 +90,20 @@ export default function ClientsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome do Cliente</TableHead>
-                  <TableHead>E-mail de Contato</TableHead>
-                  <TableHead>Tipo de Serviço</TableHead>
-                  <TableHead>Data de Início</TableHead>
+                  <TableHead>Nome do Ciclista</TableHead>
+                  <TableHead>CPF</TableHead>
+                  <TableHead>Celular</TableHead>
+                  <TableHead>Matrícula</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clients.map((client) => (
                   <TableRow key={client.id}>
-                    <TableCell className="font-medium">{client.name}</TableCell>
-                    <TableCell>{client.contact.email}</TableCell>
-                    <TableCell>{client.serviceType}</TableCell>
-                    <TableCell>{client.serviceStartDate}</TableCell>
+                    <TableCell className="font-medium">{client.nomeCiclista}</TableCell>
+                    <TableCell>{client.cpf}</TableCell>
+                    <TableCell>{client.celular}</TableCell>
+                    <TableCell>{client.matricula}</TableCell>
                     <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -158,7 +162,7 @@ export default function ClientsPage() {
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeletionReason('')}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}>
               Confirmar
             </AlertDialogAction>

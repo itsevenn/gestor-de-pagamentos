@@ -25,19 +25,40 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useClients } from '@/context/app-context';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
-  cpfCnpj: z.string().min(11, 'CPF/CNPJ inválido.'),
-  email: z.string().email('E-mail inválido.'),
-  phone: z.string().min(10, 'Telefone inválido.'),
-  street: z.string().min(2, 'A rua deve ter pelo menos 2 caracteres.'),
-  city: z.string().min(2, 'A cidade deve ter pelo menos 2 caracteres.'),
-  state: z.string().min(2, 'O estado deve ter pelo menos 2 caracteres.'),
-  zipCode: z.string().min(8, 'CEP inválido.'),
-  serviceType: z.enum(['Subscription', 'One-Time', 'Consulting']),
-  serviceStartDate: z.string().min(10, 'Data inválida.'),
+  matricula: z.string().min(1, 'Campo obrigatório'),
+  dataAdvento: z.string().min(1, 'Campo obrigatório'),
+  nomeCiclista: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres.'),
+  tipoSanguineo: z.string().min(1, 'Campo obrigatório'),
+  dataNascimento: z.string().min(1, 'Campo obrigatório'),
+  idade: z.string().min(1, 'Campo obrigatório'),
+  nacionalidade: z.string().min(1, 'Campo obrigatório'),
+  naturalidade: z.string().min(1, 'Campo obrigatório'),
+  uf: z.string().min(2, 'UF deve ter 2 caracteres.'),
+  rg: z.string().min(1, 'Campo obrigatório'),
+  cpf: z.string().min(11, 'CPF inválido.'),
+  pai: z.string().min(1, 'Campo obrigatório'),
+  mae: z.string().min(1, 'Campo obrigatório'),
+  endereco: z.string().min(1, 'Campo obrigatório'),
+  bairro: z.string().min(1, 'Campo obrigatório'),
+  cidade: z.string().min(1, 'Campo obrigatório'),
+  cep: z.string().min(8, 'CEP inválido.'),
+  estado: z.string().min(2, 'Estado deve ter 2 caracteres.'),
+  celular: z.string().min(10, 'Celular inválido.'),
+  telefoneResidencial: z.string().optional(),
+  outrosContatos: z.string().optional(),
+  referencia: z.string().optional(),
+  cnpj: z.string().optional(),
+  notaFiscal: z.string().min(1, 'Campo obrigatório'),
+  marcaModelo: z.string().min(1, 'Campo obrigatório'),
+  numeroSerie: z.string().min(1, 'Campo obrigatório'),
+  dataAquisicao: z.string().min(1, 'Campo obrigatório'),
+  observacoes: z.string().optional(),
+  nomeConselheiro: z.string().min(1, 'Campo obrigatório'),
+  localData: z.string().min(1, 'Campo obrigatório'),
 });
 
 export default function NewClientPage() {
@@ -48,41 +69,48 @@ export default function NewClientPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      cpfCnpj: '',
-      email: '',
-      phone: '',
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      serviceType: 'One-Time',
-      serviceStartDate: new Date().toISOString().split('T')[0],
+      matricula: '',
+      dataAdvento: new Date().toISOString().split('T')[0],
+      nomeCiclista: '',
+      tipoSanguineo: '',
+      dataNascimento: '',
+      idade: '',
+      nacionalidade: 'Brasileiro(a)',
+      naturalidade: '',
+      uf: '',
+      rg: '',
+      cpf: '',
+      pai: '',
+      mae: '',
+      endereco: '',
+      bairro: '',
+      cidade: '',
+      cep: '',
+      estado: '',
+      celular: '',
+      telefoneResidencial: '',
+      outrosContatos: '',
+      referencia: '',
+      cnpj: '',
+      notaFiscal: '',
+      marcaModelo: '',
+      numeroSerie: '',
+      dataAquisicao: '',
+      observacoes: '',
+      nomeConselheiro: '',
+      localData: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     addClient({
-        id: `cli-${Date.now()}`,
-        name: values.name,
-        cpfCnpj: values.cpfCnpj,
-        contact: {
-            email: values.email,
-            phone: values.phone,
-        },
-        address: {
-            street: values.street,
-            city: values.city,
-            state: values.state,
-            zipCode: values.zipCode,
-        },
-        serviceStartDate: values.serviceStartDate,
-        serviceType: values.serviceType,
+      id: `cli-${Date.now()}`,
+      ...values,
     });
 
     toast({
       title: 'Cliente Adicionado!',
-      description: `O cliente ${values.name} foi adicionado com sucesso.`,
+      description: `O cliente ${values.nomeCiclista} foi adicionado com sucesso.`,
     });
     router.push('/clients');
   }
@@ -99,162 +127,87 @@ export default function NewClientPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Informações do Cliente</CardTitle>
+          <CardTitle>Formulário de Cadastro</CardTitle>
           <CardDescription>Preencha os detalhes abaixo para adicionar um novo cliente.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                    <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Nome Completo</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: João da Silva" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="cpfCnpj"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>CPF/CNPJ</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: 123.456.789-00 ou 12.345.678/0001-90" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                     <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>E-mail</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: joao.silva@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Telefone</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Ex: (11) 99999-9999" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
+              
+              {/* Dados Pessoais */}
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Dados Pessoais</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <FormField control={form.control} name="matricula" render={({ field }) => ( <FormItem><FormLabel>Matrícula</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="dataAdvento" render={({ field }) => ( <FormItem><FormLabel>Data do Advento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="nomeCiclista" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Nome do Ciclista</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="tipoSanguineo" render={({ field }) => ( <FormItem><FormLabel>Tipo Sanguíneo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="dataNascimento" render={({ field }) => ( <FormItem><FormLabel>Data de Nascimento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="idade" render={({ field }) => ( <FormItem><FormLabel>Idade</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="nacionalidade" render={({ field }) => ( <FormItem><FormLabel>Nacionalidade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="naturalidade" render={({ field }) => ( <FormItem><FormLabel>Naturalidade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="uf" render={({ field }) => ( <FormItem><FormLabel>UF</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="rg" render={({ field }) => ( <FormItem><FormLabel>RG</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="cpf" render={({ field }) => ( <FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </div>
-                 <div className="space-y-4">
-                    <FormField
-                        control={form.control}
-                        name="street"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Rua</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Ex: Rua das Flores, 123" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="city"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Cidade</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Ex: São Paulo" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                        <FormField
-                            control={form.control}
-                            name="state"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Estado</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Ex: SP" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                    </div>
-                     <FormField
-                        control={form.control}
-                        name="zipCode"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>CEP</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Ex: 01000-000" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
+              </div>
+
+              <Separator />
+
+              {/* Filiação */}
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Filiação</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={form.control} name="pai" render={({ field }) => ( <FormItem><FormLabel>Nome do Pai</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="mae" render={({ field }) => ( <FormItem><FormLabel>Nome da Mãe</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Endereço e Contato */}
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Endereço e Contato</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField control={form.control} name="endereco" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Endereço</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="bairro" render={({ field }) => ( <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="cidade" render={({ field }) => ( <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="cep" render={({ field }) => ( <FormItem><FormLabel>CEP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="estado" render={({ field }) => ( <FormItem><FormLabel>Estado</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="celular" render={({ field }) => ( <FormItem><FormLabel>Celular</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="telefoneResidencial" render={({ field }) => ( <FormItem><FormLabel>Telefone Residencial</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="outrosContatos" render={({ field }) => ( <FormItem><FormLabel>Outros Contatos</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                   <FormField control={form.control} name="referencia" render={({ field }) => ( <FormItem><FormLabel>Referência</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Dados da Bicicleta */}
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Dados da Bicicleta e Fiscais</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <FormField control={form.control} name="cnpj" render={({ field }) => ( <FormItem><FormLabel>CNPJ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="notaFiscal" render={({ field }) => ( <FormItem><FormLabel>Nota Fiscal</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="marcaModelo" render={({ field }) => ( <FormItem><FormLabel>Marca/Modelo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="numeroSerie" render={({ field }) => ( <FormItem><FormLabel>Número de Série</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="dataAquisicao" render={({ field }) => ( <FormItem><FormLabel>Data da Aquisição</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Observações e Finalização */}
+               <div>
+                <h2 className="text-xl font-semibold mb-4">Observações e Finalização</h2>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={form.control} name="observacoes" render={({ field }) => ( <FormItem><FormLabel>Observações</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="nomeConselheiro" render={({ field }) => ( <FormItem><FormLabel>Nome do Conselheiro</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                  <FormField control={form.control} name="localData" render={({ field }) => ( <FormItem><FormLabel>Local e Data</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                  </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
-                 <FormField
-                    control={form.control}
-                    name="serviceType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Serviço</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione um tipo de serviço" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Subscription">Subscription</SelectItem>
-                            <SelectItem value="One-Time">One-Time</SelectItem>
-                            <SelectItem value="Consulting">Consulting</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="serviceStartDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data de Início do Serviço</FormLabel>
-                        <FormControl>
-                          <Input placeholder="YYYY-MM-DD" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-              </div>
-              <div className="flex justify-end gap-2">
+               </div>
+
+              <div className="flex justify-end gap-2 pt-8">
                  <Button type="button" variant="outline" asChild>
                     <Link href="/clients">Cancelar</Link>
                 </Button>

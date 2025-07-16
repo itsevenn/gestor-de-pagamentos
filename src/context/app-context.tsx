@@ -15,7 +15,7 @@ interface AppContextType {
     invoices: Invoice[];
     auditLogs: AuditLog[];
     deletedClients: Client[];
-    addClient: (client: Client) => void;
+    addClient: (client: Omit<Client, 'id'>) => void;
     updateClient: (updatedClient: Client) => void;
     deleteClient: (clientId: string, reason: string) => void;
     restoreClient: (clientId: string) => void;
@@ -39,12 +39,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setAuditLogs(prevLogs => [newLog, ...prevLogs]);
     };
 
-    const addClient = (client: Client) => {
-        setClients(prevClients => [...prevClients, client]);
+    const addClient = (clientData: Omit<Client, 'id'>) => {
+        const newClient: Client = {
+            id: `cli-${Date.now()}`,
+            ...clientData,
+        };
+        setClients(prevClients => [...prevClients, newClient]);
         addAuditLog({
             user: 'Admin',
             action: 'Cliente Criado',
-            details: `Cliente ${client.name} foi adicionado.`,
+            details: `Cliente ${newClient.nomeCiclista} foi adicionado.`,
         });
     };
 
@@ -55,7 +59,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         addAuditLog({
             user: 'Admin',
             action: 'Cliente Atualizado',
-            details: `Dados do cliente ${updatedClient.name} foram atualizados.`,
+            details: `Dados do cliente ${updatedClient.nomeCiclista} foram atualizados.`,
         });
     };
 
@@ -72,7 +76,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             addAuditLog({
                 user: 'Admin',
                 action: 'Cliente Excluído',
-                details: `Cliente ${clientToDelete.name} foi excluído. Motivo: ${reason}`,
+                details: `Cliente ${clientToDelete.nomeCiclista} foi excluído. Motivo: ${reason}`,
             });
         }
     };
@@ -82,11 +86,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (clientToRestore) {
             const { deletionReason, deletionDate, ...restoredClient } = clientToRestore;
             setDeletedClients(prevDeleted => prevDeleted.filter(client => client.id !== clientId));
-            setClients(prevClients => [...prevClients, restoredClient]);
+            setClients(prevClients => [...prevClients, restoredClient as Client]);
             addAuditLog({
                 user: 'Admin',
                 action: 'Cliente Restaurado',
-                details: `Cliente ${clientToRestore.name} foi restaurado.`,
+                details: `Cliente ${clientToRestore.nomeCiclista} foi restaurado.`,
             });
         }
     };

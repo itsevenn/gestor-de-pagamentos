@@ -32,7 +32,7 @@ export default function InvoicesPage() {
     const client = allClients.find(c => c.id === clientId);
     const isDeleted = deletedClients.some(c => c.id === clientId);
     return {
-        name: client?.name || 'Cliente Desconhecido',
+        name: client?.nomeCiclista || 'Cliente Desconhecido',
         isDeleted: isDeleted
     };
   };

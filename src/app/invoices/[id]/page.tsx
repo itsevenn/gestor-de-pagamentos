@@ -72,14 +72,14 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <Card>
             <CardHeader>
               <CardTitle>Detalhes da Fatura</CardTitle>
-              <CardDescription>Emitida em {invoice.issueDate} para {client?.name}.</CardDescription>
+              <CardDescription>Emitida em {invoice.issueDate} para {client?.nomeCiclista}.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <h3 className="font-semibold">Informações do Cliente</h3>
                     <div className="flex items-center gap-2 text-sm">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <Link href={`/clients/${client?.id}`} className="text-primary hover:underline">{client?.name}</Link>
+                        <Link href={`/clients/${client?.id}`} className="text-primary hover:underline">{client?.nomeCiclista}</Link>
                          {isClientDeleted && (
                             <Badge variant="destructive" className="flex items-center gap-1">
                                 <UserX className="h-3 w-3" />
@@ -87,7 +87,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                             </Badge>
                         )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{client?.contact.email}</p>
+                    <p className="text-sm text-muted-foreground">{client?.celular}</p>
                 </div>
                 <div className="space-y-2">
                     <h3 className="font-semibold">Detalhes do Pagamento</h3>
