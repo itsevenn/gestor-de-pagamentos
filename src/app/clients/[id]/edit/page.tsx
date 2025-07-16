@@ -30,7 +30,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
-  photoUrl: z.string().optional(),
+  photoUrl: z.any().optional(),
   matricula: z.string().min(1, 'Campo obrigatório'),
   dataAdvento: z.string().min(1, 'Campo obrigatório'),
   nomeCiclista: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres.'),
@@ -121,10 +121,10 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     // In a real app, you would handle file upload here.
     // For now, we'll just use a placeholder if a new file is selected.
     const finalValues = { ...values };
-    if (typeof values.photoUrl === 'object') { // A new file was selected
+    if (values.photoUrl && typeof values.photoUrl !== 'string') { // A new file was selected or a File object exists
       finalValues.photoUrl = 'https://placehold.co/150x150.png';
     } else {
-      finalValues.photoUrl = client.photoUrl; // Keep the old one
+      finalValues.photoUrl = client.photoUrl; // Keep the old one if it's a string URL
     }
 
     updateClient({

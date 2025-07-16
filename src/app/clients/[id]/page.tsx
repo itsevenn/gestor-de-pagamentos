@@ -107,6 +107,9 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                 <div className="w-full md:w-3/4">
                   <h3 className="text-lg font-semibold mb-2">Dados Pessoais</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="col-span-2 md:col-span-3">
+                        <DetailItem label="Nome do Ciclista" value={client.nomeCiclista} />
+                    </div>
                     <DetailItem label="Matrícula" value={client.matricula} />
                     <DetailItem label="Data do Advento" value={client.dataAdvento} />
                     <DetailItem label="Tipo Sanguíneo" value={client.tipoSanguineo} />

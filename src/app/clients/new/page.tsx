@@ -29,7 +29,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
-  photoUrl: z.string().optional(),
+  photoUrl: z.any().optional(),
   matricula: z.string().min(1, 'Campo obrigatório'),
   dataAdvento: z.string().min(1, 'Campo obrigatório'),
   nomeCiclista: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres.'),
@@ -108,8 +108,10 @@ export default function NewClientPage() {
     // In a real app, you would handle file upload here.
     // For now, we'll just use a placeholder if a file is selected.
     const finalValues = { ...values };
-    if (values.photoUrl) {
-      finalValues.photoUrl = 'https://placehold.co/150x150.png';
+    if (values.photoUrl && typeof values.photoUrl !== 'string') {
+        finalValues.photoUrl = 'https://placehold.co/150x150.png';
+    } else {
+        finalValues.photoUrl = '';
     }
     
     addClient({
