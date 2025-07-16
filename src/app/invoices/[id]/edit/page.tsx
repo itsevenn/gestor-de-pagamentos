@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -57,7 +58,12 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        observations: '',
+      clientId: '',
+      originalAmount: 0,
+      currentAmount: 0,
+      issueDate: '',
+      dueDate: '',
+      observations: '',
     },
   });
   
@@ -65,6 +71,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
     if (invoice) {
       form.reset({
         ...invoice,
+        observations: invoice.observations || '',
       });
     }
   }, [invoice, form]);
