@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { invoices, clients, auditLogs } from '@/lib/data';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard, Calendar, FileText, User, Bell } from 'lucide-react';
+import { ArrowLeft, CreditCard, Calendar, FileText, User, Bell, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationGenerator } from '@/components/notification-generator';
