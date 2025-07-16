@@ -1,5 +1,6 @@
 export type Client = {
   id: string;
+  photoUrl?: string;
   matricula: string;
   dataAdvento: string;
   nomeCiclista: string;
@@ -30,21 +31,6 @@ export type Client = {
   observacoes: string;
   nomeConselheiro: string;
   localData: string;
-  // Campos do modelo antigo que serão removidos/adaptados
-  // name: string;
-  // cpfCnpj: string;
-  // contact: {
-  //   email: string;
-  //   phone: string;
-  // };
-  // address: {
-  //   street: string;
-  //   city: string;
-  //   state: string;
-  //   zipCode: string;
-  // };
-  // serviceStartDate: string;
-  // serviceType: 'Subscription' | 'One-Time' | 'Consulting';
   deletionReason?: string;
   deletionDate?: string;
 };
@@ -74,6 +60,7 @@ export type AuditLog = {
 export const clients: Client[] = [
   {
     id: 'cli-1',
+    photoUrl: 'https://placehold.co/150x150.png',
     matricula: '001',
     dataAdvento: '2023-01-01',
     nomeCiclista: 'Innovate Corp (Exemplo)',
@@ -113,7 +100,7 @@ export const invoices: Invoice[] = [
   { id: 'inv-002', clientId: 'cli-2', originalAmount: 750, currentAmount: 750, issueDate: '2024-05-05', dueDate: '2024-06-04', paymentMethod: 'PayPal', status: 'pending', paymentHistory: 'First-time client.' },
   { id: 'inv-003', clientId: 'cli-3', originalAmount: 3000, currentAmount: 3250, issueDate: '2024-04-10', dueDate: '2024-05-10', paymentMethod: 'Bank Transfer', status: 'overdue', paymentHistory: 'Usually pays on time, this is a rare exception.' },
   { id: 'inv-004', clientId: 'cli-1', originalAmount: 200, currentAmount: 200, issueDate: '2024-05-15', dueDate: '2024-06-14', paymentMethod: 'Credit Card', status: 'pending', paymentHistory: 'Consistent on-time payments.' },
-  { id: 'inv-005', clientId: 'cli-2', originalAmount: 500, currentAmount: 0, issueDate: '2024-04-20', dueDate: '2024-05-20', paymentMethod: 'PayPal', status: 'refunded', paymentHistory: 'First-time client.' },
+  { id: 'inv-005', clientId: 'cli-2', originalAmount: 500, currentAmount: 0, issueDate: '2024-04-20', dueDate: '2025-05-20', paymentMethod: 'PayPal', status: 'refunded', paymentHistory: 'First-time client.' },
   { id: 'inv-006', clientId: 'cli-1', originalAmount: 1500, currentAmount: 1500, issueDate: '2024-06-01', dueDate: '2024-07-01', paymentMethod: 'Credit Card', status: 'pending', paymentHistory: 'Consistent on-time payments.' },
 ];
 

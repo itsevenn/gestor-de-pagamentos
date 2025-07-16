@@ -30,6 +30,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
+  photoUrl: z.string().optional(),
   matricula: z.string().min(1, 'Campo obrigatório'),
   dataAdvento: z.string().min(1, 'Campo obrigatório'),
   nomeCiclista: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres.'),
@@ -72,6 +73,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      photoUrl: '',
       matricula: '',
       dataAdvento: '',
       nomeCiclista: '',
@@ -115,10 +117,19 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!client) return;
+    
+    // In a real app, you would handle file upload here.
+    // For now, we'll just use a placeholder if a new file is selected.
+    const finalValues = { ...values };
+    if (typeof values.photoUrl === 'object') { // A new file was selected
+      finalValues.photoUrl = 'https://placehold.co/150x150.png';
+    } else {
+      finalValues.photoUrl = client.photoUrl; // Keep the old one
+    }
 
     updateClient({
       id: client.id,
-      ...values,
+      ...finalValues,
     });
 
     toast({
@@ -154,7 +165,8 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
               {/* Dados Pessoais */}
               <div>
                 <h2 className="text-xl font-semibold mb-4">Dados Pessoais</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <FormField control={form.control} name="photoUrl" render={({ field }) => ( <FormItem className="md:col-span-4"><FormLabel>Foto do Ciclista</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="matricula" render={({ field }) => ( <FormItem><FormLabel>Matrícula</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="dataAdvento" render={({ field }) => ( <FormItem><FormLabel>Data do Advento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
                   <FormField control={form.control} name="nomeCiclista" render={({ field }) => ( <FormItem className="md:col-span-2 lg:col-span-2"><FormLabel>Nome do Ciclista</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />

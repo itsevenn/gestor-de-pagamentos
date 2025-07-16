@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 
 const DetailItem = ({ label, value }: { label: string; value?: string }) => (
   <div>
@@ -92,19 +93,31 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
               <CardTitle>Detalhes do Ciclista</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Dados Pessoais</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <DetailItem label="Matrícula" value={client.matricula} />
-                  <DetailItem label="Data do Advento" value={client.dataAdvento} />
-                  <DetailItem label="Tipo Sanguíneo" value={client.tipoSanguineo} />
-                  <DetailItem label="Data de Nascimento" value={client.dataNascimento} />
-                  <DetailItem label="Idade" value={client.idade} />
-                  <DetailItem label="Nacionalidade" value={client.nacionalidade} />
-                  <DetailItem label="Naturalidade" value={client.naturalidade} />
-                  <DetailItem label="UF" value={client.uf} />
-                  <DetailItem label="RG" value={client.rg} />
-                  <DetailItem label="CPF" value={client.cpf} />
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="w-full md:w-1/4">
+                  <Image
+                    src={client.photoUrl || 'https://placehold.co/150x150.png'}
+                    alt={`Foto de ${client.nomeCiclista}`}
+                    width={150}
+                    height={150}
+                    className="rounded-lg object-cover"
+                    data-ai-hint="cyclist photo"
+                  />
+                </div>
+                <div className="w-full md:w-3/4">
+                  <h3 className="text-lg font-semibold mb-2">Dados Pessoais</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <DetailItem label="Matrícula" value={client.matricula} />
+                    <DetailItem label="Data do Advento" value={client.dataAdvento} />
+                    <DetailItem label="Tipo Sanguíneo" value={client.tipoSanguineo} />
+                    <DetailItem label="Data de Nascimento" value={client.dataNascimento} />
+                    <DetailItem label="Idade" value={client.idade} />
+                    <DetailItem label="Nacionalidade" value={client.nacionalidade} />
+                    <DetailItem label="Naturalidade" value={client.naturalidade} />
+                    <DetailItem label="UF" value={client.uf} />
+                    <DetailItem label="RG" value={client.rg} />
+                    <DetailItem label="CPF" value={client.cpf} />
+                  </div>
                 </div>
               </div>
               <Separator/>
