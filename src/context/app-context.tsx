@@ -20,7 +20,7 @@ interface AppContextType {
     deleteClient: (clientId: string, reason: string) => void;
     restoreClient: (clientId: string) => void;
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
-    updateInvoice: (updatedInvoice: Invoice) => void;
+    updateInvoice: (updatedInvoice: Invoice, auditDetails?: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -96,14 +96,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const updateInvoice = (updatedInvoice: Invoice) => {
+    const updateInvoice = (updatedInvoice: Invoice, auditDetails?: string) => {
         const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
         setInvoices(prevInvoices => 
             prevInvoices.map(invoice => invoice.id === updatedInvoice.id ? updatedInvoice : invoice)
         );
 
         let details = `Fatura ${updatedInvoice.id.toUpperCase()} foi atualizada.`;
-        if (originalInvoice && originalInvoice.status !== updatedInvoice.status) {
+        if (auditDetails) {
+            details = `Fatura ${updatedInvoice.id.toUpperCase()} ${auditDetails}`;
+        } else if (originalInvoice && originalInvoice.status !== updatedInvoice.status) {
             details = `Status da fatura ${updatedInvoice.id.toUpperCase()} alterado para ${updatedInvoice.status}.`;
         }
         addAuditLog({
