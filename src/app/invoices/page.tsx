@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -147,6 +148,8 @@ export default function InvoicesPage() {
               <TableBody>
                 {invoices.map((invoice) => {
                   const clientInfo = getClientInfo(invoice.clientId);
+                  const isAmountAdjusted = invoice.currentAmount !== invoice.originalAmount;
+
                   return (
                       <TableRow key={invoice.id}>
                           <TableCell className="font-medium">{invoice.id.toUpperCase()}</TableCell>
@@ -161,7 +164,16 @@ export default function InvoicesPage() {
                                   )}
                               </div>
                           </TableCell>
-                          <TableCell>{formatCurrency(invoice.currentAmount)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span>{formatCurrency(invoice.currentAmount)}</span>
+                              {isAmountAdjusted && (
+                                <s className="text-xs text-muted-foreground" title={`Valor Original: ${formatCurrency(invoice.originalAmount)}`}>
+                                  {formatCurrency(invoice.originalAmount)}
+                                </s>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell>
                               <Badge variant={statusConfig[invoice.status].variant} className={cn('capitalize', statusConfig[invoice.status].className)}>
                               {statusConfig[invoice.status].label}
