@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useInvoices, useClients, useAuditLogs } from '@/context/app-context';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard, Calendar, FileText, User, Bell, DollarSign } from 'lucide-react';
+import { ArrowLeft, CreditCard, Calendar, FileText, User, Bell, DollarSign, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationGenerator } from '@/components/notification-generator';
@@ -26,7 +26,7 @@ import { NotificationGenerator } from '@/components/notification-generator';
 export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const { invoices } = useInvoices();
-  const { clients } = useClients();
+  const { clients, deletedClients } = useClients();
   const { auditLogs } = useAuditLogs();
 
   const invoice = invoices.find((inv) => inv.id === id);
@@ -34,8 +34,10 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   if (!invoice) {
     return <div>Fatura não encontrada</div>;
   }
-
-  const client = clients.find((c) => c.id === invoice.clientId);
+  
+  const allClients = [...clients, ...deletedClients];
+  const client = allClients.find((c) => c.id === invoice.clientId);
+  const isClientDeleted = deletedClients.some(c => c.id === invoice.clientId);
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
 
@@ -77,6 +79,12 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                     <div className="flex items-center gap-2 text-sm">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <Link href={`/clients/${client?.id}`} className="text-primary hover:underline">{client?.name}</Link>
+                         {isClientDeleted && (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                                <UserX className="h-3 w-3" />
+                                Excluído
+                            </Badge>
+                        )}
                     </div>
                     <p className="text-sm text-muted-foreground">{client?.contact.email}</p>
                 </div>
