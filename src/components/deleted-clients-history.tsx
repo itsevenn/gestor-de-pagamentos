@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { useClients } from '@/context/app-context';
 import { Button } from './ui/button';
-import { MoreHorizontal, Eye, Undo } from 'lucide-react';
+import { MoreHorizontal, Eye, Undo, History } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -83,6 +83,11 @@ export function DeletedClientsHistory() {
                           <DropdownMenuItem asChild>
                             <Link href={`/clients/${client.id}`}>
                               <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/clients/${client.id}?tab=audit`}>
+                              <History className="mr-2 h-4 w-4" /> Ver Auditoria
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleRestore(client.id)}>
