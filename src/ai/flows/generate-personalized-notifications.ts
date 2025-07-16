@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -81,7 +82,12 @@ const generatePersonalizedNotificationFlow = ai.defineFlow(
     outputSchema: GeneratePersonalizedNotificationOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const response = await ai.generate({
+      prompt: prompt.compile(input),
+      output: {
+        schema: GeneratePersonalizedNotificationOutputSchema,
+      },
+    });
+    return response.output!;
   }
 );
