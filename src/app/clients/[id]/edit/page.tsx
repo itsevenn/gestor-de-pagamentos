@@ -26,6 +26,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useClients } from '@/context/app-context';
 import { useEffect, use } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -36,6 +37,8 @@ const formSchema = z.object({
   city: z.string().min(2, 'A cidade deve ter pelo menos 2 caracteres.'),
   state: z.string().min(2, 'O estado deve ter pelo menos 2 caracteres.'),
   zipCode: z.string().min(8, 'CEP inválido.'),
+  serviceType: z.enum(['Subscription', 'One-Time', 'Consulting']),
+  serviceStartDate: z.string().min(10, 'Data inválida.'),
 });
 
 export default function EditClientPage({ params }: { params: { id: string } }) {
@@ -56,6 +59,8 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
         city: '',
         state: '',
         zipCode: '',
+        serviceType: 'One-Time',
+        serviceStartDate: '',
     },
   });
   
@@ -70,6 +75,8 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
             city: client.address.city,
             state: client.address.state,
             zipCode: client.address.zipCode,
+            serviceType: client.serviceType,
+            serviceStartDate: client.serviceStartDate,
         });
     }
   }, [client, form]);
@@ -91,6 +98,8 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
             state: values.state,
             zipCode: values.zipCode,
         },
+        serviceType: values.serviceType,
+        serviceStartDate: values.serviceStartDate,
     });
 
     toast({
@@ -233,6 +242,43 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                         )}
                         />
                  </div>
+              </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+                 <FormField
+                    control={form.control}
+                    name="serviceType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Serviço</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione um tipo de serviço" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Subscription">Subscription</SelectItem>
+                            <SelectItem value="One-Time">One-Time</SelectItem>
+                            <SelectItem value="Consulting">Consulting</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="serviceStartDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data de Início do Serviço</FormLabel>
+                        <FormControl>
+                          <Input placeholder="YYYY-MM-DD" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
               </div>
               <div className="flex justify-end gap-2">
                  <Button type="button" variant="outline" asChild>
