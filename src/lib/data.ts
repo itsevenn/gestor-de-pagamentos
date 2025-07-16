@@ -1,9 +1,16 @@
 export type Client = {
   id: string;
   name: string;
+  cpfCnpj: string;
   contact: {
     email: string;
     phone: string;
+  };
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
   };
   serviceStartDate: string;
   serviceType: 'Subscription' | 'One-Time' | 'Consulting';
@@ -16,9 +23,10 @@ export type Invoice = {
   currentAmount: number;
   dueDate: string;
   issueDate: string;
-  paymentMethod: 'Credit Card' | 'Bank Transfer' | 'PayPal';
+  paymentMethod: 'Credit Card' | 'Bank Transfer' | 'PayPal' | 'Pix' | 'Boleto';
   status: 'pending' | 'paid' | 'overdue' | 'refunded';
   paymentHistory?: string;
+  observations?: string;
 };
 
 export type AuditLog = {
@@ -30,9 +38,9 @@ export type AuditLog = {
 }
 
 export const clients: Client[] = [
-  { id: 'cli-1', name: 'Innovate Corp', contact: { email: 'contact@innovate.com', phone: '123-456-7890' }, serviceStartDate: '2023-01-15', serviceType: 'Subscription' },
-  { id: 'cli-2', name: 'Solutions Inc', contact: { email: 'hello@solutions.io', phone: '987-654-3210' }, serviceStartDate: '2023-03-22', serviceType: 'One-Time' },
-  { id: 'cli-3', name: 'Quantum Leap', contact: { email: 'support@quantum.dev', phone: '555-123-4567' }, serviceStartDate: '2022-11-01', serviceType: 'Consulting' },
+  { id: 'cli-1', name: 'Innovate Corp', cpfCnpj: '12.345.678/0001-90', contact: { email: 'contact@innovate.com', phone: '123-456-7890' }, address: { street: 'Rua da Inovação, 123', city: 'São Paulo', state: 'SP', zipCode: '01000-000' }, serviceStartDate: '2023-01-15', serviceType: 'Subscription' },
+  { id: 'cli-2', name: 'Solutions Inc', cpfCnpj: '98.765.432/0001-10', contact: { email: 'hello@solutions.io', phone: '987-654-3210' }, address: { street: 'Avenida das Soluções, 456', city: 'Rio de Janeiro', state: 'RJ', zipCode: '20000-000' }, serviceStartDate: '2023-03-22', serviceType: 'One-Time' },
+  { id: 'cli-3', name: 'Quantum Leap', cpfCnpj: '11.222.333/0001-44', contact: { email: 'support@quantum.dev', phone: '555-123-4567' }, address: { street: 'Praça Quântica, 789', city: 'Belo Horizonte', state: 'MG', zipCode: '30000-000' }, serviceStartDate: '2022-11-01', serviceType: 'Consulting' },
 ];
 
 export const invoices: Invoice[] = [
