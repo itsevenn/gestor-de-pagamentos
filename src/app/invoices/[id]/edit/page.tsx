@@ -33,7 +33,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useInvoices, useClients } from '@/context/app-context';
-import { useEffect, use } from 'react';
+import { useEffect, use, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
@@ -45,7 +45,12 @@ const formSchema = z.object({
   paymentMethod: z.enum(['Credit Card', 'Bank Transfer', 'PayPal', 'Pix', 'Boleto']),
   status: z.enum(['pending', 'paid', 'overdue', 'refunded']),
   observations: z.string().optional(),
-});
+  valueCorrectionReason: z.string().optional(),
+}).refine(data => {
+    // This is a placeholder for server-side logic to check if amounts have changed.
+    // In the component, we'll manually trigger this check.
+    return true;
+}, {});
 
 export default function EditInvoicePage({ params }: { params: { id: string } }) {
   const id = use(params).id;
@@ -54,6 +59,8 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
   const { invoices, updateInvoice } = useInvoices();
   const { clients } = useClients();
   const invoice = invoices.find((inv) => inv.id === id);
+  
+  const [isAmountChanged, setIsAmountChanged] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,25 +71,55 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
       issueDate: '',
       dueDate: '',
       observations: '',
+      valueCorrectionReason: '',
     },
   });
+
+  const watchedOriginalAmount = form.watch('originalAmount');
+  const watchedCurrentAmount = form.watch('currentAmount');
   
   useEffect(() => {
     if (invoice) {
       form.reset({
         ...invoice,
         observations: invoice.observations || '',
+        valueCorrectionReason: '',
       });
     }
   }, [invoice, form]);
 
+  useEffect(() => {
+      if (invoice) {
+        const originalAmountChanged = invoice.originalAmount !== watchedOriginalAmount;
+        const currentAmountChanged = invoice.currentAmount !== watchedCurrentAmount;
+        setIsAmountChanged(originalAmountChanged || currentAmountChanged);
+      }
+  }, [watchedOriginalAmount, watchedCurrentAmount, invoice]);
+
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!invoice) return;
+
+    if (isAmountChanged && !values.valueCorrectionReason) {
+        form.setError('valueCorrectionReason', {
+            type: 'manual',
+            message: 'O motivo da correção do valor é obrigatório.',
+        });
+        return;
+    }
+
+    let auditDetails = `Fatura ${invoice.id.toUpperCase()} atualizada.`;
+
+    if (isAmountChanged) {
+        const originalAmountDiff = values.originalAmount !== invoice.originalAmount ? `Valor original alterado de ${invoice.originalAmount} para ${values.originalAmount}.` : '';
+        const currentAmountDiff = values.currentAmount !== invoice.currentAmount ? `Valor atual alterado de ${invoice.currentAmount} para ${values.currentAmount}.` : '';
+        auditDetails = `Valores da fatura ${invoice.id.toUpperCase()} atualizados. ${originalAmountDiff} ${currentAmountDiff} Motivo: ${values.valueCorrectionReason}`;
+    }
 
     updateInvoice({
       id: invoice.id,
       ...values,
-    });
+    }, auditDetails);
 
     toast({
       title: 'Fatura Atualizada!',
@@ -202,6 +239,21 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
                             </FormItem>
                         )}
                     />
+                    {isAmountChanged && (
+                        <FormField
+                            control={form.control}
+                            name="valueCorrectionReason"
+                            render={({ field }) => (
+                                <FormItem className="md:col-span-2">
+                                    <FormLabel>Motivo da Correção do Valor</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Descreva o motivo da alteração do valor..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
                 </div>
               <div className="flex justify-end gap-2 pt-4">
                  <Button type="button" variant="outline" asChild>
