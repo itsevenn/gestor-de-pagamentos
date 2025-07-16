@@ -16,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useInvoices, useClients } from '@/context/app-context';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,8 @@ export default function ReportsPage() {
   const [selectedReceiptInvoiceId, setSelectedReceiptInvoiceId] = useState<string | null>(null);
   const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
   
+  const [monthlyReceivables, setMonthlyReceivables] = useState<Record<string, number>>({});
+
   const paidInvoices = useMemo(() => invoices.filter(inv => inv.status === 'paid'), [invoices]);
   const selectedReceiptInvoice = useMemo(() => paidInvoices.find(inv => inv.id === selectedReceiptInvoiceId) || null, [paidInvoices, selectedReceiptInvoiceId]);
   const receiptClient = useMemo(() => clients.find(c => c.id === selectedReceiptInvoice?.clientId) || null, [clients, selectedReceiptInvoice]);
@@ -47,15 +49,22 @@ export default function ReportsPage() {
   const getClientName = (clientId: string) => {
     return clients.find(c => c.id === clientId)?.nomeCiclista || 'Ciclista Desconhecido';
   };
+  
+  useEffect(() => {
+    const receivables = invoices.filter(inv => inv.status === 'paid').reduce((acc, inv) => {
+      // Adding T00:00:00 ensures the date is parsed in local timezone consistently
+      const date = new Date(`${inv.issueDate}T00:00:00`);
+      const month = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+      const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+      if (!acc[capitalizedMonth]) {
+        acc[capitalizedMonth] = 0;
+      }
+      acc[capitalizedMonth] += inv.originalAmount;
+      return acc;
+    }, {} as Record<string, number>);
+    setMonthlyReceivables(receivables);
+  }, [invoices]);
 
-  const monthlyReceivables = invoices.filter(inv => inv.status === 'paid').reduce((acc, inv) => {
-    const month = new Date(inv.issueDate).toLocaleString('default', { month: 'long', year: 'numeric' });
-    if (!acc[month]) {
-      acc[month] = 0;
-    }
-    acc[month] += inv.originalAmount;
-    return acc;
-  }, {} as Record<string, number>);
 
   const overdueInvoices = invoices.filter(inv => inv.status === 'overdue');
 
@@ -207,7 +216,7 @@ export default function ReportsPage() {
                       </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleGenerateReceiptPdf} disabled={!selectedReceiptInvoiceId || isGeneratingReceipt} className="w-full md:w-auto flex-shrink-0">
+                <Button onClick={handleGenerateReceiptPdf} disabled={!selectedReceiptInvoiceId || isGeneratingReceipt} className="w-full md:w-auto flex-shrink-0 whitespace-nowrap">
                   {isGeneratingReceipt ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                   {isGeneratingReceipt ? 'Gerando...' : 'Exportar Comprovante'}
                 </Button>
