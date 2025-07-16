@@ -47,6 +47,7 @@ export default function RootLayout({
             <SidebarProvider>
               <Sidebar>
                 <SidebarHeader className="p-4 flex flex-col gap-4">
+                   <UserNav />
                   <Logo />
                 </SidebarHeader>
                 <SidebarContent>
@@ -67,12 +68,12 @@ export default function RootLayout({
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <Button asChild>
-                      <Link href="/invoices/new">
+                    <Link href="/invoices/new" passHref>
+                      <Button>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Nova Fatura
-                      </Link>
-                    </Button>
+                      </Button>
+                    </Link>
                     <UserNav />
                   </div>
                 </header>
