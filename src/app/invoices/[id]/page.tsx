@@ -76,7 +76,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                    <h3 className="font-semibold">Informações do Cliente</h3>
+                    <h3 className="font-semibold">Informações do Ciclista</h3>
                     <div className="flex items-center gap-2 text-sm">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <Link href={`/clients/${client?.id}`} className="text-primary hover:underline">{client?.nomeCiclista}</Link>

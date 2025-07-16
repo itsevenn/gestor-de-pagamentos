@@ -32,7 +32,7 @@ export default function InvoicesPage() {
     const client = allClients.find(c => c.id === clientId);
     const isDeleted = deletedClients.some(c => c.id === clientId);
     return {
-        name: client?.nomeCiclista || 'Cliente Desconhecido',
+        name: client?.nomeCiclista || 'Ciclista Desconhecido',
         isDeleted: isDeleted
     };
   };
@@ -64,7 +64,7 @@ export default function InvoicesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID da Fatura</TableHead>
-                <TableHead>Cliente</TableHead>
+                <TableHead>Ciclista</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Vencimento</TableHead>

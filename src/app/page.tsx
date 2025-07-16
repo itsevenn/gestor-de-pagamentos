@@ -97,7 +97,7 @@ export default function Home() {
   };
   
   const getClientName = (clientId: string) => {
-    return clients.find(c => c.id === clientId)?.nomeCiclista || 'Cliente Desconhecido';
+    return clients.find(c => c.id === clientId)?.nomeCiclista || 'Ciclista Desconhecido';
   };
 
   return (
@@ -161,7 +161,7 @@ export default function Home() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cliente</TableHead>
+                <TableHead>Ciclista</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Vencimento</TableHead>

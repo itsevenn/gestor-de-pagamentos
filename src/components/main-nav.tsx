@@ -14,7 +14,7 @@ export function MainNav() {
 
   const menuItems = [
     { href: '/', label: 'Painel', icon: Home, tooltip: 'Painel' },
-    { href: '/clients', label: 'Clientes', icon: Users, tooltip: 'Clientes' },
+    { href: '/clients', label: 'Ciclistas', icon: Users, tooltip: 'Ciclistas' },
     { href: '/invoices', label: 'Faturas', icon: FileText, tooltip: 'Faturas' },
     { href: '/reports', label: 'Relatórios', icon: LineChart, tooltip: 'Relatórios' },
   ];

@@ -122,14 +122,14 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     });
 
     toast({
-      title: 'Cliente Atualizado!',
-      description: `O cliente ${values.nomeCiclista} foi atualizado com sucesso.`,
+      title: 'Ciclista Atualizado!',
+      description: `O ciclista ${values.nomeCiclista} foi atualizado com sucesso.`,
     });
     router.push('/clients');
   }
 
   if (!client) {
-    return <div>Cliente não encontrado.</div>
+    return <div>Ciclista não encontrado.</div>
   }
 
   return (
@@ -140,12 +140,12 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Editar Cliente</h1>
+        <h1 className="text-3xl font-bold font-headline">Editar Ciclista</h1>
       </div>
       <Card>
         <CardHeader>
           <CardTitle>Formulário de Cadastro</CardTitle>
-          <CardDescription>Atualize os detalhes do cliente abaixo.</CardDescription>
+          <CardDescription>Atualize os detalhes do ciclista abaixo.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

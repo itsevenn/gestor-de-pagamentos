@@ -47,8 +47,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setClients(prevClients => [...prevClients, newClient]);
         addAuditLog({
             user: 'Admin',
-            action: 'Cliente Criado',
-            details: `Cliente ${newClient.nomeCiclista} foi adicionado.`,
+            action: 'Ciclista Criado',
+            details: `Ciclista ${newClient.nomeCiclista} foi adicionado.`,
         });
     };
 
@@ -58,8 +58,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         );
         addAuditLog({
             user: 'Admin',
-            action: 'Cliente Atualizado',
-            details: `Dados do cliente ${updatedClient.nomeCiclista} foram atualizados.`,
+            action: 'Ciclista Atualizado',
+            details: `Dados do ciclista ${updatedClient.nomeCiclista} foram atualizados.`,
         });
     };
 
@@ -75,8 +75,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setDeletedClients(prevDeleted => [...prevDeleted, deletedClient]);
             addAuditLog({
                 user: 'Admin',
-                action: 'Cliente Excluído',
-                details: `Cliente ${clientToDelete.nomeCiclista} foi excluído. Motivo: ${reason}`,
+                action: 'Ciclista Excluído',
+                details: `Ciclista ${clientToDelete.nomeCiclista} foi excluído. Motivo: ${reason}`,
             });
         }
     };
@@ -89,8 +89,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setClients(prevClients => [...prevClients, restoredClient as Client]);
             addAuditLog({
                 user: 'Admin',
-                action: 'Cliente Restaurado',
-                details: `Cliente ${clientToRestore.nomeCiclista} foi restaurado.`,
+                action: 'Ciclista Restaurado',
+                details: `Ciclista ${clientToRestore.nomeCiclista} foi restaurado.`,
             });
         }
     };

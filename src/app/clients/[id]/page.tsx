@@ -53,7 +53,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   }, [defaultTab]);
 
   if (!client) {
-    return <div>Cliente não encontrado</div>;
+    return <div>Ciclista não encontrado</div>;
   }
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
@@ -89,7 +89,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
         <TabsContent value="details">
           <Card>
             <CardHeader>
-              <CardTitle>Detalhes do Cliente</CardTitle>
+              <CardTitle>Detalhes do Ciclista</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -188,7 +188,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center">Nenhuma fatura encontrada para este cliente.</TableCell>
+                      <TableCell colSpan={5} className="text-center">Nenhuma fatura encontrada para este ciclista.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -200,7 +200,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
            <Card>
             <CardHeader>
                 <CardTitle>Trilha de Auditoria</CardTitle>
-                <CardDescription>Histórico de todas as alterações relacionadas a este cliente.</CardDescription>
+                <CardDescription>Histórico de todas as alterações relacionadas a este ciclista.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -222,7 +222,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                             </TableRow>
                         )) : (
                            <TableRow>
-                              <TableCell colSpan={4} className="text-center">Nenhum registro de auditoria encontrado para este cliente.</TableCell>
+                              <TableCell colSpan={4} className="text-center">Nenhum registro de auditoria encontrado para este ciclista.</TableCell>
                            </TableRow>
                         )}
                     </TableBody>

@@ -23,7 +23,7 @@ export default function ReportsPage() {
   const formatCurrency = (amount: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
   
   const getClientName = (clientId: string) => {
-    return clients.find(c => c.id === clientId)?.nomeCiclista || 'Cliente Desconhecido';
+    return clients.find(c => c.id === clientId)?.nomeCiclista || 'Ciclista Desconhecido';
   };
 
   const monthlyReceivables = invoices.filter(inv => inv.status === 'paid').reduce((acc, inv) => {
@@ -69,14 +69,14 @@ export default function ReportsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Clientes Inadimplentes</CardTitle>
+            <CardTitle>Ciclistas Inadimplentes</CardTitle>
             <CardDescription>Faturas que estão atualmente atrasadas.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Cliente</TableHead>
+                  <TableHead>Ciclista</TableHead>
                   <TableHead>Valor</TableHead>
                   <TableHead>Vencimento</TableHead>
                 </TableRow>

@@ -40,17 +40,17 @@ export function DeletedClientsHistory() {
   const handleRestore = (clientId: string) => {
     restoreClient(clientId);
     toast({
-        title: 'Cliente Restaurado!',
-        description: 'O cliente foi movido de volta para a lista de clientes ativos.',
+        title: 'Ciclista Restaurado!',
+        description: 'O ciclista foi movido de volta para a lista de ciclistas ativos.',
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Histórico de Clientes Excluídos</CardTitle>
+        <CardTitle>Histórico de Ciclistas Excluídos</CardTitle>
         <CardDescription>
-          Clientes que foram removidos da lista principal.
+          Ciclistas que foram removidos da lista principal.
         </CardDescription>
       </CardHeader>
       <CardContent>

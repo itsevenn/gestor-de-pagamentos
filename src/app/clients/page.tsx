@@ -37,7 +37,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { DeletedClientsHistory } from '@/components/deleted-clients-history';
@@ -54,36 +53,41 @@ export default function ClientsPage() {
     if (selectedClientId) {
       deleteClient(selectedClientId, deletionReason || 'Nenhum motivo fornecido.');
       toast({
-        title: 'Cliente Excluído!',
-        description: 'O cliente foi movido para o histórico.',
+        title: 'Ciclista Excluído!',
+        description: 'O ciclista foi movido para o histórico.',
       });
       setDeletionReason('');
       setSelectedClientId(null);
     }
   };
 
+  const openDialog = (clientId: string) => {
+    setSelectedClientId(clientId);
+  }
+
+  const closeDialog = () => {
+    setSelectedClientId(null);
+    setDeletionReason('');
+  }
+
   return (
-    <AlertDialog onOpenChange={(open) => {
-      if (!open) {
-        setSelectedClientId(null);
-      }
-    }}>
+    <AlertDialog open={!!selectedClientId} onOpenChange={(open) => !open && closeDialog()}>
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold font-headline">Clientes</h1>
+          <h1 className="text-3xl font-bold font-headline">Ciclistas</h1>
           <Button asChild>
             <Link href="/clients/new">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Cliente
+              Adicionar Ciclista
             </Link>
           </Button>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Lista de Clientes</CardTitle>
+            <CardTitle>Lista de Ciclistas</CardTitle>
             <CardDescription>
-              Gerencie seus clientes e veja seus detalhes.
+              Gerencie seus ciclistas e veja seus detalhes.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -125,14 +129,12 @@ export default function ClientsPage() {
                                 <Edit className="mr-2 h-4 w-4" /> Editar
                               </Link>
                             </DropdownMenuItem>
-                            <AlertDialogTrigger asChild>
                                <DropdownMenuItem
-                                  onSelect={(e) => { e.preventDefault(); setSelectedClientId(client.id) }}
+                                  onSelect={() => openDialog(client.id)}
                                   className="text-destructive focus:text-destructive focus:bg-red-100 dark:focus:bg-red-900/50"
                                 >
                                  <Trash2 className="mr-2 h-4 w-4" /> Excluir
                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
                           </DropdownMenuContent>
                         </DropdownMenu>
                     </TableCell>
@@ -149,7 +151,7 @@ export default function ClientsPage() {
               Você tem certeza absoluta?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Essa ação não pode ser desfeita. Isso irá mover o cliente para o histórico de clientes excluídos. Por favor, informe o motivo da exclusão.
+              Essa ação não pode ser desfeita. Isso irá mover o ciclista para o histórico de ciclistas excluídos. Por favor, informe o motivo da exclusão.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="grid w-full gap-1.5">
@@ -162,7 +164,7 @@ export default function ClientsPage() {
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletionReason('')}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel onClick={closeDialog}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}>
               Confirmar
             </AlertDialogAction>

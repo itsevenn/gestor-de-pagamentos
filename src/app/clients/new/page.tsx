@@ -108,8 +108,8 @@ export default function NewClientPage() {
     });
 
     toast({
-      title: 'Cliente Adicionado!',
-      description: `O cliente ${values.nomeCiclista} foi adicionado com sucesso.`,
+      title: 'Ciclista Adicionado!',
+      description: `O ciclista ${values.nomeCiclista} foi adicionado com sucesso.`,
     });
     router.push('/clients');
   }
@@ -122,12 +122,12 @@ export default function NewClientPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-headline">Adicionar Novo Cliente</h1>
+        <h1 className="text-3xl font-bold font-headline">Adicionar Novo Ciclista</h1>
       </div>
       <Card>
         <CardHeader>
           <CardTitle>Formulário de Cadastro</CardTitle>
-          <CardDescription>Preencha os detalhes abaixo para adicionar um novo cliente.</CardDescription>
+          <CardDescription>Preencha os detalhes abaixo para adicionar um novo ciclista.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -210,7 +210,7 @@ export default function NewClientPage() {
                  <Button type="button" variant="outline" asChild>
                     <Link href="/clients">Cancelar</Link>
                 </Button>
-                <Button type="submit">Salvar Cliente</Button>
+                <Button type="submit">Salvar Ciclista</Button>
               </div>
             </form>
           </Form>
