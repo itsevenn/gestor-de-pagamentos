@@ -25,19 +25,30 @@ import { differenceInDays, parseISO } from 'date-fns';
 
 export default function Home() {
   const { invoices } = useInvoices();
-  const { clients } = useClients();
+  const { clients, deletedClients } = useClients();
   const { toast } = useToast();
-
-  const activeClientIds = new Set(clients.map(c => c.id));
-  const activeInvoices = invoices.filter(inv => activeClientIds.has(inv.clientId));
   
-  const totalDue = activeInvoices.reduce((acc, inv) => inv.status === 'pending' || inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
-  const totalReceived = activeInvoices.reduce((acc, inv) => inv.status === 'paid' ? acc + inv.originalAmount : acc, 0);
-  const totalRefunds = activeInvoices.reduce((acc, inv) => inv.status === 'refunded' ? acc + inv.originalAmount : acc, 0);
-  const totalOverdue = activeInvoices.reduce((acc, inv) => inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
+  const allClients = [...clients, ...deletedClients];
+
+  const totalDue = invoices.reduce((acc, inv) => inv.status === 'pending' || inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
+  const totalReceived = invoices.reduce((acc, inv) => inv.status === 'paid' ? acc + inv.originalAmount : acc, 0);
+  const totalRefunds = invoices.reduce((acc, inv) => inv.status === 'refunded' ? acc + inv.originalAmount : acc, 0);
+  const totalOverdue = invoices.reduce((acc, inv) => inv.status === 'overdue' ? acc + inv.currentAmount : acc, 0);
+
+  const getClientName = (clientId: string) => {
+    return allClients.find(c => c.id === clientId)?.nomeCiclista || 'Ciclista Desconhecido';
+  };
+  
+  const getClientContact = (clientId: string) => {
+    return allClients.find(c => c.id === clientId)?.celular || '';
+  }
 
   useEffect(() => {
     const today = new Date();
+    // Only show toasts for active clients' invoices
+    const activeClientIds = new Set(clients.map(c => c.id));
+    const activeInvoices = invoices.filter(inv => activeClientIds.has(inv.clientId));
+
     activeInvoices.forEach(invoice => {
       if (invoice.status === 'overdue') {
         toast({
@@ -94,10 +105,6 @@ export default function Home() {
       className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300 border-gray-200 dark:border-gray-700',
       label: 'Reembolsado'
     },
-  };
-  
-  const getClientName = (clientId: string) => {
-    return clients.find(c => c.id === clientId)?.nomeCiclista || 'Ciclista Desconhecido';
   };
 
   return (
@@ -169,11 +176,11 @@ export default function Home() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeInvoices.slice(0, 5).map((invoice) => (
+              {invoices.slice(0, 5).map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell>
                     <div className="font-medium">{getClientName(invoice.clientId)}</div>
-                    <div className="text-sm text-muted-foreground">{clients.find(c => c.id === invoice.clientId)?.celular}</div>
+                    <div className="text-sm text-muted-foreground">{getClientContact(invoice.clientId)}</div>
                   </TableCell>
                   <TableCell>{formatCurrency(invoice.currentAmount)}</TableCell>
                   <TableCell>
