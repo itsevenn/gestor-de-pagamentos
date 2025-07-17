@@ -6,7 +6,7 @@ let db: Pool;
 // In production, this check isn't necessary but doesn't hurt.
 if (process.env.NODE_ENV === 'production') {
   db = new Pool({
-    connectionString: process.env.POSTGRES_URL,
+    connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false,
     }
@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === 'production') {
   // In development, use a global variable to preserve the pool across HMR
   if (!global.dbPool) {
     global.dbPool = new Pool({
-        connectionString: process.env.POSTGRES_URL,
+        connectionString: process.env.DATABASE_URL,
         ssl: {
             rejectUnauthorized: false,
         }
