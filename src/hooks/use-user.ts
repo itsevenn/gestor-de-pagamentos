@@ -1,52 +1,31 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-
-const USER_STORAGE_KEY = 'app-user';
-
-type User = {
-  name: string;
-  email: string;
-  photoUrl: string;
-};
-
-const defaultUser: User = {
-  name: 'Usuário Admin',
-  email: 'admin@gestordociclista.com',
-  photoUrl: 'https://placehold.co/40x40.png',
-};
+import { useAuth } from '@/context/auth-context';
+import { useCallback } from 'react';
 
 export function useUser() {
-  const [user, setUser] = useState<User>(defaultUser);
-
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      } else {
-        // If no user is stored, save the default user
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(defaultUser));
-      }
-    } catch (error) {
-        console.error("Failed to parse user from localStorage", error);
-        // Fallback to default user
-        setUser(defaultUser);
-    }
-  }, []);
+  const { user: authUser } = useAuth();
 
   const updateUser = useCallback((newDetails: { name: string; email: string }) => {
-    const updatedUser = { ...user, ...newDetails };
-    setUser(updatedUser);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-  }, [user]);
+    // In a real app, this would update the user in the backend
+    console.log('Updating user details:', newDetails);
+    // For now, just log the update since we're using a simple auth system
+  }, []);
 
   const updatePhoto = useCallback((photoUrl: string) => {
-    const updatedUser = { ...user, photoUrl };
-    setUser(updatedUser);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
-  }, [user]);
-  
-  return { user, updateUser, updatePhoto };
+    // In a real app, this would update the user photo in the backend
+    console.log('Updating user photo:', photoUrl);
+    // For now, just log the update since we're using a simple auth system
+  }, []);
+
+  return { 
+    user: authUser || {
+      name: 'Usuário Admin',
+      email: 'admin@gestordociclista.com',
+      photoUrl: 'https://placehold.co/40x40.png',
+    }, 
+    updateUser, 
+    updatePhoto 
+  };
 }
