@@ -18,13 +18,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Copy } from 'lucide-react';
 import type { Invoice, Client } from '@/lib/data';
+import { useCiclistas } from '@/context/app-context';
 
 interface NotificationGeneratorProps {
   invoice: Invoice;
   client: Client;
 }
 
-export function NotificationGenerator({ invoice, client }: NotificationGeneratorProps) {
+export function NotificationGenerator({ invoice }: NotificationGeneratorProps) {
+  const { ciclistas } = useCiclistas();
+  const client = ciclistas.find(c => c.id === invoice.ciclistaId);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState('');
   const { toast } = useToast();
@@ -34,10 +37,10 @@ export function NotificationGenerator({ invoice, client }: NotificationGenerator
     setNotification('');
 
     const input: GeneratePersonalizedNotificationInput = {
-      clientName: client.nomeCiclista,
+      clientName: client?.nomeCiclista || 'Ciclista Desconhecido',
       paymentHistory: invoice.paymentHistory || 'Nenhum histórico anterior.',
-      originalAmount: invoice.originalAmount,
-      currentAmount: invoice.currentAmount,
+      originalAmount: Number(invoice.originalAmount),
+      currentAmount: Number(invoice.currentAmount),
       dueDate: invoice.dueDate,
       paymentMethod: invoice.paymentMethod,
       status: invoice.status,

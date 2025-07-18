@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useClients } from '@/context/app-context';
+import { useCiclistas } from '@/context/app-context';
 import { Button } from './ui/button';
 import { MoreHorizontal, Eye, Undo, History } from 'lucide-react';
 import {
@@ -29,16 +29,16 @@ import {
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
-export function DeletedClientsHistory() {
-  const { deletedClients, restoreClient } = useClients();
+export function DeletedCiclistasHistory() {
+  const { deletedCiclistas, restoreCiclista } = useCiclistas();
   const { toast } = useToast();
 
-  if (deletedClients.length === 0) {
+  if (deletedCiclistas.length === 0) {
     return null;
   }
 
-  const handleRestore = (clientId: string) => {
-    restoreClient(clientId);
+  const handleRestore = (ciclistaId: string) => {
+    restoreCiclista(ciclistaId);
     toast({
         title: 'Ciclista Restaurado!',
         description: 'O ciclista foi movido de volta para a lista de ciclistas ativos.',
@@ -64,11 +64,11 @@ export function DeletedClientsHistory() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {deletedClients.map((client) => (
-              <TableRow key={client.id} className="bg-muted/50">
-                <TableCell className="font-medium">{client.nomeCiclista}</TableCell>
-                <TableCell>{client.deletionDate}</TableCell>
-                <TableCell>{client.deletionReason}</TableCell>
+            {deletedCiclistas.map((ciclista) => (
+              <TableRow key={ciclista.id} className="bg-muted/50">
+                <TableCell className="font-medium">{ciclista.nomeCiclista}</TableCell>
+                <TableCell>{ciclista.deletionDate}</TableCell>
+                <TableCell>{ciclista.deletionReason}</TableCell>
                 <TableCell className="text-right">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -81,16 +81,16 @@ export function DeletedClientsHistory() {
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
-                            <Link href={`/clients/${client.id}`}>
+                            <Link href={`/ciclistas/${ciclista.id}`}>
                               <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/clients/${client.id}?tab=audit`}>
+                            <Link href={`/ciclistas/${ciclista.id}?tab=audit`}>
                               <History className="mr-2 h-4 w-4" /> Ver Auditoria
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleRestore(client.id)}>
+                          <DropdownMenuItem onClick={() => handleRestore(ciclista.id)}>
                              <Undo className="mr-2 h-4 w-4" /> Restaurar
                           </DropdownMenuItem>
                         </DropdownMenuContent>

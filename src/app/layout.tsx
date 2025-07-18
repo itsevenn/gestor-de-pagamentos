@@ -18,10 +18,10 @@ import { PlusCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AppProvider } from '@/context/app-context';
 import { AuthProvider } from '@/context/auth-context';
-import { AuthGuard } from '@/components/auth-guard';
 import { Logo } from '@/components/logo';
 import { ThemeProvider } from '@/hooks/use-theme';
 import Link from 'next/link';
+import { AppLayout } from '@/components/app-layout';
 
 export const metadata: Metadata = {
   title: 'GESTOR DO CICLISTA',
@@ -46,45 +46,11 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <AuthGuard>
               <AppProvider>
-                <SidebarProvider>
-                  <Sidebar>
-                    <SidebarHeader className="p-4 flex flex-col gap-4">
-                      <Logo />
-                    </SidebarHeader>
-                    <SidebarContent>
-                      <MainNav />
-                    </SidebarContent>
-                    <SidebarFooter className="p-4">
-                      {/* UserNav was moved to the header */}
-                    </SidebarFooter>
-                  </Sidebar>
-                  <SidebarInset>
-                    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
-                      <div className="flex items-center gap-4">
-                        <SidebarTrigger className="md:hidden" />
-                        <div className="relative hidden md:block">
-                          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                          <Input placeholder="Buscar..." className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[336px]" />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <Link href="/invoices/new" passHref>
-                          <Button>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Nova Fatura
-                          </Button>
-                        </Link>
-                        <UserNav />
-                      </div>
-                    </header>
-                    <main className="flex-1 p-4 sm:p-6">{children}</main>
-                  </SidebarInset>
-                </SidebarProvider>
+              <AppLayout>
+                {children}
+              </AppLayout>
               </AppProvider>
-            </AuthGuard>
           </AuthProvider>
         </ThemeProvider>
         <Toaster />

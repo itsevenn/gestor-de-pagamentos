@@ -3,7 +3,7 @@
 import { db } from './db';
 import { v4 as uuidv4 } from 'uuid';
 
-export type Client = {
+export type Ciclista = {
   id: string;
   photoUrl?: string;
   matricula: string;
@@ -42,7 +42,7 @@ export type Client = {
 
 export type Invoice = {
   id: string;
-  clientId: string;
+  ciclistaId: string;
   originalAmount: number;
   currentAmount: number;
   dueDate: string;
@@ -63,9 +63,9 @@ export type AuditLog = {
 }
 
 // NOTE: You will need to create the corresponding tables in your Postgres database.
-// Example SQL for creating the clients table:
+// Example SQL for creating the ciclistas table:
 /*
-CREATE TABLE clients (
+CREATE TABLE ciclistas (
     id UUID PRIMARY KEY,
     photoUrl TEXT,
     matricula TEXT,
@@ -101,65 +101,97 @@ CREATE TABLE clients (
 );
 */
 
-// Client Functions
-export const getClients = async (): Promise<Client[]> => {
-  const result = await db.query('SELECT * FROM clients');
-  return result.rows as Client[];
+// Ciclista Functions
+export const getCiclistas = async (): Promise<Ciclista[]> => {
+  const result = await db.query('SELECT * FROM ciclistas');
+  console.log('DEBUG getCiclistas - raw result:', result.rows);
+  return result.rows as Ciclista[];
 };
 
-export const getDeletedClients = async (): Promise<Client[]> => {
-    const result = await db.query('SELECT * FROM deleted_clients');
-    return result.rows as Client[];
+export const getDeletedCiclistas = async (): Promise<Ciclista[]> => {
+    const result = await db.query('SELECT * FROM ciclistas_deletados');
+    return result.rows as Ciclista[];
 };
 
-export const addClientDb = async (clientData: Omit<Client, 'id'>) => {
+export const addCiclistaDb = async (ciclistaData: Omit<Ciclista, 'id'>) => {
     const newId = uuidv4();
-    const newClient = { id: newId, ...clientData };
-    const columns = Object.keys(newClient).join(', ');
-    const placeholders = Object.keys(newClient).map((_, i) => `$${i + 1}`).join(', ');
-    const values = Object.values(newClient);
-    await db.query(`INSERT INTO clients (${columns}) VALUES (${placeholders})`, values);
+    let newCiclista: any = { id: newId, ...ciclistaData };
+    // Proteção extra: se vier nomeciclista minúsculo, converte para camelCase
+    if ('nomeciclista' in newCiclista && !('nomeCiclista' in newCiclista)) {
+        newCiclista.nomeCiclista = newCiclista['nomeciclista'];
+        delete newCiclista['nomeciclista'];
+    }
+    // Debug: imprimir objeto e colunas
+    console.log('DEBUG newCiclista:', newCiclista);
+    const columns = Object.keys(newCiclista).map(col => `"${col}"`).join(', ');
+    console.log('DEBUG columns:', columns);
+    const placeholders = Object.keys(newCiclista).map((_, i) => `$${i + 1}`).join(', ');
+    const values = Object.values(newCiclista);
+    await db.query(`INSERT INTO ciclistas (${columns}) VALUES (${placeholders})`, values);
     return newId;
 }
 
-export const updateClientDb = async (client: Client) => {
-    const { id, ...clientData } = client;
-    const setClause = Object.keys(clientData).map((key, i) => `${key} = $${i + 2}`).join(', ');
-    const values = [id, ...Object.values(clientData)];
-    await db.query(`UPDATE clients SET ${setClause} WHERE id = $1`, values);
+export const updateCiclistaDb = async (ciclista: Ciclista) => {
+    const { id, ...ciclistaData } = ciclista;
+    
+    // Debug: imprimir dados que estão sendo atualizados
+    console.log('DEBUG updateCiclistaDb - ciclistaData:', ciclistaData);
+    
+    // Proteção extra: remove duplicatas ignorando case e garante camelCase
+    const seen = new Set<string>();
+    const filteredCiclistaData: Record<string, any> = {};
+    for (const key of Object.keys(ciclistaData)) {
+        const lower = key.toLowerCase();
+        if (!seen.has(lower)) {
+            seen.add(lower);
+            filteredCiclistaData[key] = ciclistaData[key];
+        }
+    }
+    
+    // Debug: imprimir dados filtrados
+    console.log('DEBUG updateCiclistaDb - filteredCiclistaData:', filteredCiclistaData);
+    
+    const setClause = Object.keys(filteredCiclistaData).map((key, i) => `"${key}" = $${i + 2}`).join(', ');
+    const values = [id, ...Object.values(filteredCiclistaData)];
+    
+    // Debug: imprimir query e valores
+    console.log('DEBUG updateCiclistaDb - query:', `UPDATE ciclistas SET ${setClause} WHERE id = $1`);
+    console.log('DEBUG updateCiclistaDb - values:', values);
+    
+    await db.query(`UPDATE ciclistas SET ${setClause} WHERE id = $1`, values);
 }
 
-export const deleteClientDb = async (clientId: string, reason: string) => {
-    // This assumes you have a separate `deleted_clients` table
-    const clientResult = await db.query('SELECT * FROM clients WHERE id = $1', [clientId]);
-    if (clientResult.rows.length > 0) {
-        const clientData = clientResult.rows[0];
-        const deletedClientData = {
-            ...clientData,
+export const deleteCiclistaDb = async (ciclistaId: string, reason: string) => {
+    // Assume que você tem uma tabela separada `ciclistas_deletados`
+    const ciclistaResult = await db.query('SELECT * FROM ciclistas WHERE id = $1', [ciclistaId]);
+    if (ciclistaResult.rows.length > 0) {
+        const ciclistaData = ciclistaResult.rows[0];
+        const deletedCiclistaData = {
+            ...ciclistaData,
             deletionReason: reason,
             deletionDate: new Date().toISOString().split('T')[0],
         };
 
-        const columns = Object.keys(deletedClientData).join(', ');
-        const placeholders = Object.keys(deletedClientData).map((_, i) => `$${i + 1}`).join(', ');
-        const values = Object.values(deletedClientData);
+        const columns = Object.keys(deletedCiclistaData).join(', ');
+        const placeholders = Object.keys(deletedCiclistaData).map((_, i) => `$${i + 1}`).join(', ');
+        const values = Object.values(deletedCiclistaData);
 
-        await db.query(`INSERT INTO deleted_clients (${columns}) VALUES (${placeholders})`, values);
-        await db.query('DELETE FROM clients WHERE id = $1', [clientId]);
+        await db.query(`INSERT INTO ciclistas_deletados (${columns}) VALUES (${placeholders})`, values);
+        await db.query('DELETE FROM ciclistas WHERE id = $1', [ciclistaId]);
     }
 }
 
-export const restoreClientDb = async (clientId: string) => {
-    const deletedClientResult = await db.query('SELECT * FROM deleted_clients WHERE id = $1', [clientId]);
-    if (deletedClientResult.rows.length > 0) {
-        const { deletionReason, deletionDate, ...restoredClientData } = deletedClientResult.rows[0];
+export const restoreCiclistaDb = async (ciclistaId: string) => {
+    const deletedCiclistaResult = await db.query('SELECT * FROM ciclistas_deletados WHERE id = $1', [ciclistaId]);
+    if (deletedCiclistaResult.rows.length > 0) {
+        const { deletionReason, deletionDate, ...restoredCiclistaData } = deletedCiclistaResult.rows[0];
         
-        const columns = Object.keys(restoredClientData).join(', ');
-        const placeholders = Object.keys(restoredClientData).map((_, i) => `$${i + 1}`).join(', ');
-        const values = Object.values(restoredClientData);
+        const columns = Object.keys(restoredCiclistaData).join(', ');
+        const placeholders = Object.keys(restoredCiclistaData).map((_, i) => `$${i + 1}`).join(', ');
+        const values = Object.values(restoredCiclistaData);
 
-        await db.query(`INSERT INTO clients (${columns}) VALUES (${placeholders})`, values);
-        await db.query('DELETE FROM deleted_clients WHERE id = $1', [clientId]);
+        await db.query(`INSERT INTO ciclistas (${columns}) VALUES (${placeholders})`, values);
+        await db.query('DELETE FROM ciclistas_deletados WHERE id = $1', [ciclistaId]);
     }
 }
 
@@ -167,13 +199,19 @@ export const restoreClientDb = async (clientId: string) => {
 // Invoice Functions
 export const getInvoices = async (): Promise<Invoice[]> => {
     const result = await db.query('SELECT * FROM invoices');
+    console.log('DEBUG getInvoices - raw result:', result.rows);
     return result.rows as Invoice[];
 };
 
 export const addInvoiceDb = async (invoiceData: Omit<Invoice, 'id'>) => {
     const newId = uuidv4();
-    const newInvoice = { id: newId, ...invoiceData };
-    const columns = Object.keys(newInvoice).join(', ');
+    let newInvoice: Record<string, any> = { id: newId, ...invoiceData };
+    // Proteção extra: se vier ciclistaid minúsculo, converte para camelCase
+    if ('ciclistaid' in newInvoice && !('ciclistaId' in newInvoice)) {
+        newInvoice.ciclistaId = newInvoice['ciclistaid'];
+        delete newInvoice['ciclistaid'];
+    }
+    const columns = Object.keys(newInvoice).map(col => `"${col}"`).join(', ');
     const placeholders = Object.keys(newInvoice).map((_, i) => `$${i + 1}`).join(', ');
     const values = Object.values(newInvoice);
     await db.query(`INSERT INTO invoices (${columns}) VALUES (${placeholders})`, values);
@@ -182,8 +220,18 @@ export const addInvoiceDb = async (invoiceData: Omit<Invoice, 'id'>) => {
 
 export const updateInvoiceDb = async (invoice: Invoice) => {
     const { id, ...invoiceData } = invoice;
-    const setClause = Object.keys(invoiceData).map((key, i) => `${key} = $${i + 2}`).join(', ');
-    const values = [id, ...Object.values(invoiceData)];
+    // Proteção extra: remove duplicatas ignorando case
+    const seen = new Set<string>();
+    const filteredInvoiceData: Record<string, any> = {};
+    for (const key of Object.keys(invoiceData)) {
+        const lower = key.toLowerCase();
+        if (!seen.has(lower)) {
+            seen.add(lower);
+            filteredInvoiceData[key] = invoiceData[key];
+        }
+    }
+    const setClause = Object.keys(filteredInvoiceData).map((key, i) => `"${key}" = $${i + 2}`).join(', ');
+    const values = [id, ...Object.values(filteredInvoiceData)];
     await db.query(`UPDATE invoices SET ${setClause} WHERE id = $1`, values);
 }
 
@@ -196,7 +244,9 @@ export const getAuditLogs = async (): Promise<AuditLog[]> => {
 export const addAuditLogDb = async (logData: Omit<AuditLog, 'id'>) => {
     const newId = uuidv4();
     const newLog = { id: newId, ...logData };
-    const columns = Object.keys(newLog).join(', ');
+    const columns = Object.keys(newLog)
+      .map(col => col === 'user' ? '"user"' : col)
+      .join(', ');
     const placeholders = Object.keys(newLog).map((_, i) => `$${i + 1}`).join(', ');
     const values = Object.values(newLog);
     await db.query(`INSERT INTO audit_logs (${columns}) VALUES (${placeholders})`, values);

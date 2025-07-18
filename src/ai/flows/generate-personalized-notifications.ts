@@ -48,32 +48,17 @@ export async function generatePersonalizedNotification(
   return generatePersonalizedNotificationFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generatePersonalizedNotificationPrompt',
-  input: {schema: GeneratePersonalizedNotificationInputSchema},
-  output: {schema: GeneratePersonalizedNotificationOutputSchema},
-  prompt: `Você é um assistente de IA que gera lembretes de faturas e avisos de atraso personalizados para clientes em português do Brasil.
-
-  Com base no histórico de pagamentos do cliente e nos detalhes da fatura atual, crie uma mensagem de notificação que seja informativa e encorajadora.
-
-  Aqui estão os detalhes:
-  Nome do Cliente: {{{clientName}}}
-  Histórico de Pagamento: {{{paymentHistory}}}
-  Valor Original: {{{originalAmount}}}
-  Valor Atual: {{{currentAmount}}}
-  Data de Vencimento: {{{dueDate}}}
-  Método de Pagamento: {{{paymentMethod}}}
-  Status: {{{status}}}
-
-  Componha uma mensagem que:
-  - Lembre o cliente do pagamento futuro ou em atraso.
-  - Forneça os detalhes de pagamento necessários (valor, data de vencimento, método de pagamento).
-  - Incentive o pagamento imediato, mantendo um tom profissional e amigável.
-  - Se estiver em atraso, lembre gentilmente de quaisquer taxas de atraso ou consequências.
-  - Se estiver pago, agradeça ao cliente pelo pagamento.
-
-  Mensagem de Notificação:`,
-});
+// Substituir a definição do prompt por um array de mensagens no formato esperado
+const buildPromptMessages = (input: GeneratePersonalizedNotificationInput) => [
+  {
+    role: "user",
+    content: [
+      {
+        text: `Você é um assistente de IA que gera lembretes de faturas e avisos de atraso personalizados para clientes em português do Brasil.\n\nCom base no histórico de pagamentos do cliente e nos detalhes da fatura atual, crie uma mensagem de notificação que seja informativa e encorajadora.\n\nAqui estão os detalhes:\nNome do Cliente: ${input.clientName}\nHistórico de Pagamento: ${input.paymentHistory}\nValor Original: ${input.originalAmount}\nValor Atual: ${input.currentAmount}\nData de Vencimento: ${input.dueDate}\nMétodo de Pagamento: ${input.paymentMethod}\nStatus: ${input.status}\n\nComponha uma mensagem que:\n- Lembre o cliente do pagamento futuro ou em atraso.\n- Forneça os detalhes de pagamento necessários (valor, data de vencimento, método de pagamento).\n- Incentive o pagamento imediato, mantendo um tom profissional e amigável.\n- Se estiver em atraso, lembre gentilmente de quaisquer taxas de atraso ou consequências.\n- Se estiver pago, agradeça ao cliente pelo pagamento.\n\nMensagem de Notificação:`
+      }
+    ]
+  }
+];
 
 const generatePersonalizedNotificationFlow = ai.defineFlow(
   {
@@ -83,7 +68,7 @@ const generatePersonalizedNotificationFlow = ai.defineFlow(
   },
   async input => {
     const response = await ai.generate({
-      prompt: prompt.compile(input),
+      messages: buildPromptMessages(input),
       output: {
         schema: GeneratePersonalizedNotificationOutputSchema,
       },

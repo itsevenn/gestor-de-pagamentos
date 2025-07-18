@@ -1,33 +1,33 @@
 
 'use client';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { 
-    getClients,
+import {
+    getCiclistas,
     getInvoices,
     getAuditLogs,
-    getDeletedClients,
-    addClientDb,
-    updateClientDb,
-    deleteClientDb,
-    restoreClientDb,
+    getDeletedCiclistas,
+    addCiclistaDb,
+    updateCiclistaDb,
+    deleteCiclistaDb,
+    restoreCiclistaDb,
     addInvoiceDb,
     updateInvoiceDb,
     addAuditLogDb,
-    type Client,
+    type Ciclista,
     type Invoice,
     type AuditLog
 } from '@/lib/data';
 import { v4 as uuidv4 } from 'uuid';
 
 interface AppContextType {
-    clients: Client[];
+    ciclistas: Ciclista[];
     invoices: Invoice[];
     auditLogs: AuditLog[];
-    deletedClients: Client[];
-    addClient: (client: Omit<Client, 'id'>) => void;
-    updateClient: (updatedClient: Client) => void;
-    deleteClient: (clientId: string, reason: string) => void;
-    restoreClient: (clientId: string) => void;
+    deletedCiclistas: Ciclista[];
+    addCiclista: (ciclista: Omit<Ciclista, 'id'>) => void;
+    updateCiclista: (updatedCiclista: Ciclista) => void;
+    deleteCiclista: (ciclistaId: string, reason: string) => void;
+    restoreCiclista: (ciclistaId: string) => void;
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date' | 'user'>) => void;
     addInvoice: (invoiceData: Omit<Invoice, 'id'>) => void;
     updateInvoice: (updatedInvoice: Invoice, auditDetails?: string) => void;
@@ -37,8 +37,8 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-    const [clients, setClients] = useState<Client[]>([]);
-    const [deletedClients, setDeletedClients] = useState<Client[]>([]);
+    const [ciclistas, setCiclistas] = useState<Ciclista[]>([]);
+    const [deletedCiclistas, setDeletedCiclistas] = useState<Ciclista[]>([]);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
@@ -47,16 +47,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [clientsData, invoicesData, auditLogsData, deletedClientsData] = await Promise.all([
-                    getClients(),
+                const [ciclistasData, invoicesData, auditLogsData, deletedCiclistasData] = await Promise.all([
+                    getCiclistas(),
                     getInvoices(),
                     getAuditLogs(),
-                    getDeletedClients()
+                    getDeletedCiclistas()
                 ]);
-                setClients(clientsData);
+                setCiclistas(ciclistasData);
                 setInvoices(invoicesData);
                 setAuditLogs(auditLogsData);
-                setDeletedClients(deletedClientsData);
+                setDeletedCiclistas(deletedCiclistasData);
             } catch (error) {
                 console.error("Falha ao buscar dados iniciais:", error);
             } finally {
@@ -77,15 +77,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setAuditLogs(auditLogs);
     };
 
-    const addClient = async (clientData: Omit<Client, 'id'>) => {
+    const addCiclista = async (ciclistaData: Omit<Ciclista, 'id'>) => {
         setLoading(true);
         try {
-            const newClientId = await addClientDb(clientData);
-            const newClient = { ...clientData, id: newClientId };
-            setClients(prevClients => [...prevClients, newClient]);
+            const newCiclistaId = await addCiclistaDb(ciclistaData);
+            const newCiclista = { ...ciclistaData, id: newCiclistaId };
+            setCiclistas(prevCiclistas => [...prevCiclistas, newCiclista]);
             await addAuditLog({
                 action: 'Ciclista Criado',
-                details: `Ciclista ${newClient.nomeCiclista} foi adicionado.`,
+                details: `Ciclista ${newCiclista.nomeCiclista} foi adicionado.`,
             });
         } catch (error) {
             console.error("Erro ao adicionar ciclista:", error);
@@ -94,16 +94,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const updateClient = async (updatedClient: Client) => {
+    const updateCiclista = async (updatedCiclista: Ciclista) => {
         setLoading(true);
         try {
-            await updateClientDb(updatedClient);
-            setClients(prevClients => 
-                prevClients.map(client => client.id === updatedClient.id ? updatedClient : client)
+            await updateCiclistaDb(updatedCiclista);
+            setCiclistas(prevCiclistas => 
+                prevCiclistas.map(ciclista => ciclista.id === updatedCiclista.id ? updatedCiclista : ciclista)
             );
             await addAuditLog({
                 action: 'Ciclista Atualizado',
-                details: `Dados do ciclista ${updatedClient.nomeCiclista} foram atualizados.`,
+                details: `Dados do ciclista ${updatedCiclista.nomeCiclista} foram atualizados.`,
             });
         } catch (error) {
             console.error("Erro ao atualizar ciclista:", error);
@@ -112,22 +112,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const deleteClient = async (clientId: string, reason: string) => {
+    const deleteCiclista = async (ciclistaId: string, reason: string) => {
         setLoading(true);
         try {
-            const clientToDelete = clients.find(c => c.id === clientId);
-            if (clientToDelete) {
-                await deleteClientDb(clientId, reason);
-                const deletedClient = { 
-                    ...clientToDelete, 
+            const ciclistaToDelete = ciclistas.find(c => c.id === ciclistaId);
+            if (ciclistaToDelete) {
+                await deleteCiclistaDb(ciclistaId, reason);
+                const deletedCiclista = { 
+                    ...ciclistaToDelete, 
                     deletionReason: reason, 
                     deletionDate: new Date().toISOString().split('T')[0]
                 };
-                setClients(prevClients => prevClients.filter(client => client.id !== clientId));
-                setDeletedClients(prevDeleted => [...prevDeleted, deletedClient]);
+                setCiclistas(prevCiclistas => prevCiclistas.filter(ciclista => ciclista.id !== ciclistaId));
+                setDeletedCiclistas(prevDeleted => [...prevDeleted, deletedCiclista]);
                 await addAuditLog({
                     action: 'Ciclista Excluído',
-                    details: `Ciclista ${clientToDelete.nomeCiclista} foi excluído. Motivo: ${reason}`,
+                    details: `Ciclista ${ciclistaToDelete.nomeCiclista} foi excluído. Motivo: ${reason}`,
                 });
             }
         } catch (error) {
@@ -137,18 +137,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const restoreClient = async (clientId: string) => {
+    const restoreCiclista = async (ciclistaId: string) => {
         setLoading(true);
         try {
-            const clientToRestore = deletedClients.find(c => c.id === clientId);
-            if(clientToRestore){
-                await restoreClientDb(clientId);
-                const { deletionReason, deletionDate, ...restoredClient } = clientToRestore;
-                setDeletedClients(prevDeleted => prevDeleted.filter(client => client.id !== clientId));
-                setClients(prevClients => [...prevClients, restoredClient as Client]);
+            const ciclistaToRestore = deletedCiclistas.find(c => c.id === ciclistaId);
+            if(ciclistaToRestore){
+                await restoreCiclistaDb(ciclistaId);
+                const { deletionReason, deletionDate, ...restoredCiclista } = ciclistaToRestore;
+                setDeletedCiclistas(prevDeleted => prevDeleted.filter(ciclista => ciclista.id !== ciclistaId));
+                setCiclistas(prevCiclistas => [...prevCiclistas, restoredCiclista as Ciclista]);
                 await addAuditLog({
                     action: 'Ciclista Restaurado',
-                    details: `Ciclista ${clientToRestore.nomeCiclista} foi restaurado.`,
+                    details: `Ciclista ${ciclistaToRestore.nomeCiclista} foi restaurado.`,
                 });
             }
         } catch (error) {
@@ -164,10 +164,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             const newInvoiceId = await addInvoiceDb(invoiceData);
             const newInvoice = { ...invoiceData, id: newInvoiceId };
             setInvoices(prevInvoices => [newInvoice, ...prevInvoices]);
-            const clientName = clients.find(c => c.id === newInvoice.clientId)?.nomeCiclista || 'Desconhecido';
+            const ciclistaName = ciclistas.find(c => c.id === newInvoice.ciclistaId)?.nomeCiclista || 'Desconhecido';
             await addAuditLog({
                 action: 'Fatura Criada',
-                details: `Fatura ${newInvoice.id.toUpperCase()} criada para ${clientName}.`,
+                details: `Fatura ${newInvoice.id.toUpperCase()} criada para ${ciclistaName}.`,
             });
         } catch (error) {
             console.error("Erro ao adicionar fatura:", error);
@@ -185,14 +185,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             );
 
             const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
-            const allClients = [...clients, ...deletedClients];
-            const client = allClients.find(c => c.id === updatedInvoice.clientId);
+            const allCiclistas = [...ciclistas, ...deletedCiclistas];
+            const ciclista = allCiclistas.find(c => c.id === updatedInvoice.ciclistaId);
             
-            let details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${client?.nomeCiclista || 'Desconhecido'} foi atualizada.`;
+            let details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${ciclista?.nomeCiclista || 'Desconhecido'} foi atualizada.`;
             if (auditDetails) {
-                details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${client?.nomeCiclista || 'Desconhecido'} ${auditDetails}`;
+                details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${ciclista?.nomeCiclista || 'Desconhecido'} ${auditDetails}`;
             } else if (originalInvoice && originalInvoice.status !== updatedInvoice.status) {
-                details = `Status da fatura ${updatedInvoice.id.toUpperCase()} para ${client?.nomeCiclista || 'Desconhecido'} alterado para ${updatedInvoice.status}.`;
+                details = `Status da fatura ${updatedInvoice.id.toUpperCase()} para ${ciclista?.nomeCiclista || 'Desconhecido'} alterado para ${updatedInvoice.status}.`;
             }
             await addAuditLog({
                 action: 'Fatura Atualizada',
@@ -206,14 +206,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const contextValue = {
-        clients,
+        ciclistas,
         invoices,
         auditLogs,
-        deletedClients,
-        addClient,
-        updateClient,
-        deleteClient,
-        restoreClient,
+        deletedCiclistas,
+        addCiclista,
+        updateCiclista,
+        deleteCiclista,
+        restoreCiclista,
         addAuditLog,
         addInvoice,
         updateInvoice,
@@ -227,18 +227,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useClients = () => {
+export const useCiclistas = () => {
     const context = useContext(AppContext);
     if (context === undefined) {
-        throw new Error('useClients must be used within an AppProvider');
+        throw new Error('useCiclistas must be used within an AppProvider');
     }
     return { 
-        clients: context.clients, 
-        addClient: context.addClient,
-        updateClient: context.updateClient,
-        deleteClient: context.deleteClient,
-        restoreClient: context.restoreClient,
-        deletedClients: context.deletedClients,
+        ciclistas: context.ciclistas, 
+        addCiclista: context.addCiclista,
+        updateCiclista: context.updateCiclista,
+        deleteCiclista: context.deleteCiclista,
+        restoreCiclista: context.restoreCiclista,
+        deletedCiclistas: context.deletedCiclistas,
         loading: context.loading
      };
 };

@@ -2,33 +2,30 @@
 'use client';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { 
-    clients as initialClients, 
-    invoices as initialInvoices, 
-    auditLogs as initialAuditLogs,
-    Client,
-    Invoice,
+    Ciclista, 
+    Invoice, 
     AuditLog
 } from '@/lib/data';
 
 interface AppContextType {
-    clients: Client[];
+    ciclistas: Ciclista[];
     invoices: Invoice[];
     auditLogs: AuditLog[];
-    deletedClients: Client[];
-    addClient: (client: Client) => void;
-    updateClient: (updatedClient: Client) => void;
-    deleteClient: (clientId: string) => void;
-    restoreClient: (clientId: string) => void;
+    deletedCiclistas: Ciclista[];
+    addCiclista: (ciclista: Ciclista) => void;
+    updateCiclista: (updatedCiclista: Ciclista) => void;
+    deleteCiclista: (ciclistaId: string) => void;
+    restoreCiclista: (ciclistaId: string) => void;
     addAuditLog: (log: Omit<AuditLog, 'id' | 'date'>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-    const [clients, setClients] = useState<Client[]>(initialClients);
-    const [deletedClients, setDeletedClients] = useState<Client[]>([]);
-    const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
-    const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
+    const [ciclistas, setCiclistas] = useState<Ciclista[]>([]);
+    const [deletedCiclistas, setDeletedCiclistas] = useState<Ciclista[]>([]);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
     const addAuditLog = (log: Omit<AuditLog, 'id' | 'date'>) => {
         const newLog: AuditLog = {
@@ -39,61 +36,61 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setAuditLogs(prevLogs => [newLog, ...prevLogs]);
     };
 
-    const addClient = (client: Client) => {
-        setClients(prevClients => [...prevClients, client]);
+    const addCiclista = (ciclista: Ciclista) => {
+        setCiclistas(prevCiclistas => [...prevCiclistas, ciclista]);
         addAuditLog({
             user: 'Admin',
-            action: 'Cliente Criado',
-            details: `Cliente ${client.name} foi adicionado.`,
+            action: 'Ciclista Criado',
+            details: `Ciclista ${ciclista.nomeCiclista} foi adicionado.`,
         });
     };
 
-    const updateClient = (updatedClient: Client) => {
-        setClients(prevClients => 
-            prevClients.map(client => client.id === updatedClient.id ? updatedClient : client)
+    const updateCiclista = (updatedCiclista: Ciclista) => {
+        setCiclistas(prevCiclistas => 
+            prevCiclistas.map(ciclista => ciclista.id === updatedCiclista.id ? updatedCiclista : ciclista)
         );
         addAuditLog({
             user: 'Admin',
-            action: 'Cliente Atualizado',
-            details: `Dados do cliente ${updatedClient.name} foram atualizados.`,
+            action: 'Ciclista Atualizado',
+            details: `Dados do ciclista ${updatedCiclista.nomeCiclista} foram atualizados.`,
         });
     };
 
-    const deleteClient = (clientId: string) => {
-        const clientToDelete = clients.find(c => c.id === clientId);
-        if (clientToDelete) {
-            setClients(prevClients => prevClients.filter(client => client.id !== clientId));
-            setDeletedClients(prevDeleted => [...prevDeleted, clientToDelete]);
+    const deleteCiclista = (ciclistaId: string) => {
+        const ciclistaToDelete = ciclistas.find(c => c.id === ciclistaId);
+        if (ciclistaToDelete) {
+            setCiclistas(prevCiclistas => prevCiclistas.filter(ciclista => ciclista.id !== ciclistaId));
+            setDeletedCiclistas(prevDeleted => [...prevDeleted, ciclistaToDelete]);
             addAuditLog({
                 user: 'Admin',
-                action: 'Cliente Excluído',
-                details: `Cliente ${clientToDelete.name} foi excluído.`,
+                action: 'Ciclista Excluído',
+                details: `Ciclista ${ciclistaToDelete.nomeCiclista} foi excluído.`,
             });
         }
     };
 
-    const restoreClient = (clientId: string) => {
-        const clientToRestore = deletedClients.find(c => c.id === clientId);
-        if (clientToRestore) {
-            setDeletedClients(prevDeleted => prevDeleted.filter(client => client.id !== clientId));
-            setClients(prevClients => [...prevClients, clientToRestore]);
+    const restoreCiclista = (ciclistaId: string) => {
+        const ciclistaToRestore = deletedCiclistas.find(c => c.id === ciclistaId);
+        if (ciclistaToRestore) {
+            setDeletedCiclistas(prevDeleted => prevDeleted.filter(ciclista => ciclista.id !== ciclistaId));
+            setCiclistas(prevCiclistas => [...prevCiclistas, ciclistaToRestore]);
             addAuditLog({
                 user: 'Admin',
-                action: 'Cliente Restaurado',
-                details: `Cliente ${clientToRestore.name} foi restaurado.`,
+                action: 'Ciclista Restaurado',
+                details: `Ciclista ${ciclistaToRestore.nomeCiclista} foi restaurado.`,
             });
         }
     };
 
     const contextValue = {
-        clients,
+        ciclistas,
         invoices,
         auditLogs,
-        deletedClients,
-        addClient,
-        updateClient,
-        deleteClient,
-        restoreClient,
+        deletedCiclistas,
+        addCiclista,
+        updateCiclista,
+        deleteCiclista,
+        restoreCiclista,
         addAuditLog
     };
 
@@ -104,18 +101,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useClients = () => {
+export const useCiclistas = () => {
     const context = useContext(AppContext);
     if (context === undefined) {
-        throw new Error('useClients must be used within an AppProvider');
+        throw new Error('useCiclistas must be used within an AppProvider');
     }
     return { 
-        clients: context.clients, 
-        addClient: context.addClient,
-        updateClient: context.updateClient,
-        deleteClient: context.deleteClient,
-        restoreClient: context.restoreClient,
-        deletedClients: context.deletedClients,
+        ciclistas: context.ciclistas, 
+        addCiclista: context.addCiclista,
+        updateCiclista: context.updateCiclista,
+        deleteCiclista: context.deleteCiclista,
+        restoreCiclista: context.restoreCiclista,
+        deletedCiclistas: context.deletedCiclistas,
      };
 };
 
