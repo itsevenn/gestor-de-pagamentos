@@ -29,6 +29,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { useAuth } from '@/context/auth-context';
 
 const formSchema = z.object({
   photoUrl: z.any().optional(),
@@ -68,6 +69,7 @@ export default function NewCiclistaPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { ciclistas, addCiclista } = useCiclistas();
+  const { user } = useAuth();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -145,9 +147,17 @@ export default function NewCiclistaPage() {
     } else {
         finalValues.photoUrl = photoPreview || '';
     }
-    
+    if (!user) {
+      toast({
+        title: 'Erro',
+        description: 'Usuário não autenticado! Faça login novamente.',
+        variant: 'destructive',
+      });
+      return;
+    }
     addCiclista({
       ...finalValues,
+      user_id: user.id, // <-- ESSENCIAL!
     });
 
     toast({
