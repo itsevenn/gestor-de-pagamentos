@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from './db';
+import { supabase } from './supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
 export type Ciclista = {
@@ -103,104 +103,53 @@ CREATE TABLE ciclistas (
 
 // Ciclista Functions
 export const getCiclistas = async (): Promise<Ciclista[]> => {
-  const result = await db.query('SELECT * FROM ciclistas');
-  console.log('DEBUG getCiclistas - raw result:', result.rows);
-  return result.rows as Ciclista[];
+  const { data, error } = await supabase.from('ciclistas').select('*');
+  if (error) throw error;
+  return data as Ciclista[];
 };
 
 export const getDeletedCiclistas = async (): Promise<Ciclista[]> => {
-    const result = await db.query('SELECT * FROM ciclistas_deletados');
-    return result.rows as Ciclista[];
+    const result = await supabase.from('ciclistas_deletados').select('*');
+    return result.data as Ciclista[];
 };
 
 export const addCiclistaDb = async (ciclistaData: Omit<Ciclista, 'id'>) => {
-    const newId = uuidv4();
-    let newCiclista: any = { id: newId, ...ciclistaData };
-    // Proteção extra: se vier nomeciclista minúsculo, converte para camelCase
-    if ('nomeciclista' in newCiclista && !('nomeCiclista' in newCiclista)) {
-        newCiclista.nomeCiclista = newCiclista['nomeciclista'];
-        delete newCiclista['nomeciclista'];
-    }
-    // Debug: imprimir objeto e colunas
-    console.log('DEBUG newCiclista:', newCiclista);
-    const columns = Object.keys(newCiclista).map(col => `"${col}"`).join(', ');
-    console.log('DEBUG columns:', columns);
-    const placeholders = Object.keys(newCiclista).map((_, i) => `$${i + 1}`).join(', ');
-    const values = Object.values(newCiclista);
-    await db.query(`INSERT INTO ciclistas (${columns}) VALUES (${placeholders})`, values);
-    return newId;
-}
+  const newId = uuidv4();
+  const { error } = await supabase.from('ciclistas').insert([{ id: newId, ...ciclistaData }]);
+  if (error) throw error;
+  return newId;
+};
 
 export const updateCiclistaDb = async (ciclista: Ciclista) => {
-    const { id, ...ciclistaData } = ciclista;
-    
-    // Debug: imprimir dados que estão sendo atualizados
-    console.log('DEBUG updateCiclistaDb - ciclistaData:', ciclistaData);
-    
-    // Proteção extra: remove duplicatas ignorando case e garante camelCase
-    const seen = new Set<string>();
-    const filteredCiclistaData: Record<string, any> = {};
-    for (const key of Object.keys(ciclistaData)) {
-        const lower = key.toLowerCase();
-        if (!seen.has(lower)) {
-            seen.add(lower);
-            filteredCiclistaData[key] = ciclistaData[key];
-        }
-    }
-    
-    // Debug: imprimir dados filtrados
-    console.log('DEBUG updateCiclistaDb - filteredCiclistaData:', filteredCiclistaData);
-    
-    const setClause = Object.keys(filteredCiclistaData).map((key, i) => `"${key}" = $${i + 2}`).join(', ');
-    const values = [id, ...Object.values(filteredCiclistaData)];
-    
-    // Debug: imprimir query e valores
-    console.log('DEBUG updateCiclistaDb - query:', `UPDATE ciclistas SET ${setClause} WHERE id = $1`);
-    console.log('DEBUG updateCiclistaDb - values:', values);
-    
-    await db.query(`UPDATE ciclistas SET ${setClause} WHERE id = $1`, values);
-}
+  const { id, ...ciclistaData } = ciclista;
+  const { error } = await supabase.from('ciclistas').update(ciclistaData).eq('id', id);
+  if (error) throw error;
+};
 
-export const deleteCiclistaDb = async (ciclistaId: string, reason: string) => {
-    // Assume que você tem uma tabela separada `ciclistas_deletados`
-    const ciclistaResult = await db.query('SELECT * FROM ciclistas WHERE id = $1', [ciclistaId]);
-    if (ciclistaResult.rows.length > 0) {
-        const ciclistaData = ciclistaResult.rows[0];
-        const deletedCiclistaData = {
-            ...ciclistaData,
-            deletionReason: reason,
-            deletionDate: new Date().toISOString().split('T')[0],
-        };
-
-        const columns = Object.keys(deletedCiclistaData).join(', ');
-        const placeholders = Object.keys(deletedCiclistaData).map((_, i) => `$${i + 1}`).join(', ');
-        const values = Object.values(deletedCiclistaData);
-
-        await db.query(`INSERT INTO ciclistas_deletados (${columns}) VALUES (${placeholders})`, values);
-        await db.query('DELETE FROM ciclistas WHERE id = $1', [ciclistaId]);
-    }
-}
+export const deleteCiclistaDb = async (ciclistaId: string) => {
+  const { error } = await supabase.from('ciclistas').delete().eq('id', ciclistaId);
+  if (error) throw error;
+};
 
 export const restoreCiclistaDb = async (ciclistaId: string) => {
-    const deletedCiclistaResult = await db.query('SELECT * FROM ciclistas_deletados WHERE id = $1', [ciclistaId]);
-    if (deletedCiclistaResult.rows.length > 0) {
-        const { deletionReason, deletionDate, ...restoredCiclistaData } = deletedCiclistaResult.rows[0];
+    const deletedCiclistaResult = await supabase.from('ciclistas_deletados').select('*').eq('id', ciclistaId);
+    if (deletedCiclistaResult.data && deletedCiclistaResult.data.length > 0) {
+        const { deletionReason, deletionDate, ...restoredCiclistaData } = deletedCiclistaResult.data[0];
         
         const columns = Object.keys(restoredCiclistaData).join(', ');
         const placeholders = Object.keys(restoredCiclistaData).map((_, i) => `$${i + 1}`).join(', ');
         const values = Object.values(restoredCiclistaData);
 
-        await db.query(`INSERT INTO ciclistas (${columns}) VALUES (${placeholders})`, values);
-        await db.query('DELETE FROM ciclistas_deletados WHERE id = $1', [ciclistaId]);
+        await supabase.from('ciclistas').insert([{ id: ciclistaId, ...restoredCiclistaData }]);
+        await supabase.from('ciclistas_deletados').delete().eq('id', ciclistaId);
     }
 }
 
 
 // Invoice Functions
 export const getInvoices = async (): Promise<Invoice[]> => {
-    const result = await db.query('SELECT * FROM invoices');
-    console.log('DEBUG getInvoices - raw result:', result.rows);
-    return result.rows as Invoice[];
+    const result = await supabase.from('invoices').select('*');
+    return result.data as Invoice[];
 };
 
 export const addInvoiceDb = async (invoiceData: Omit<Invoice, 'id'>) => {
@@ -214,7 +163,7 @@ export const addInvoiceDb = async (invoiceData: Omit<Invoice, 'id'>) => {
     const columns = Object.keys(newInvoice).map(col => `"${col}"`).join(', ');
     const placeholders = Object.keys(newInvoice).map((_, i) => `$${i + 1}`).join(', ');
     const values = Object.values(newInvoice);
-    await db.query(`INSERT INTO invoices (${columns}) VALUES (${placeholders})`, values);
+    await supabase.from('invoices').insert([{ id: newId, ...newInvoice }]);
     return newId;
 }
 
@@ -232,13 +181,13 @@ export const updateInvoiceDb = async (invoice: Invoice) => {
     }
     const setClause = Object.keys(filteredInvoiceData).map((key, i) => `"${key}" = $${i + 2}`).join(', ');
     const values = [id, ...Object.values(filteredInvoiceData)];
-    await db.query(`UPDATE invoices SET ${setClause} WHERE id = $1`, values);
+    await supabase.from('invoices').update(filteredInvoiceData).eq('id', id);
 }
 
 // AuditLog Functions
 export const getAuditLogs = async (): Promise<AuditLog[]> => {
-    const result = await db.query('SELECT * FROM audit_logs ORDER BY date DESC');
-    return result.rows as AuditLog[];
+    const result = await supabase.from('audit_logs').select('*').order('date', { ascending: false });
+    return result.data as AuditLog[];
 };
 
 export const addAuditLogDb = async (logData: Omit<AuditLog, 'id'>) => {
@@ -249,5 +198,5 @@ export const addAuditLogDb = async (logData: Omit<AuditLog, 'id'>) => {
       .join(', ');
     const placeholders = Object.keys(newLog).map((_, i) => `$${i + 1}`).join(', ');
     const values = Object.values(newLog);
-    await db.query(`INSERT INTO audit_logs (${columns}) VALUES (${placeholders})`, values);
+    await supabase.from('audit_logs').insert([{ id: newId, ...newLog }]);
 }
