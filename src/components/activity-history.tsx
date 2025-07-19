@@ -102,14 +102,18 @@ export function ActivityHistory({ ciclistaId, userId, limit = 50, showFilters = 
     const fetchActivities = async () => {
       setLoading(true);
       try {
+        console.log('🔍 ActivityHistory: Iniciando busca de atividades...');
+        
         let url = '/api/audit-logs';
         const params = new URLSearchParams();
         
         if (ciclistaId) {
           params.append('ciclistaId', ciclistaId);
+          console.log('🔍 ActivityHistory: Filtrando por ciclista:', ciclistaId);
         }
         if (userId) {
           params.append('userId', userId);
+          console.log('🔍 ActivityHistory: Filtrando por usuário:', userId);
         }
         if (limit) {
           params.append('limit', limit.toString());
@@ -119,23 +123,29 @@ export function ActivityHistory({ ciclistaId, userId, limit = 50, showFilters = 
           url += `?${params.toString()}`;
         }
         
+        console.log('🔍 ActivityHistory: URL da API:', url);
+        
         const response = await fetch(url);
+        
+        console.log('🔍 ActivityHistory: Status da resposta:', response.status);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('🔍 ActivityHistory: Dados recebidos:', data);
         
         // Garantir que data seja um array
         if (Array.isArray(data)) {
+          console.log('🔍 ActivityHistory: Definindo atividades:', data.length);
           setActivities(data);
         } else {
-          console.warn('API retornou dados que não são um array:', data);
+          console.warn('⚠️ ActivityHistory: API retornou dados que não são um array:', data);
           setActivities([]);
         }
       } catch (error) {
-        console.error('Erro ao carregar atividades:', error);
+        console.error('❌ ActivityHistory: Erro ao carregar atividades:', error);
         setActivities([]);
       } finally {
         setLoading(false);

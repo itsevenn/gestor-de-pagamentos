@@ -1,5 +1,4 @@
 import { supabase } from './supabaseClient';
-import { v4 as uuidv4 } from 'uuid';
 
 export type AuditAction = 
   | 'CICLISTA_CREATED'
@@ -16,6 +15,9 @@ export type AuditAction =
   | 'USER_LOGIN'
   | 'USER_LOGOUT'
   | 'PROFILE_UPDATED'
+  | 'PROFILE_PHOTO_UPLOADED'
+  | 'PROFILE_PHOTO_UPDATED'
+  | 'PROFILE_PHOTO_REMOVED'
   | 'SYSTEM_ACTION';
 
 export type AuditLogEntry = {
@@ -28,28 +30,43 @@ export type AuditLogEntry = {
   entityId?: string;
   entityName?: string;
   details: string;
-  changes?: {
-    field: string;
-    oldValue: any;
-    newValue: any;
-  }[];
+  changes?: any;
   ipAddress?: string;
   userAgent?: string;
 };
 
 export class AuditLogger {
   private static async getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.warn('Erro ao obter usuário atual:', error);
+        return null;
+      }
+      return user;
+    } catch (error) {
+      console.warn('Erro ao obter usuário atual:', error);
+      return null;
+    }
   }
 
   private static async getUserProfile(userId: string) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    return data;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.warn('Erro ao obter perfil do usuário:', error);
+        return null;
+      }
+      return data;
+    } catch (error) {
+      console.warn('Erro ao obter perfil do usuário:', error);
+      return null;
+    }
   }
 
   static async log(
@@ -58,40 +75,63 @@ export class AuditLogger {
     details: string,
     entityId?: string,
     entityName?: string,
-    changes?: AuditLogEntry['changes']
+    changes?: any
   ): Promise<void> {
     try {
+      console.log('🔍 AuditLogger: Iniciando log...', { action, entityType, details });
+      
       const user = await this.getCurrentUser();
       const profile = user ? await this.getUserProfile(user.id) : null;
       
-      const logEntry: Omit<AuditLogEntry, 'id'> = {
+      const logData = {
         timestamp: new Date().toISOString(),
         userId: user?.id || 'system',
         userName: profile?.email || user?.email || 'Sistema',
         action,
         entityType,
-        entityId,
-        entityName,
+        entityId: entityId || null,
+        entityName: entityName || null,
         details,
-        changes,
-        ipAddress: 'N/A', // Pode ser implementado com middleware
-        userAgent: 'N/A'  // Pode ser implementado com middleware
+        changes: changes ? JSON.stringify(changes) : null,
+        ipAddress: 'N/A',
+        userAgent: 'N/A'
       };
 
-      await supabase.from('audit_logs').insert([{
-        id: uuidv4(),
-        ...logEntry
-      }]);
+      console.log('📝 AuditLogger: Dados do log:', logData);
 
-      console.log('📝 Audit Log:', {
-        action,
-        entityType,
-        entityName,
-        details,
-        user: logEntry.userName
-      });
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .insert([logData])
+        .select();
+
+      if (error) {
+        console.error('❌ Erro ao inserir log de auditoria:', error);
+        console.error('Dados que falharam:', logData);
+        
+        // Tentar inserir sem alguns campos opcionais
+        const fallbackData = {
+          timestamp: logData.timestamp,
+          userId: logData.userId,
+          userName: logData.userName,
+          action: logData.action,
+          entityType: logData.entityType,
+          details: logData.details
+        };
+        
+        const { error: fallbackError } = await supabase
+          .from('audit_logs')
+          .insert([fallbackData]);
+        
+        if (fallbackError) {
+          console.error('❌ Erro também no fallback:', fallbackError);
+        } else {
+          console.log('✅ Log inserido com fallback');
+        }
+      } else {
+        console.log('✅ Log de auditoria registrado com sucesso:', data);
+      }
     } catch (error) {
-      console.error('❌ Erro ao registrar log de auditoria:', error);
+      console.error('❌ Erro geral ao registrar log de auditoria:', error);
     }
   }
 
@@ -234,7 +274,7 @@ export class AuditLogger {
   }
 
   static async logInvoiceUpdated(invoiceId: string, ciclistaName: string, changes?: any, details?: string) {
-    const changeText = details || (changes ? this.formatChanges(changes) : 'Fatura atualizada');
+    const changeText = details || (changes ? JSON.stringify(changes) : 'Fatura atualizada');
     await this.log(
       'INVOICE_UPDATED',
       'invoice',
