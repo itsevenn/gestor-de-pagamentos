@@ -79,7 +79,44 @@ export default function NewCiclistaPage() {
   const [tempFile, setTempFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { register, handleSubmit, setValue, watch, reset } = useForm();
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      photoUrl: '',
+      matricula: '',
+      dataAdvento: '',
+      nomeCiclista: '',
+      tipoSanguineo: '',
+      dataNascimento: '',
+      idade: '',
+      nacionalidade: '',
+      naturalidade: '',
+      uf: '',
+      rg: '',
+      cpf: '',
+      pai: '',
+      mae: '',
+      endereco: '',
+      bairro: '',
+      cidade: '',
+      cep: '',
+      estado: '',
+      celular: '',
+      telefoneResidencial: '',
+      outrosContatos: '',
+      referencia: '',
+      cnpj: '',
+      notaFiscal: '',
+      marcaModelo: '',
+      numeroSerie: '',
+      dataAquisicao: '',
+      observacoes: '',
+      nomeConselheiro: '',
+      localData: '',
+    },
+  });
+
+  const { register, handleSubmit, setValue, watch, reset, control } = form;
 
   useEffect(() => {
     if (ciclistas.length > 0) {
@@ -258,7 +295,8 @@ export default function NewCiclistaPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <Form {...form}>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
               
               {/* Dados Pessoais */}
               <div>
@@ -271,10 +309,10 @@ export default function NewCiclistaPage() {
                   
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="md:col-span-4">
-                      <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium mb-3">
+                      <label className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium mb-3">
                         <Upload className="h-4 w-4 text-blue-500" />
                         Foto do Ciclista
-                      </FormLabel>
+                      </label>
                       <div className="flex items-center gap-6 p-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
                         <div className="flex items-center justify-center">
                           <div className="relative" style={{ maxWidth: 240, maxHeight: 240 }}>
@@ -338,144 +376,144 @@ export default function NewCiclistaPage() {
                     </div>
                   </div>
                     
-                    <FormField control={undefined} name="matricula" render={({ field }) => (
+                    <FormField control={control} name="matricula" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-purple-500" />
                           Matrícula
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('matricula')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="dataAdvento" render={({ field }) => (
+                    <FormField control={control} name="dataAdvento" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <Calendar className="h-4 w-4 text-green-500" />
                           Data do Advento
                         </FormLabel>
                         <FormControl>
-                          <Input type="date" {...register('dataAdvento')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input type="date" {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="nomeCiclista" render={({ field }) => (
+                    <FormField control={control} name="nomeCiclista" render={({ field }) => (
                       <FormItem className="md:col-span-2">
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <User className="h-4 w-4 text-blue-500" />
                           Nome do Ciclista
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('nomeCiclista')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="tipoSanguineo" render={({ field }) => (
+                    <FormField control={control} name="tipoSanguineo" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-red-500" />
                           Tipo Sanguíneo
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('tipoSanguineo')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="dataNascimento" render={({ field }) => (
+                    <FormField control={control} name="dataNascimento" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <Calendar className="h-4 w-4 text-purple-500" />
                           Data de Nascimento
                         </FormLabel>
                         <FormControl>
-                          <Input type="date" {...register('dataNascimento')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input type="date" {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="idade" render={({ field }) => (
+                    <FormField control={control} name="idade" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <User className="h-4 w-4 text-orange-500" />
                           Idade
                         </FormLabel>
                         <FormControl>
-                          <Input type="number" {...register('idade')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input type="number" {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="nacionalidade" render={({ field }) => (
+                    <FormField control={control} name="nacionalidade" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-indigo-500" />
                           Nacionalidade
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('nacionalidade')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="naturalidade" render={({ field }) => (
+                    <FormField control={control} name="naturalidade" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-green-500" />
                           Naturalidade
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('naturalidade')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="uf" render={({ field }) => (
+                    <FormField control={control} name="uf" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-blue-500" />
                           UF
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('uf')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="rg" render={({ field }) => (
+                    <FormField control={control} name="rg" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-slate-500" />
                           RG
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('rg')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     
-                    <FormField control={undefined} name="cpf" render={({ field }) => (
+                    <FormField control={control} name="cpf" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-slate-600" />
                           CPF
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('cpf')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -494,26 +532,26 @@ export default function NewCiclistaPage() {
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Filiação</h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField control={undefined} name="pai" render={({ field }) => (
+                    <FormField control={control} name="pai" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <User className="h-4 w-4 text-blue-500" />
                           Nome do Pai
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('pai')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="mae" render={({ field }) => (
+                    <FormField control={control} name="mae" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <User className="h-4 w-4 text-pink-500" />
                           Nome da Mãe
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('mae')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -532,110 +570,110 @@ export default function NewCiclistaPage() {
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Endereço e Contato</h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <FormField control={undefined} name="endereco" render={({ field }) => (
+                    <FormField control={control} name="endereco" render={({ field }) => (
                       <FormItem className="md:col-span-2">
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-green-500" />
                           Endereço
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('endereco')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="bairro" render={({ field }) => (
+                    <FormField control={control} name="bairro" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-blue-500" />
                           Bairro
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('bairro')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="cidade" render={({ field }) => (
+                    <FormField control={control} name="cidade" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-indigo-500" />
                           Cidade
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('cidade')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="cep" render={({ field }) => (
+                    <FormField control={control} name="cep" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-purple-500" />
                           CEP
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('cep')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="estado" render={({ field }) => (
+                    <FormField control={control} name="estado" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-red-500" />
                           Estado
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('estado')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="celular" render={({ field }) => (
+                    <FormField control={control} name="celular" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <Phone className="h-4 w-4 text-green-500" />
                           Celular
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('celular')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="telefoneResidencial" render={({ field }) => (
+                    <FormField control={control} name="telefoneResidencial" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <Phone className="h-4 w-4 text-blue-500" />
                           Telefone Residencial
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('telefoneResidencial')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="outrosContatos" render={({ field }) => (
+                    <FormField control={control} name="outrosContatos" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <Phone className="h-4 w-4 text-orange-500" />
                           Outros Contatos
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('outrosContatos')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="referencia" render={({ field }) => (
+                    <FormField control={control} name="referencia" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <User className="h-4 w-4 text-indigo-500" />
                           Referência
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('referencia')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -654,62 +692,62 @@ export default function NewCiclistaPage() {
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Dados da Bicicleta e Fiscais</h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <FormField control={undefined} name="cnpj" render={({ field }) => (
+                    <FormField control={control} name="cnpj" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-slate-500" />
                           CNPJ
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('cnpj')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="notaFiscal" render={({ field }) => (
+                    <FormField control={control} name="notaFiscal" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-green-500" />
                           Nota Fiscal
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('notaFiscal')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="marcaModelo" render={({ field }) => (
+                    <FormField control={control} name="marcaModelo" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <Bike className="h-4 w-4 text-blue-500" />
                           Marca/Modelo
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('marcaModelo')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="numeroSerie" render={({ field }) => (
+                    <FormField control={control} name="numeroSerie" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-purple-500" />
                           Número de Série
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('numeroSerie')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="dataAquisicao" render={({ field }) => (
+                    <FormField control={control} name="dataAquisicao" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <Calendar className="h-4 w-4 text-orange-500" />
                           Data da Aquisição
                         </FormLabel>
                         <FormControl>
-                          <Input type="date" {...register('dataAquisicao')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input type="date" {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -728,38 +766,38 @@ export default function NewCiclistaPage() {
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Observações e Finalização</h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField control={undefined} name="observacoes" render={({ field }) => (
+                    <FormField control={control} name="observacoes" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <FileText className="h-4 w-4 text-slate-500" />
                           Observações
                         </FormLabel>
                         <FormControl>
-                          <Textarea {...register('observacoes')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]" />
+                          <Textarea {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="nomeConselheiro" render={({ field }) => (
+                    <FormField control={control} name="nomeConselheiro" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <User className="h-4 w-4 text-indigo-500" />
                           Nome do Conselheiro
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('nomeConselheiro')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={undefined} name="localData" render={({ field }) => (
+                    <FormField control={control} name="localData" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="h-4 w-4 text-green-500" />
                           Local e Data
                         </FormLabel>
                         <FormControl>
-                          <Input {...register('localData')} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                          <Input {...field} className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -797,6 +835,7 @@ export default function NewCiclistaPage() {
                 </Button>
               </div>
             </form>
+            </Form>
           </CardContent>
         </Card>
       </div>

@@ -20,7 +20,7 @@ import { AlertCircle, ArrowRight, DollarSign, Receipt, RefreshCw, TrendingUp, Us
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { differenceInDays, parseISO, startOfMonth, endOfMonth, subMonths, isWithinInterval } from 'date-fns';
 import { AuthGuard } from '@/components/auth-guard';
@@ -29,6 +29,20 @@ export default function Home() {
   const { invoices, loading: loadingInvoices } = useInvoices();
   const { ciclistas, deletedCiclistas, loading: loadingCiclistas } = useCiclistas();
   const { toast } = useToast();
+  
+  // Estado para o carrossel de imagens
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Efeito para mudança automática das imagens do carrossel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % 4);
+    }, 4000); // Muda a cada 4 segundos
+
+    return () => clearInterval(interval);
+  }, []);
+  
+
   
   const loading = loadingInvoices || loadingCiclistas;
 
@@ -80,6 +94,8 @@ export default function Home() {
   const getCiclistaContact = (ciclistaId: string) => {
     return allClients.find(c => c.id === ciclistaId)?.celular || '';
   }
+
+
 
   useEffect(() => {
     const today = new Date();
@@ -207,6 +223,114 @@ export default function Home() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto p-6">
           <div className="flex flex-col gap-8">
+            {/* Hero Section - Ciclismo e Saúde */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-2xl">
+              <div className="absolute inset-0 bg-black/20"></div>
+              <div className="relative px-8 py-12 md:px-12 md:py-16">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                  {/* Texto */}
+                  <div className="text-white space-y-6">
+                    <div className="space-y-4">
+                      <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+                        <span className="text-blue-100">Gerencie seus</span>
+                        <br />
+                        <span className="text-white">ciclistas com eficiência!</span>
+                      </h1>
+                      <p className="text-xl text-blue-100 leading-relaxed">
+                        Encontre tudo o que você precisa para administrar seu clube de ciclismo em um só lugar!
+                      </p>
+                    </div>
+                    
+                    {/* Botões de Ação */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-200 hover:text-blue-800 font-semibold px-8 py-3 border border-blue-400 shadow-md hover:shadow-lg transition-all duration-200">
+                        <Link href="/ciclistas/new">
+                          Adicionar Ciclista
+                        </Link>
+                      </Button>
+                      <Button asChild size="lg" className="bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-800 font-semibold px-8 py-3 border border-gray-400 shadow-md hover:shadow-lg transition-all duration-200">
+                        <Link href="/invoices/new">
+                          Nova Fatura
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Card Grande com Carrossel de Imagens */}
+                  <div className="relative bg-white/20 backdrop-blur-sm rounded-2xl overflow-hidden h-96">
+                    <div className="relative w-full h-full">
+                      {/* Imagens do Carrossel */}
+                      <div className="relative w-full h-full">
+                        <img 
+                          src="https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800&h=400&fit=crop&crop=center" 
+                          alt="Bicicletas"
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                            currentImageIndex === 0 ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        />
+                        <img 
+                          src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop&crop=center" 
+                          alt="Saúde"
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                            currentImageIndex === 1 ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        />
+                        <img 
+                          src="https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&h=400&fit=crop&crop=center" 
+                          alt="Performance"
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                            currentImageIndex === 2 ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        />
+                        <img 
+                          src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=400&fit=crop&crop=center" 
+                          alt="Comunidade"
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                            currentImageIndex === 3 ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        />
+                      </div>
+                      
+                      {/* Gradiente e Texto */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                      <div className="absolute bottom-6 left-6 text-white">
+                        <h3 className="text-2xl font-bold mb-2">
+                          {currentImageIndex === 0 && "Bicicletas"}
+                          {currentImageIndex === 1 && "Saúde"}
+                          {currentImageIndex === 2 && "Performance"}
+                          {currentImageIndex === 3 && "Comunidade"}
+                        </h3>
+                        <p className="text-blue-100 text-lg">
+                          {currentImageIndex === 0 && "Gestão completa"}
+                          {currentImageIndex === 1 && "Bem-estar total"}
+                          {currentImageIndex === 2 && "Acompanhamento"}
+                          {currentImageIndex === 3 && "Clube unido"}
+                        </p>
+                      </div>
+                      
+                      {/* Indicadores de Página */}
+                      <div className="absolute bottom-4 right-6 flex space-x-2">
+                        {[0, 1, 2, 3].map((index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                              currentImageIndex === index 
+                                ? 'bg-white' 
+                                : 'bg-white/50 hover:bg-white/75'
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+
+            </div>
+
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Painel</h1>
