@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { Sun, Moon, Laptop, Settings, Palette, Bell, Shield, Database, Users } from 'lucide-react';
+import { Sun, Moon, Laptop, Settings, Palette, Bell, Shield, Database, Users, Upload, Image } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
@@ -25,6 +25,8 @@ export default function SettingsPage() {
   const [clubName, setClubName] = useState('SUSSUARANA CLUBE DE DESBRAVADORES');
   const [editName, setEditName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [clubLogo, setClubLogo] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -33,6 +35,9 @@ export default function SettingsPage() {
     setMounted(true);
     const storedClubName = localStorage.getItem('app-club-name');
     if (storedClubName) setClubName(storedClubName);
+    
+    const storedClubLogo = localStorage.getItem('app-club-logo');
+    if (storedClubLogo) setClubLogo(storedClubLogo);
   }, []);
 
   const handleEditClick = () => {
@@ -44,6 +49,45 @@ export default function SettingsPage() {
     setClubName(editName);
     localStorage.setItem('app-club-name', editName);
     setIsEditing(false);
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Verificar se é uma imagem
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas arquivos de imagem.');
+      return;
+    }
+
+    // Verificar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Converter para base64 para armazenamento local
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setClubLogo(result);
+        localStorage.setItem('app-club-logo', result);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Erro ao fazer upload do logo:', error);
+      setIsUploading(false);
+      alert('Erro ao fazer upload do logo. Tente novamente.');
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setClubLogo(null);
+    localStorage.removeItem('app-club-logo');
   };
 
   if (!mounted) {
@@ -278,35 +322,121 @@ export default function SettingsPage() {
                 Clube
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400">
-                Altere o nome do clube exibido no menu lateral.
+                Altere o nome e logo do clube exibidos no menu lateral.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              {user?.role === 'admin' ? (
-                isEditing ? (
-                  <div className="flex flex-col gap-2 max-w-md">
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={e => setEditName(e.target.value)}
-                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-center font-semibold"
-                      maxLength={50}
-                      autoFocus
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveName} className="bg-blue-600 text-white hover:bg-blue-700">Salvar</Button>
-                      <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
+            <CardContent className="p-6 space-y-6">
+              {/* Nome do Clube */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Nome do Clube</h3>
+                {user?.role === 'admin' ? (
+                  isEditing ? (
+                    <div className="flex flex-col gap-2 max-w-md">
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={e => setEditName(e.target.value)}
+                        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold"
+                        maxLength={50}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={handleSaveName} className="bg-blue-600 text-white hover:bg-blue-700">Salvar</Button>
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <span className="font-semibold text-gray-900 dark:text-white text-lg">{clubName}</span>
+                      <Button size="sm" variant="outline" onClick={handleEditClick}>Editar nome</Button>
+                    </div>
+                  )
+                ) : (
+                  <span className="font-semibold text-gray-900 dark:text-white text-lg">{clubName}</span>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Logo do Clube */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Logo do Clube</h3>
+                <div className="flex items-start gap-6">
+                  {/* Preview do Logo */}
+                  <div className="flex-shrink-0">
+                    <div className="w-32 h-32 bg-gray-100 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden">
+                      {clubLogo ? (
+                        <img
+                          src={clubLogo}
+                          alt="Logo do Clube"
+                          className="w-full h-full object-contain rounded-lg"
+                        />
+                      ) : (
+                        <div className="text-center text-gray-500 dark:text-gray-400">
+                          <Image className="w-8 h-8 mx-auto mb-2" />
+                          <span className="text-sm">120 x 120</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-4">
-                    <span className="font-semibold text-gray-900 dark:text-white text-lg">{clubName}</span>
-                    <Button size="sm" variant="outline" onClick={handleEditClick}>Editar nome</Button>
+
+                  {/* Controles do Logo */}
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        {clubLogo ? 'Logo atual do clube' : 'Nenhum logo carregado'}
+                      </p>
+                      {clubLogo && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          O logo será exibido no menu lateral e em relatórios.
+                        </p>
+                      )}
+                    </div>
+
+                    {user?.role === 'admin' && (
+                      <div className="flex flex-wrap gap-2">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            disabled={isUploading}
+                          />
+                          <Button
+                            variant="outline"
+                            className="flex items-center gap-2"
+                            disabled={isUploading}
+                          >
+                            {isUploading ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                                Carregando...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="w-4 h-4" />
+                                {clubLogo ? 'Alterar Logo' : 'Carregar Logo'}
+                              </>
+                            )}
+                          </Button>
+                        </label>
+
+                        {clubLogo && (
+                          <Button
+                            variant="outline"
+                            onClick={handleRemoveLogo}
+                            className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                            disabled={isUploading}
+                          >
+                            Remover Logo
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )
-              ) : (
-                <span className="font-semibold text-gray-900 dark:text-white text-lg">{clubName}</span>
-              )}
+                </div>
+              </div>
             </CardContent>
           </Card>
           {/* Botão para abrir o gerenciador de usuários (apenas admin) */}
