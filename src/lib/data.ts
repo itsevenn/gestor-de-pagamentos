@@ -121,7 +121,7 @@ export const addCiclistaDb = async (ciclistaData: Omit<Ciclista, 'id'>) => {
 };
 
 export const updateCiclistaDb = async (ciclista: Ciclista) => {
-  const { id, ...ciclistaData } = ciclista;
+  const { id, changeReason, changes, ...ciclistaData } = ciclista;
   const { error } = await supabase.from('ciclistas').update(ciclistaData).eq('id', id);
   if (error) throw error;
 };
@@ -168,7 +168,7 @@ export const addInvoiceDb = async (invoiceData: Omit<Invoice, 'id'>) => {
 }
 
 export const updateInvoiceDb = async (invoice: Invoice) => {
-    const { id, ...invoiceData } = invoice;
+    const { id, changeReason, changes, ...invoiceData } = invoice;
     // Proteção extra: remove duplicatas ignorando case
     const seen = new Set<string>();
     const filteredInvoiceData: Record<string, any> = {};
