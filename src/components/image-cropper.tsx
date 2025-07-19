@@ -153,8 +153,8 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden p-0">
-        <DialogHeader className="px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 border-b border-slate-200 dark:border-slate-600">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogHeader className="px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 border-b border-slate-200 dark:border-slate-600 sticky top-0 z-10">
           <DialogTitle className="flex items-center gap-3 text-xl font-semibold text-slate-900 dark:text-white">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-sm">
               <ZoomIn className="w-5 h-5 text-white" />
@@ -163,15 +163,15 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-6 p-6">
+        <div className="flex flex-col gap-4 p-4 sm:p-6">
           {/* Controles */}
-          <div className="flex flex-wrap items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600">
+          <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Proporção:</span>
               <select
                 value={aspect || ''}
                 onChange={(e) => handleAspectChange(e.target.value ? Number(e.target.value) : undefined)}
-                className="px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="px-2 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="">Livre</option>
                 <option value="1">1:1 (Quadrado)</option>
@@ -181,12 +181,12 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleRotate('left')}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <RotateCcw className="w-4 h-4" />
               </Button>
@@ -194,29 +194,29 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
                 variant="outline"
                 size="sm"
                 onClick={() => handleRotate('right')}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <RotateCw className="w-4 h-4" />
               </Button>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleZoom('out')}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <ZoomOut className="w-4 h-4" />
               </Button>
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-400 min-w-[60px] text-center">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400 min-w-[50px] text-center">
                 {Math.round(scale * 100)}%
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleZoom('in')}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <ZoomIn className="w-4 h-4" />
               </Button>
@@ -224,7 +224,7 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
           </div>
 
           {/* Área de Corte */}
-          <div className="flex justify-center bg-slate-100 dark:bg-slate-900 rounded-xl p-6 min-h-[450px] border border-slate-200 dark:border-slate-700">
+          <div className="flex justify-center bg-slate-100 dark:bg-slate-900 rounded-xl p-3 sm:p-6 min-h-[300px] sm:min-h-[400px] border border-slate-200 dark:border-slate-700">
             {imageSrc ? (
               <ReactCrop
                 crop={crop}
@@ -234,7 +234,7 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
                 minWidth={100}
                 minHeight={100}
                 keepSelection
-                className="max-w-full max-h-[550px]"
+                className="max-w-full max-h-[400px] sm:max-h-[500px]"
               >
                 <img
                   ref={imgRef}
@@ -243,7 +243,7 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
                   style={{
                     transform: `scale(${scale}) rotate(${rotate}deg)`,
                     maxWidth: '100%',
-                    maxHeight: '550px',
+                    maxHeight: '400px',
                   }}
                   onLoad={onImageLoad}
                   className="object-contain rounded-lg"
@@ -252,15 +252,15 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
             ) : (
               <div className="flex items-center justify-center text-slate-500 dark:text-slate-400">
                 <div className="text-center">
-                  <div className="w-16 h-16 border-4 border-slate-300 dark:border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-lg font-medium">Carregando imagem...</p>
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-slate-300 dark:border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
+                  <p className="text-base sm:text-lg font-medium">Carregando imagem...</p>
                 </div>
               </div>
             )}
           </div>
 
           {/* Instruções */}
-          <div className="text-sm text-slate-600 dark:text-slate-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+          <div className="text-sm text-slate-600 dark:text-slate-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-3 sm:p-4 rounded-xl border border-blue-200 dark:border-blue-800">
             <p className="font-semibold mb-2 text-blue-700 dark:text-blue-300">💡 Dicas de Uso:</p>
             <ul className="space-y-1 text-xs">
               <li className="flex items-center gap-2">
@@ -283,7 +283,7 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
           </div>
         </div>
 
-        <DialogFooter className="flex gap-3 p-6 pt-0">
+        <DialogFooter className="flex gap-3 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0">
           <Button
             variant="outline"
             onClick={onClose}
