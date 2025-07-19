@@ -158,6 +158,49 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
   const renderChanges = (changes: AuditLogEntry['changes']) => {
     if (!changes || changes.length === 0) return null;
     
+    // Função para formatar valores
+    const formatValue = (value: any, field: string) => {
+      if (value === null || value === undefined || value === '') return 'N/A';
+      
+      // Formatar valores monetários
+      if (field === 'currentAmount' || field === 'amount') {
+        return `R$ ${Number(value).toFixed(2)}`;
+      }
+      
+      // Formatar datas
+      if (field === 'dueDate' || field === 'createdAt' || field === 'updatedAt') {
+        try {
+          return new Date(value).toLocaleDateString('pt-BR');
+        } catch {
+          return value;
+        }
+      }
+      
+      // Formatar status
+      if (field === 'status') {
+        const statusMap: Record<string, string> = {
+          'pending': 'Pendente',
+          'paid': 'Pago',
+          'overdue': 'Atrasado',
+          'refunded': 'Reembolsado'
+        };
+        return statusMap[value] || value;
+      }
+      
+      // Formatar nomes de campos
+      const fieldNames: Record<string, string> = {
+        'currentAmount': 'Valor',
+        'amount': 'Valor',
+        'dueDate': 'Data de Vencimento',
+        'status': 'Status',
+        'ciclistaId': 'Ciclista',
+        'createdAt': 'Data de Criação',
+        'updatedAt': 'Data de Atualização'
+      };
+      
+      return fieldNames[field] || field;
+    };
+    
     return (
       <div className="mt-3 space-y-2">
         <div className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
@@ -167,15 +210,15 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
           <div key={index} className="text-xs bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between">
               <span className="font-medium text-slate-700 dark:text-slate-300">
-                {change.field}:
+                {formatValue(change.field, change.field)}:
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
-                  {change.oldValue || 'N/A'}
+                  {formatValue(change.oldValue, change.field)}
                 </span>
                 <ArrowRight className="w-3 h-3 text-slate-400" />
                 <span className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
-                  {change.newValue || 'N/A'}
+                  {formatValue(change.newValue, change.field)}
                 </span>
               </div>
             </div>
@@ -266,9 +309,9 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
                         {formatTimestamp(activity.timestamp)}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
-                      {activity.details}
-                    </p>
+                                         <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
+                       {activity.details || `${activity.action} da fatura ${invoiceId}`}
+                     </p>
                     <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                       <User className="w-3 h-3" />
                       <span>{activity.userName}</span>
