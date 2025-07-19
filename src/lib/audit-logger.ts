@@ -358,12 +358,26 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
   try {
     console.log('🔍 getCiclistaAuditLogs: Buscando logs para ciclista:', ciclistaId);
     
-    // Buscar logs que contenham o ID do ciclista nos detalhes
+    // Primeiro, buscar o nome do ciclista para usar na filtragem
+    const { data: ciclista, error: ciclistaError } = await supabase
+      .from('ciclistas')
+      .select('nomeCiclista')
+      .eq('id', ciclistaId)
+      .single();
+    
+    if (ciclistaError) {
+      console.error('❌ Erro ao buscar nome do ciclista:', ciclistaError);
+      return [];
+    }
+    
+    const ciclistaName = ciclista?.nomeCiclista;
+    console.log('🔍 getCiclistaAuditLogs: Nome do ciclista:', ciclistaName);
+    
+    // Buscar logs que contenham o ID do ciclista nos detalhes OU logs antigos sem ID
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
       .or('action.eq.Ciclista Criado,action.eq.Ciclista Atualizado,action.eq.Ciclista Excluído,action.eq.Ciclista Restaurado,action.eq.Foto Carregada,action.eq.Foto Removida')
-      .ilike('details', `%${ciclistaId}%`)
       .order('date', { ascending: false })
       .limit(100); // Limitar para performance
     
@@ -376,14 +390,27 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
     
     // Filtrar logs que sejam realmente relacionados ao ciclista específico
     const filteredData = (data || []).filter(log => {
-      // Verificar se o log contém o ID do ciclista nos detalhes
+      // 1. Verificar se o log contém o ID do ciclista nos detalhes (formato novo)
       if (log.details && log.details.includes(ciclistaId)) {
         return true;
       }
       
-      // Verificar se é uma ação relacionada a fotos e contém o ID do ciclista
+      // 2. Verificar se é uma ação relacionada a fotos e contém o ID do ciclista
       if (log.action && (log.action.includes('Foto')) && log.details && log.details.includes(ciclistaId)) {
         return true;
+      }
+      
+      // 3. Para logs antigos sem ID, verificar se contém o nome do ciclista
+      if (log.details && !log.details.includes('ID:') && !log.details.includes('(ID:') && ciclistaName) {
+        // Extrair nome do ciclista dos detalhes (formato: "Dados do ciclista "NOME" foram atualizados")
+        const nameMatch = log.details.match(/"([^"]+)"/);
+        if (nameMatch) {
+          const logCiclistaName = nameMatch[1];
+          // Verificar se o nome extraído corresponde ao nome do ciclista atual
+          if (logCiclistaName === ciclistaName) {
+            return true;
+          }
+        }
       }
       
       return false;
