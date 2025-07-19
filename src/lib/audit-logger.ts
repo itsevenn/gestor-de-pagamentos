@@ -84,14 +84,12 @@ export class AuditLogger {
       const profile = user ? await this.getUserProfile(user.id) : null;
       
       const logData = {
-        timestamp: new Date().toISOString(),
-        userId: user?.id || 'system',
-        userName: profile?.email || user?.email || 'Sistema',
+        date: new Date().toISOString(),
+        user: profile?.email || user?.email || 'Sistema',
         action,
-        entityType,
+        details,
         entityId: entityId || null,
         entityName: entityName || null,
-        details,
         changes: changes ? JSON.stringify(changes) : null,
         ipAddress: 'N/A',
         userAgent: 'N/A'
@@ -138,11 +136,9 @@ export class AuditLogger {
         // Tentar inserção mínima
         console.log('🔄 AuditLogger: Tentando inserção mínima...');
         const minimalData = {
-          timestamp: logData.timestamp,
-          userId: logData.userId,
-          userName: logData.userName,
+          date: logData.date,
+          user: logData.user,
           action: logData.action,
-          entityType: logData.entityType,
           details: logData.details
         };
         
@@ -392,20 +388,40 @@ export function formatValue(value: any): string {
 // Função para obter logs de um ciclista específico
 export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLogEntry[]> {
   try {
+    console.log('🔍 getCiclistaAuditLogs: Buscando logs para ciclista:', ciclistaId);
+    
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
-      .eq('entityId', ciclistaId)
-      .order('timestamp', { ascending: false });
+      .ilike('details', `%${ciclistaId}%`)
+      .order('date', { ascending: false });
     
     if (error) {
-      console.error('Erro ao buscar logs do ciclista:', error);
+      console.error('❌ Erro ao buscar logs do ciclista:', error);
       return [];
     }
     
-    return (data || []) as AuditLogEntry[];
+    console.log('✅ getCiclistaAuditLogs: Logs encontrados:', data?.length || 0);
+    
+    // Converter dados para o formato esperado
+    const convertedData = (data || []).map(log => ({
+      id: log.id,
+      timestamp: log.date,
+      userId: log.user || 'system',
+      userName: log.user || 'Sistema',
+      action: log.action as AuditAction,
+      entityType: 'ciclista' as const,
+      entityId: ciclistaId,
+      entityName: log.details?.split('"')[1] || 'Ciclista',
+      details: log.details,
+      changes: null,
+      ipAddress: 'N/A',
+      userAgent: 'N/A'
+    }));
+    
+    return convertedData;
   } catch (error) {
-    console.error('Erro ao buscar logs do ciclista:', error);
+    console.error('❌ Erro ao buscar logs do ciclista:', error);
     return [];
   }
 }
@@ -413,20 +429,40 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
 // Função para obter logs de um usuário específico
 export async function getUserAuditLogs(userId: string): Promise<AuditLogEntry[]> {
   try {
+    console.log('🔍 getUserAuditLogs: Buscando logs para usuário:', userId);
+    
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
-      .eq('userId', userId)
-      .order('timestamp', { ascending: false });
+      .eq('user', userId)
+      .order('date', { ascending: false });
     
     if (error) {
-      console.error('Erro ao buscar logs do usuário:', error);
+      console.error('❌ Erro ao buscar logs do usuário:', error);
       return [];
     }
     
-    return (data || []) as AuditLogEntry[];
+    console.log('✅ getUserAuditLogs: Logs encontrados:', data?.length || 0);
+    
+    // Converter dados para o formato esperado
+    const convertedData = (data || []).map(log => ({
+      id: log.id,
+      timestamp: log.date,
+      userId: log.user || 'system',
+      userName: log.user || 'Sistema',
+      action: log.action as AuditAction,
+      entityType: 'user' as const,
+      entityId: userId,
+      entityName: log.user || 'Usuário',
+      details: log.details,
+      changes: null,
+      ipAddress: 'N/A',
+      userAgent: 'N/A'
+    }));
+    
+    return convertedData;
   } catch (error) {
-    console.error('Erro ao buscar logs do usuário:', error);
+    console.error('❌ Erro ao buscar logs do usuário:', error);
     return [];
   }
 }
@@ -434,20 +470,62 @@ export async function getUserAuditLogs(userId: string): Promise<AuditLogEntry[]>
 // Função para obter todos os logs com paginação
 export async function getAllAuditLogs(limit: number = 50, offset: number = 0): Promise<AuditLogEntry[]> {
   try {
+    console.log('🔍 getAllAuditLogs: Buscando todos os logs');
+    
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
-      .order('timestamp', { ascending: false })
+      .order('date', { ascending: false })
       .range(offset, offset + limit - 1);
     
     if (error) {
-      console.error('Erro ao buscar todos os logs:', error);
+      console.error('❌ Erro ao buscar todos os logs:', error);
       return [];
     }
     
-    return (data || []) as AuditLogEntry[];
+    console.log('✅ getAllAuditLogs: Logs encontrados:', data?.length || 0);
+    
+    // Converter dados para o formato esperado
+    const convertedData = (data || []).map(log => ({
+      id: log.id,
+      timestamp: log.date,
+      userId: log.user || 'system',
+      userName: log.user || 'Sistema',
+      action: log.action as AuditAction,
+      entityType: getEntityTypeFromAction(log.action),
+      entityId: null,
+      entityName: getEntityNameFromDetails(log.details),
+      details: log.details,
+      changes: null,
+      ipAddress: 'N/A',
+      userAgent: 'N/A'
+    }));
+    
+    return convertedData;
   } catch (error) {
-    console.error('Erro ao buscar todos os logs:', error);
+    console.error('❌ Erro ao buscar todos os logs:', error);
     return [];
   }
+}
+
+// Função auxiliar para determinar o tipo de entidade baseado na ação
+function getEntityTypeFromAction(action: string): 'ciclista' | 'invoice' | 'user' | 'system' {
+  if (action.includes('Ciclista') || action.includes('PHOTO')) return 'ciclista';
+  if (action.includes('Fatura') || action.includes('INVOICE')) return 'invoice';
+  if (action.includes('Perfil') || action.includes('PROFILE')) return 'user';
+  return 'system';
+}
+
+// Função auxiliar para extrair nome da entidade dos detalhes
+function getEntityNameFromDetails(details: string): string {
+  // Tentar extrair nome entre aspas
+  const match = details.match(/"([^"]+)"/);
+  if (match) return match[1];
+  
+  // Se não encontrar, retornar parte do texto
+  if (details.includes('Ciclista')) return 'Ciclista';
+  if (details.includes('Fatura')) return 'Fatura';
+  if (details.includes('Perfil')) return 'Usuário';
+  
+  return 'Sistema';
 } 
