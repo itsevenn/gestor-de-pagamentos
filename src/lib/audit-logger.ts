@@ -1,24 +1,21 @@
 import { supabase } from './supabaseClient';
 
 export type AuditAction = 
-  | 'CICLISTA_CREATED'
-  | 'CICLISTA_UPDATED'
-  | 'CICLISTA_DELETED'
-  | 'CICLISTA_RESTORED'
-  | 'INVOICE_CREATED'
-  | 'INVOICE_UPDATED'
-  | 'INVOICE_DELETED'
-  | 'PAYMENT_RECEIVED'
-  | 'PAYMENT_REFUNDED'
-  | 'PHOTO_UPLOADED'
-  | 'PHOTO_DELETED'
-  | 'USER_LOGIN'
-  | 'USER_LOGOUT'
-  | 'PROFILE_UPDATED'
-  | 'PROFILE_PHOTO_UPLOADED'
-  | 'PROFILE_PHOTO_UPDATED'
-  | 'PROFILE_PHOTO_REMOVED'
-  | 'SYSTEM_ACTION';
+  | 'Ciclista Criado'
+  | 'Ciclista Atualizado'
+  | 'Ciclista Excluído'
+  | 'Ciclista Restaurado'
+  | 'Fatura Criada'
+  | 'Fatura Atualizada'
+  | 'Fatura Excluída'
+  | 'Pagamento Recebido'
+  | 'Pagamento Reembolsado'
+  | 'Foto Carregada'
+  | 'Foto Removida'
+  | 'Usuário Logado'
+  | 'Usuário Deslogado'
+  | 'Perfil Atualizado'
+  | 'Ação do Sistema';
 
 export type AuditLogEntry = {
   id: string;
@@ -83,39 +80,15 @@ export class AuditLogger {
       const user = await this.getCurrentUser();
       const profile = user ? await this.getUserProfile(user.id) : null;
       
+      // Usar apenas os campos que existem na tabela audit_logs
       const logData = {
         date: new Date().toISOString(),
-        user: profile?.email || user?.email || 'Sistema',
-        action,
-        details,
-        entityId: entityId || null,
-        entityName: entityName || null,
-        changes: changes ? JSON.stringify(changes) : null,
-        ipAddress: 'N/A',
-        userAgent: 'N/A'
+        user: profile?.email || user?.email || 'Admin',
+        action: action,
+        details: details
       };
 
       console.log('📝 AuditLogger: Dados do log:', logData);
-
-      // Primeiro, verificar se a tabela existe
-      console.log('🔍 AuditLogger: Verificando se a tabela existe...');
-      const { data: checkData, error: checkError } = await supabase
-        .from('audit_logs')
-        .select('count')
-        .limit(1);
-
-      if (checkError) {
-        console.error('❌ AuditLogger: Tabela audit_logs não existe ou não está acessível:', checkError);
-        console.error('Detalhes do erro:', {
-          message: checkError.message,
-          details: checkError.details,
-          hint: checkError.hint,
-          code: checkError.code
-        });
-        return;
-      }
-
-      console.log('✅ AuditLogger: Tabela audit_logs existe, tentando inserção...');
 
       const { data, error } = await supabase
         .from('audit_logs')
@@ -132,31 +105,6 @@ export class AuditLogger {
           code: error.code,
           fullError: error
         });
-        
-        // Tentar inserção mínima
-        console.log('🔄 AuditLogger: Tentando inserção mínima...');
-        const minimalData = {
-          date: logData.date,
-          user: logData.user,
-          action: logData.action,
-          details: logData.details
-        };
-        
-        const { error: fallbackError } = await supabase
-          .from('audit_logs')
-          .insert([minimalData]);
-        
-        if (fallbackError) {
-          console.error('❌ Erro também no fallback:', fallbackError);
-          console.error('Detalhes do erro de fallback:', {
-            message: fallbackError.message,
-            details: fallbackError.details,
-            hint: fallbackError.hint,
-            code: fallbackError.code
-          });
-        } else {
-          console.log('✅ Log inserido com fallback');
-        }
       } else {
         console.log('✅ Log de auditoria registrado com sucesso:', data);
       }
@@ -169,7 +117,7 @@ export class AuditLogger {
   // Métodos específicos para cada tipo de ação
   static async logCiclistaCreated(ciclistaId: string, ciclistaName: string, details?: string) {
     await this.log(
-      'CICLISTA_CREATED',
+      'Ciclista Criado',
       'ciclista',
       details || `Ciclista "${ciclistaName}" foi criado`,
       ciclistaId,
@@ -184,7 +132,7 @@ export class AuditLogger {
     details?: string
   ) {
     await this.log(
-      'CICLISTA_UPDATED',
+      'Ciclista Atualizado',
       'ciclista',
       details || `Dados do ciclista "${ciclistaName}" foram atualizados`,
       ciclistaId,
@@ -195,7 +143,7 @@ export class AuditLogger {
 
   static async logCiclistaDeleted(ciclistaId: string, ciclistaName: string, reason: string) {
     await this.log(
-      'CICLISTA_DELETED',
+      'Ciclista Excluído',
       'ciclista',
       `Ciclista "${ciclistaName}" foi excluído. Motivo: ${reason}`,
       ciclistaId,
@@ -205,7 +153,7 @@ export class AuditLogger {
 
   static async logCiclistaRestored(ciclistaId: string, ciclistaName: string) {
     await this.log(
-      'CICLISTA_RESTORED',
+      'Ciclista Restaurado',
       'ciclista',
       `Ciclista "${ciclistaName}" foi restaurado`,
       ciclistaId,
@@ -215,7 +163,7 @@ export class AuditLogger {
 
   static async logPaymentReceived(invoiceId: string, ciclistaName: string, amount: number, method: string) {
     await this.log(
-      'PAYMENT_RECEIVED',
+      'Pagamento Recebido',
       'invoice',
       `Pagamento de R$ ${amount.toFixed(2)} recebido via ${method} para "${ciclistaName}"`,
       invoiceId,
@@ -225,7 +173,7 @@ export class AuditLogger {
 
   static async logPaymentRefunded(invoiceId: string, ciclistaName: string, amount: number, reason: string) {
     await this.log(
-      'PAYMENT_REFUNDED',
+      'Pagamento Reembolsado',
       'invoice',
       `Reembolso de R$ ${amount.toFixed(2)} para "${ciclistaName}". Motivo: ${reason}`,
       invoiceId,
@@ -235,7 +183,7 @@ export class AuditLogger {
 
   static async logPhotoUploaded(ciclistaId: string, ciclistaName: string) {
     await this.log(
-      'PHOTO_UPLOADED',
+      'Foto Carregada',
       'ciclista',
       `Foto de perfil foi carregada para "${ciclistaName}"`,
       ciclistaId,
@@ -245,7 +193,7 @@ export class AuditLogger {
 
   static async logPhotoDeleted(ciclistaId: string, ciclistaName: string) {
     await this.log(
-      'PHOTO_DELETED',
+      'Foto Removida',
       'ciclista',
       `Foto de perfil foi removida de "${ciclistaName}"`,
       ciclistaId,
@@ -255,7 +203,7 @@ export class AuditLogger {
 
   static async logProfileUpdated(userId: string, userName: string, changes?: any) {
     await this.log(
-      'PROFILE_UPDATED',
+      'Perfil Atualizado',
       'user',
       `Perfil do usuário "${userName}" foi atualizado`,
       userId,
@@ -266,7 +214,7 @@ export class AuditLogger {
 
   static async logProfilePhotoUploaded(userId: string, userName: string) {
     await this.log(
-      'PROFILE_PHOTO_UPLOADED',
+      'Foto Carregada',
       'user',
       `Foto de perfil foi carregada para o usuário "${userName}"`,
       userId,
@@ -276,7 +224,7 @@ export class AuditLogger {
 
   static async logProfilePhotoUpdated(userId: string, userName: string) {
     await this.log(
-      'PROFILE_PHOTO_UPDATED',
+      'Perfil Atualizado',
       'user',
       `Foto de perfil foi atualizada para o usuário "${userName}"`,
       userId,
@@ -286,7 +234,7 @@ export class AuditLogger {
 
   static async logProfilePhotoRemoved(userId: string, userName: string) {
     await this.log(
-      'PROFILE_PHOTO_REMOVED',
+      'Foto Removida',
       'user',
       `Foto de perfil foi removida do usuário "${userName}"`,
       userId,
@@ -296,7 +244,7 @@ export class AuditLogger {
 
   static async logInvoiceCreated(invoiceId: string, ciclistaName: string, amount: number) {
     await this.log(
-      'INVOICE_CREATED',
+      'Fatura Criada',
       'invoice',
       `Fatura ${invoiceId.toUpperCase()} criada para "${ciclistaName}" - R$ ${amount.toFixed(2)}`,
       invoiceId,
@@ -307,7 +255,7 @@ export class AuditLogger {
   static async logInvoiceUpdated(invoiceId: string, ciclistaName: string, changes?: any, details?: string) {
     const changeText = details || (changes ? JSON.stringify(changes) : 'Fatura atualizada');
     await this.log(
-      'INVOICE_UPDATED',
+      'Fatura Atualizada',
       'invoice',
       `Fatura ${invoiceId.toUpperCase()} para "${ciclistaName}" - ${changeText}`,
       invoiceId,
@@ -319,7 +267,7 @@ export class AuditLogger {
   static async logInvoiceDeleted(invoiceId: string, ciclistaName: string, reason?: string) {
     const reasonText = reason ? ` - Motivo: ${reason}` : '';
     await this.log(
-      'INVOICE_DELETED',
+      'Fatura Excluída',
       'invoice',
       `Fatura ${invoiceId.toUpperCase()} para "${ciclistaName}" foi excluída${reasonText}`,
       invoiceId,
@@ -329,7 +277,7 @@ export class AuditLogger {
 
   static async logUserLogin(userEmail: string) {
     await this.log(
-      'USER_LOGIN',
+      'Usuário Logado',
       'user',
       `Usuário "${userEmail}" fez login no sistema`,
       undefined,
@@ -339,7 +287,7 @@ export class AuditLogger {
 
   static async logUserLogout(userEmail: string) {
     await this.log(
-      'USER_LOGOUT',
+      'Usuário Deslogado',
       'user',
       `Usuário "${userEmail}" fez logout do sistema`,
       undefined,
@@ -349,7 +297,7 @@ export class AuditLogger {
 
   static async logSystemAction(action: string, details: string) {
     await this.log(
-      'SYSTEM_ACTION',
+      'Ação do Sistema',
       'system',
       details,
       undefined,
