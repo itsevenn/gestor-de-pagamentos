@@ -16,7 +16,7 @@ import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ActivityHistory } from '@/components/activity-history';
+import { InvoiceChangesHistory } from '@/components/invoice-changes-history';
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -226,7 +226,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <ActivityHistory invoiceId={invoice.id} />
+                    <InvoiceChangesHistory invoiceId={invoice.id} />
                   </CardContent>
                 </Card>
               </TabsContent>
