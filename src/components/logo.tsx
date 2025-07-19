@@ -13,11 +13,28 @@ export function Logo() {
   const [clubName, setClubName] = useState(DEFAULT_CLUB_NAME);
 
   useEffect(() => {
-    const storedClubLogo = localStorage.getItem(CLUB_LOGO_STORAGE_KEY);
-    const storedClubName = localStorage.getItem(CLUB_NAME_STORAGE_KEY);
-    
-    setLogoUrl(storedClubLogo);
-    setClubName(storedClubName || DEFAULT_CLUB_NAME);
+    const loadData = () => {
+      const storedClubLogo = localStorage.getItem(CLUB_LOGO_STORAGE_KEY);
+      const storedClubName = localStorage.getItem(CLUB_NAME_STORAGE_KEY);
+      
+      setLogoUrl(storedClubLogo);
+      setClubName(storedClubName || DEFAULT_CLUB_NAME);
+    };
+
+    // Carregar dados iniciais
+    loadData();
+
+    // Escutar mudanças no localStorage
+    const handleStorageChange = () => {
+      loadData();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('storage', handleStorageChange); // Para mudanças locais
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
 
@@ -35,7 +52,7 @@ export function Logo() {
     <div className="flex flex-col items-center gap-6 p-6">
       {/* Título Principal com Destaque Absoluto */}
       <div className="text-center space-y-2 w-full">
-        <h1 className="text-3xl font-black text-sidebar-foreground tracking-widest bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 bg-clip-text text-transparent drop-shadow-xl animate-pulse">
+        <h1 className="text-4xl font-black text-sidebar-foreground tracking-widest bg-gradient-to-r from-blue-100 via-blue-300 to-blue-500 bg-clip-text text-transparent drop-shadow-2xl">
           GESTOR DO CICLISTA
         </h1>
       </div>
