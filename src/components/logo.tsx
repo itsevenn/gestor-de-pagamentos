@@ -33,9 +33,9 @@ export function Logo() {
 
   return (
     <div className="flex flex-col items-center gap-6 p-6">
-      {/* Título Principal com Máximo Destaque */}
+      {/* Título Principal com Destaque Absoluto */}
       <div className="text-center space-y-2 w-full">
-        <h1 className="text-2xl font-black text-sidebar-foreground tracking-wider bg-gradient-to-r from-blue-300 via-blue-500 to-blue-700 bg-clip-text text-transparent drop-shadow-lg">
+        <h1 className="text-3xl font-black text-sidebar-foreground tracking-widest bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 bg-clip-text text-transparent drop-shadow-xl animate-pulse">
           GESTOR DO CICLISTA
         </h1>
       </div>
