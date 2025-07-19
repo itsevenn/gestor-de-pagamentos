@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { ArrowLeft, Trash2, Upload, User, Calendar, MapPin, Phone, CreditCard, FileText, Users, Home, Bike, CheckCircle, UserCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Upload, User, Calendar, MapPin, Phone, CreditCard, FileText, Users, Home, Bike, CheckCircle, UserCircle, Loader2, Crop } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCiclistas } from '@/context/app-context';
 import { Separator } from '@/components/ui/separator';
@@ -31,6 +31,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
 import { uploadAvatar, validateImageFile } from '@/lib/avatar-utils';
+import { ImageCropper } from '@/components/image-cropper';
 
 const formSchema = z.object({
   photoUrl: z.any().optional(),
@@ -74,6 +75,8 @@ export default function NewCiclistaPage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [tempFile, setTempFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm();
@@ -95,17 +98,13 @@ export default function NewCiclistaPage() {
         // Validar arquivo
         validateImageFile(file);
         
-        // Criar preview
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPhotoPreview(reader.result as string);
-          setSelectedFile(file);
-        };
-        reader.readAsDataURL(file);
+        // Abrir cropper com o arquivo
+        setTempFile(file);
+        setIsCropperOpen(true);
         
         toast({
           title: 'Imagem selecionada',
-          description: 'Imagem carregada com sucesso. Clique em "Adicionar Ciclista" para fazer o upload.',
+          description: 'Agora você pode recortar a imagem antes de salvar.',
         });
       } catch (error) {
         toast({
@@ -119,6 +118,21 @@ export default function NewCiclistaPage() {
         }
       }
     }
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    // Criar preview da imagem recortada
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+      setSelectedFile(croppedFile);
+    };
+    reader.readAsDataURL(croppedFile);
+    
+    toast({
+      title: 'Imagem recortada',
+      description: 'Imagem processada com sucesso. Clique em "Adicionar Ciclista" para salvar.',
+    });
   };
 
   const handleRemovePhoto = () => {
@@ -294,7 +308,7 @@ export default function NewCiclistaPage() {
                                 ) : (
                                   <>
                                     <Upload className="mr-2 h-4 w-4" />
-                                    Carregar Foto
+                                    Carregar e Recortar Foto
                                   </>
                                 )}
                             </Button>
@@ -317,7 +331,7 @@ export default function NewCiclistaPage() {
                             />
                             {selectedFile && (
                               <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                                ✓ Nova imagem selecionada: {selectedFile.name}
+                                ✓ Imagem recortada: {selectedFile.name}
                               </p>
                             )}
                         </div>
@@ -786,6 +800,14 @@ export default function NewCiclistaPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Componente de Corte de Imagem */}
+      <ImageCropper
+        isOpen={isCropperOpen}
+        onClose={() => setIsCropperOpen(false)}
+        onCropComplete={handleCropComplete}
+        imageFile={tempFile}
+      />
     </div>
   );
 }
