@@ -83,22 +83,7 @@ export const uploadAvatar = async (file: File, ciclistaId: string): Promise<stri
     
     console.log('Nome do arquivo gerado:', fileName);
     
-    // Verificar se o bucket existe
-    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-    if (bucketsError) {
-      console.error('Erro ao listar buckets:', bucketsError);
-      throw new Error(`Erro de configuração do storage: ${bucketsError.message}`);
-    }
-    
-    const avatarsBucket = buckets?.find(bucket => bucket.name === 'avatars');
-    if (!avatarsBucket) {
-      console.error('Bucket "avatars" não encontrado');
-      throw new Error('Bucket de avatares não está configurado. Entre em contato com o administrador.');
-    }
-    
-    console.log('Bucket "avatars" encontrado, iniciando upload...');
-    
-    // Upload para o bucket 'avatars' no Supabase Storage
+    // Upload direto para o bucket 'avatars' no Supabase Storage
     const { data, error } = await supabase.storage
       .from('avatars')
       .upload(fileName, file, {
