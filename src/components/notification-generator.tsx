@@ -1,10 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  generatePersonalizedNotification,
-  type GeneratePersonalizedNotificationInput,
-} from '@/ai/flows/generate-personalized-notifications';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -32,23 +28,148 @@ export function NotificationGenerator({ invoice }: NotificationGeneratorProps) {
   const [notification, setNotification] = useState('');
   const { toast } = useToast();
 
+  const generateLocalNotification = (invoice: Invoice, client?: Ciclista) => {
+    const clientName = client?.nomeCiclista || 'Ciclista';
+    const amount = Number(invoice.currentAmount).toFixed(2);
+    const dueDate = new Date(invoice.dueDate).toLocaleDateString('pt-BR');
+    const today = new Date();
+    const dueDateObj = new Date(invoice.dueDate);
+    const daysOverdue = Math.floor((today.getTime() - dueDateObj.getTime()) / (1000 * 60 * 60 * 24));
+
+    let message = '';
+
+    switch (invoice.status) {
+      case 'overdue':
+        message = `Olá ${clientName}! 👋
+
+Espero que esteja bem! Gostaria de lembrar que sua fatura está em atraso há ${daysOverdue} dia(s).
+
+📋 Detalhes da Fatura:
+• Valor: R$ ${amount}
+• Data de Vencimento: ${dueDate}
+• Status: Atrasada
+
+⏰ Por favor, regularize seu pagamento o quanto antes para evitar possíveis taxas de atraso.
+
+💳 Formas de Pagamento:
+• PIX
+• Boleto Bancário
+• Transferência Bancária
+• Cartão de Crédito
+
+Se tiver alguma dúvida ou dificuldade, não hesite em entrar em contato conosco. Estamos aqui para ajudar!
+
+Agradecemos sua atenção e aguardamos o pagamento.
+
+Atenciosamente,
+Equipe de Gestão de Pagamentos`;
+
+        break;
+
+      case 'paid':
+        message = `Olá ${clientName}! 👋
+
+Excelente notícia! Recebemos seu pagamento com sucesso! 🎉
+
+📋 Confirmação de Pagamento:
+• Valor Pago: R$ ${amount}
+• Data de Pagamento: ${invoice.paymentDate ? new Date(invoice.paymentDate).toLocaleDateString('pt-BR') : 'Hoje'}
+• Método: ${invoice.paymentMethod || 'Não informado'}
+
+✅ Sua fatura foi marcada como PAGA e está em dia.
+
+Obrigado por manter seu pagamento em dia! Sua pontualidade é muito importante para nós.
+
+Continue assim! 🚀
+
+Atenciosamente,
+Equipe de Gestão de Pagamentos`;
+
+        break;
+
+      case 'pending':
+        message = `Olá ${clientName}! 👋
+
+Gostaria de lembrar sobre sua fatura pendente.
+
+📋 Detalhes da Fatura:
+• Valor: R$ ${amount}
+• Data de Vencimento: ${dueDate}
+• Status: Pendente
+
+⏰ A data de vencimento está se aproximando. Para evitar atrasos, recomendamos realizar o pagamento antes do vencimento.
+
+💳 Formas de Pagamento Disponíveis:
+• PIX (mais rápido)
+• Boleto Bancário
+• Transferência Bancária
+• Cartão de Crédito
+
+Se tiver alguma dúvida sobre o pagamento, estamos à disposição para ajudar!
+
+Agradecemos sua atenção.
+
+Atenciosamente,
+Equipe de Gestão de Pagamentos`;
+
+        break;
+
+      case 'refunded':
+        message = `Olá ${clientName}! 👋
+
+Informamos que sua fatura foi reembolsada conforme solicitado.
+
+📋 Detalhes do Reembolso:
+• Valor Reembolsado: R$ ${amount}
+• Status: Reembolsado
+
+✅ O processo de reembolso foi concluído com sucesso.
+
+Se você ainda não recebeu o valor, pode levar alguns dias úteis dependendo do método de pagamento original.
+
+Em caso de dúvidas sobre o reembolso, entre em contato conosco.
+
+Agradecemos sua compreensão.
+
+Atenciosamente,
+Equipe de Gestão de Pagamentos`;
+
+        break;
+
+      default:
+        message = `Olá ${clientName}! 👋
+
+Gostaria de informar sobre sua fatura.
+
+📋 Detalhes da Fatura:
+• Valor: R$ ${amount}
+• Data de Vencimento: ${dueDate}
+• Status: ${invoice.status}
+
+Para mais informações, entre em contato conosco.
+
+Atenciosamente,
+Equipe de Gestão de Pagamentos`;
+    }
+
+    return message;
+  };
+
   const handleGenerate = async () => {
     setLoading(true);
     setNotification('');
 
-    const input: GeneratePersonalizedNotificationInput = {
-      clientName: client?.nomeCiclista || 'Ciclista Desconhecido',
-      paymentHistory: invoice.paymentHistory || 'Nenhum histórico anterior.',
-      originalAmount: Number(invoice.originalAmount),
-      currentAmount: Number(invoice.currentAmount),
-      dueDate: invoice.dueDate,
-      paymentMethod: invoice.paymentMethod,
-      status: invoice.status,
-    };
-
     try {
-      const result = await generatePersonalizedNotification(input);
-      setNotification(result.notificationMessage);
+      // Simular um pequeno delay para mostrar o loading
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const message = generateLocalNotification(invoice, client);
+      setNotification(message);
+      
+      toast({
+        title: 'Notificação Gerada!',
+        description: 'A mensagem foi criada com sucesso.',
+      });
     } catch (error) {
       console.error(error);
       toast({
@@ -76,7 +197,7 @@ export function NotificationGenerator({ invoice }: NotificationGeneratorProps) {
       <CardHeader>
         <CardTitle>Gerador de Notificações Inteligentes</CardTitle>
         <CardDescription>
-          Use IA para gerar lembretes e notificações personalizadas para esta fatura.
+          Gere lembretes e notificações personalizadas para esta fatura baseadas no status atual.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
