@@ -36,7 +36,7 @@ export default function SettingsPage() {
     const storedClubName = localStorage.getItem('app-club-name');
     if (storedClubName) setClubName(storedClubName);
     
-    const storedClubLogo = localStorage.getItem('app-club-logo');
+    const storedClubLogo = localStorage.getItem('app-logo');
     if (storedClubLogo) setClubLogo(storedClubLogo);
   }, []);
 
@@ -52,34 +52,63 @@ export default function SettingsPage() {
   };
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🔍 handleLogoUpload chamada');
     const file = event.target.files?.[0];
-    if (!file) return;
+    console.log('🔍 Arquivo selecionado:', file);
+    
+    if (!file) {
+      console.log('❌ Nenhum arquivo selecionado');
+      return;
+    }
+
+    console.log('🔍 Tipo do arquivo:', file.type);
+    console.log('🔍 Tamanho do arquivo:', file.size);
 
     // Verificar se é uma imagem
     if (!file.type.startsWith('image/')) {
+      console.log('❌ Arquivo não é uma imagem');
       alert('Por favor, selecione apenas arquivos de imagem.');
       return;
     }
 
     // Verificar tamanho (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
+      console.log('❌ Arquivo muito grande');
       alert('A imagem deve ter no máximo 5MB.');
       return;
     }
 
+    console.log('✅ Arquivo válido, iniciando upload...');
     setIsUploading(true);
+    
     try {
       // Converter para base64 para armazenamento local
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
+        console.log('✅ Arquivo convertido para base64');
         setClubLogo(result);
-        localStorage.setItem('app-club-logo', result);
+        localStorage.setItem('app-logo', result);
         setIsUploading(false);
+        
+        // Disparar evento para atualizar a sidebar
+        window.dispatchEvent(new Event('localStorageChange'));
+        
+        // Limpar o input para permitir carregar o mesmo arquivo novamente
+        event.target.value = '';
+        
+        // Mostrar mensagem de sucesso
+        console.log('✅ Logo carregado com sucesso!');
+        alert('Logo carregado com sucesso! A logo aparecerá na barra lateral.');
+      };
+      reader.onerror = () => {
+        console.log('❌ Erro ao ler arquivo');
+        setIsUploading(false);
+        alert('Erro ao ler o arquivo. Tente novamente.');
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('Erro ao fazer upload do logo:', error);
+      console.error('❌ Erro ao fazer upload do logo:', error);
       setIsUploading(false);
       alert('Erro ao fazer upload do logo. Tente novamente.');
     }
@@ -87,7 +116,10 @@ export default function SettingsPage() {
 
   const handleRemoveLogo = () => {
     setClubLogo(null);
-    localStorage.removeItem('app-club-logo');
+    localStorage.removeItem('app-logo');
+    
+    // Disparar evento para atualizar a sidebar
+    window.dispatchEvent(new Event('localStorageChange'));
   };
 
   if (!mounted) {
@@ -395,32 +427,35 @@ export default function SettingsPage() {
 
                     {user?.role === 'admin' && (
                       <div className="flex flex-wrap gap-2">
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoUpload}
-                            className="hidden"
-                            disabled={isUploading}
-                          />
-                          <Button
-                            variant="outline"
-                            className="flex items-center gap-2"
-                            disabled={isUploading}
-                          >
-                            {isUploading ? (
-                              <>
-                                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-                                Carregando...
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="w-4 h-4" />
-                                {clubLogo ? 'Alterar Logo' : 'Carregar Logo'}
-                              </>
-                            )}
-                          </Button>
-                        </label>
+                                                <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                          disabled={isUploading}
+                          id="logo-upload-input"
+                        />
+                        <Button
+                          variant="outline"
+                          className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-300 text-blue-700 hover:text-blue-800"
+                          disabled={isUploading}
+                          onClick={() => {
+                            console.log('🔍 Botão Carregar Logo clicado');
+                            document.getElementById('logo-upload-input')?.click();
+                          }}
+                        >
+                          {isUploading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                              Carregando...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-4 h-4" />
+                              {clubLogo ? 'Alterar Logo' : 'Carregar Logo'}
+                            </>
+                          )}
+                        </Button>
 
                         {clubLogo && (
                           <Button

@@ -16,12 +16,13 @@ export function CiclistaProfilePDF({ ciclista }: { ciclista: Ciclista }) {
 
   return (
     <div className="bg-white text-gray-900 p-8 font-sans">
-      <header className="flex items-center justify-between mb-8 border-b-4 border-blue-700 pb-4">
-        <div>
-            <h1 className="text-4xl font-bold text-blue-800">{ciclista.nomeCiclista}</h1>
-            <p className="text-md text-gray-600">Perfil do Ciclista</p>
+      <header className="flex flex-col items-center mb-8 border-b-4 border-blue-700 pb-4">
+        <div className="text-center mb-4">
+          <h2 className="text-3xl font-bold text-blue-600 mb-4 uppercase tracking-wider bg-blue-50 px-6 py-3 rounded-lg shadow-sm">GESTOR DO CICLISTA</h2>
+          <h1 className="text-4xl font-bold text-blue-800">{ciclista.nomeCiclista}</h1>
+          <p className="text-md text-gray-600">Perfil do Ciclista</p>
         </div>
-         <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-700">
+        <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-700">
           {ciclistaAvatarUrl ? (
             <Image
               src={ciclistaAvatarUrl}

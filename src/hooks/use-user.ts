@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useCallback, useContext } from 'react';
-import { AuthContext } from '@/context/auth-context';
+import { useCallback } from 'react';
+import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { AuditLogger } from '@/lib/audit-logger';
 
 export function useUser() {
-  const { user: authUser, setUser } = useContext(AuthContext);
+  const { user: authUser, setUser } = useAuth();
   const { toast } = useToast();
 
   const updateUser = useCallback(async (newDetails: { name: string; email: string }) => {
