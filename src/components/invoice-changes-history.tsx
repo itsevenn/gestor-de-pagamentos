@@ -158,6 +158,22 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
   const renderChanges = (changes: AuditLogEntry['changes']) => {
     if (!changes || changes.length === 0) return null;
     
+    // Se changes for uma string JSON, tentar fazer parse
+    let parsedChanges = changes;
+    if (typeof changes === 'string') {
+      try {
+        parsedChanges = JSON.parse(changes);
+      } catch (error) {
+        console.warn('Erro ao fazer parse das mudanças:', error);
+        return null;
+      }
+    }
+    
+    // Garantir que é um array
+    if (!Array.isArray(parsedChanges)) {
+      return null;
+    }
+    
     // Função para formatar valores
     const formatValue = (value: any, field: string) => {
       if (value === null || value === undefined || value === '') return 'N/A';
@@ -206,7 +222,7 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
         <div className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
           Alterações:
         </div>
-        {changes.map((change, index) => (
+        {parsedChanges.map((change, index) => (
           <div key={index} className="text-xs bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between">
               <span className="font-medium text-slate-700 dark:text-slate-300">
@@ -310,7 +326,13 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
                       </span>
                     </div>
                                          <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
-                       {activity.details || `${activity.action} da fatura ${invoiceId}`}
+                       {activity.action === 'Fatura Criada' && `Fatura criada com sucesso`}
+                       {activity.action === 'Fatura Atualizada' && `Fatura atualizada`}
+                       {activity.action === 'Fatura Excluída' && `Fatura excluída`}
+                       {activity.action === 'Pagamento Recebido' && `Pagamento recebido`}
+                       {activity.action === 'Pagamento Reembolsado' && `Pagamento reembolsado`}
+                       {!['Fatura Criada', 'Fatura Atualizada', 'Fatura Excluída', 'Pagamento Recebido', 'Pagamento Reembolsado'].includes(activity.action) && 
+                         (activity.details || `${activity.action} da fatura`)}
                      </p>
                     <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                       <User className="w-3 h-3" />
