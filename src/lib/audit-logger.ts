@@ -99,6 +99,26 @@ export class AuditLogger {
 
       console.log('📝 AuditLogger: Dados do log:', logData);
 
+      // Primeiro, verificar se a tabela existe
+      console.log('🔍 AuditLogger: Verificando se a tabela existe...');
+      const { data: checkData, error: checkError } = await supabase
+        .from('audit_logs')
+        .select('count')
+        .limit(1);
+
+      if (checkError) {
+        console.error('❌ AuditLogger: Tabela audit_logs não existe ou não está acessível:', checkError);
+        console.error('Detalhes do erro:', {
+          message: checkError.message,
+          details: checkError.details,
+          hint: checkError.hint,
+          code: checkError.code
+        });
+        return;
+      }
+
+      console.log('✅ AuditLogger: Tabela audit_logs existe, tentando inserção...');
+
       const { data, error } = await supabase
         .from('audit_logs')
         .insert([logData])
@@ -107,9 +127,17 @@ export class AuditLogger {
       if (error) {
         console.error('❌ Erro ao inserir log de auditoria:', error);
         console.error('Dados que falharam:', logData);
+        console.error('Detalhes completos do erro:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: error
+        });
         
-        // Tentar inserir sem alguns campos opcionais
-        const fallbackData = {
+        // Tentar inserção mínima
+        console.log('🔄 AuditLogger: Tentando inserção mínima...');
+        const minimalData = {
           timestamp: logData.timestamp,
           userId: logData.userId,
           userName: logData.userName,
@@ -120,10 +148,16 @@ export class AuditLogger {
         
         const { error: fallbackError } = await supabase
           .from('audit_logs')
-          .insert([fallbackData]);
+          .insert([minimalData]);
         
         if (fallbackError) {
           console.error('❌ Erro também no fallback:', fallbackError);
+          console.error('Detalhes do erro de fallback:', {
+            message: fallbackError.message,
+            details: fallbackError.details,
+            hint: fallbackError.hint,
+            code: fallbackError.code
+          });
         } else {
           console.log('✅ Log inserido com fallback');
         }
@@ -132,6 +166,7 @@ export class AuditLogger {
       }
     } catch (error) {
       console.error('❌ Erro geral ao registrar log de auditoria:', error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     }
   }
 
