@@ -137,7 +137,8 @@ export class AuditLogger {
         date: new Date().toISOString(),
         user: profile?.email || user?.email || 'Admin',
         action: action,
-        details: details
+        details: details,
+        changes: changes ? JSON.stringify(changes) : null
       };
 
       console.log('📝 AuditLogger: Dados do log:', logData);
