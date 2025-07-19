@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useInvoices, useCiclistas, useAuditLogs } from '@/context/app-context';
 import Link from 'next/link';
 import { ArrowLeft, UserX, User, Calendar, MapPin, Phone, CreditCard, FileText, Users, Home, Bike, Activity, Clock, Receipt, CheckCircle, UserCircle } from 'lucide-react';
-import { ActivityHistory } from '@/components/activity-history';
+import { CiclistaChangesHistory } from '@/components/ciclista-changes-history';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { use, useEffect, useState } from 'react';
@@ -373,7 +373,22 @@ export default function CiclistaDetailPage({ params }: { params: Promise<{ id: s
 
           {/* Conteúdo do Histórico */}
           <TabsContent value="historico" className="space-y-6">
-            <ActivityHistory ciclistaId={ciclista.id} showFilters={false} />
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
+              <CardHeader className="pb-4 bg-gradient-to-r from-slate-50 to-gray-100 dark:from-slate-700 dark:to-slate-600">
+                <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+                    <Clock className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                  </div>
+                  Histórico de Atividades do Ciclista
+                </CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-400">
+                  Todas as modificações realizadas no perfil
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <CiclistaChangesHistory ciclistaId={ciclista.id} />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Conteúdo das Ações */}
