@@ -44,6 +44,7 @@ const formSchema = z.object({
   status: z.enum(['pending', 'paid', 'overdue', 'refunded']),
   paymentMethod: z.string().optional(),
   issueDate: z.string().min(1, 'Data de emissão é obrigatória'),
+  changeReason: z.string().optional(),
 });
 
 export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
@@ -64,6 +65,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
       status: 'pending',
       paymentMethod: '',
       issueDate: '',
+      changeReason: '',
     },
   });
 
@@ -84,11 +86,44 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!invoice) return;
 
+    // Detectar mudanças
+    const changes = [];
+    if (Number(values.originalAmount) !== invoice.originalAmount) {
+      changes.push({
+        field: 'originalAmount',
+        oldValue: invoice.originalAmount,
+        newValue: Number(values.originalAmount)
+      });
+    }
+    if (Number(values.currentAmount) !== invoice.currentAmount) {
+      changes.push({
+        field: 'currentAmount',
+        oldValue: invoice.currentAmount,
+        newValue: Number(values.currentAmount)
+      });
+    }
+    if (values.status !== invoice.status) {
+      changes.push({
+        field: 'status',
+        oldValue: invoice.status,
+        newValue: values.status
+      });
+    }
+    if (values.dueDate !== invoice.dueDate) {
+      changes.push({
+        field: 'dueDate',
+        oldValue: invoice.dueDate,
+        newValue: values.dueDate
+      });
+    }
+
     updateInvoice({
       id: invoice.id,
       ...values,
       originalAmount: Number(values.originalAmount),
       currentAmount: Number(values.currentAmount),
+      changeReason: values.changeReason,
+      changes: changes.length > 0 ? changes : undefined
     });
 
     toast({
@@ -333,6 +368,28 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                     )}
                   />
                 </div>
+
+                {/* Motivo da Alteração */}
+                <FormField
+                  control={form.control}
+                  name="changeReason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                        <CreditCard className="h-4 w-4 text-orange-500" />
+                        Motivo da Alteração
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Ajuste de valor, correção de erro, desconto aplicado..."
+                          className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Separator className="bg-slate-200 dark:bg-slate-600" />
 

@@ -98,7 +98,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const updateCiclista = async (updatedCiclista: Ciclista) => {
+    const updateCiclista = async (updatedCiclista: Ciclista & { changeReason?: string, changes?: any[] }) => {
         setLoading(true);
         try {
             const originalCiclista = ciclistas.find(c => c.id === updatedCiclista.id);
@@ -109,8 +109,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             
             // Detectar mudanças e registrar no sistema de auditoria
             if (originalCiclista) {
-                const changes = detectChanges(originalCiclista, updatedCiclista);
-                await AuditLogger.logCiclistaUpdated(updatedCiclista.id, updatedCiclista.nomeCiclista, changes);
+                const changes = updatedCiclista.changes || detectChanges(originalCiclista, updatedCiclista);
+                const reason = updatedCiclista.changeReason ? ` - Motivo: ${updatedCiclista.changeReason}` : '';
+                const details = `Dados do ciclista "${updatedCiclista.nomeCiclista}" foram atualizados${reason}`;
+                await AuditLogger.logCiclistaUpdated(updatedCiclista.id, updatedCiclista.nomeCiclista, changes, details);
             }
             
             // Atualizar logs locais
@@ -197,7 +199,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const updateInvoice = async (updatedInvoice: Invoice, auditDetails?: string) => {
+    const updateInvoice = async (updatedInvoice: Invoice & { changeReason?: string, changes?: any[] }, auditDetails?: string) => {
         setLoading(true);
         try {
             const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
@@ -212,8 +214,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             
             // Detectar mudanças e registrar no sistema de auditoria
             if (originalInvoice) {
-                const changes = detectChanges(originalInvoice, updatedInvoice);
-                await AuditLogger.logInvoiceUpdated(updatedInvoice.id, ciclistaName, changes, auditDetails);
+                const changes = updatedInvoice.changes || detectChanges(originalInvoice, updatedInvoice);
+                const reason = updatedInvoice.changeReason ? ` - Motivo: ${updatedInvoice.changeReason}` : '';
+                const details = auditDetails ? `${auditDetails}${reason}` : `Fatura atualizada${reason}`;
+                await AuditLogger.logInvoiceUpdated(updatedInvoice.id, ciclistaName, changes, details);
             }
             
             // Atualizar logs locais

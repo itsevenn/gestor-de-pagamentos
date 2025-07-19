@@ -486,24 +486,113 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
     console.log('✅ getCiclistaAuditLogs: Logs filtrados:', filteredData.length);
     
     // Converter dados para o formato esperado
-    const convertedData = filteredData.map(log => ({
-      id: log.id,
-      timestamp: log.date,
-      userId: log.user || 'system',
-      userName: log.user || 'Sistema',
-      action: log.action as AuditAction,
-      entityType: 'ciclista' as const,
-      entityId: ciclistaId,
-      entityName: log.details?.split('"')[1] || 'Ciclista',
-      details: log.details,
-      changes: null,
-      ipAddress: 'N/A',
-      userAgent: 'N/A'
-    }));
+    const convertedData = filteredData.map(log => {
+      // Tentar fazer parse das mudanças se existirem
+      let parsedChanges = null;
+      if (log.changes) {
+        try {
+          parsedChanges = JSON.parse(log.changes);
+        } catch (error) {
+          console.warn('Erro ao fazer parse das mudanças:', error);
+        }
+      }
+      
+      return {
+        id: log.id,
+        timestamp: log.date,
+        userId: log.user || 'system',
+        userName: log.user || 'Sistema',
+        action: log.action as AuditAction,
+        entityType: 'ciclista' as const,
+        entityId: ciclistaId,
+        entityName: log.details?.split('"')[1] || 'Ciclista',
+        details: log.details,
+        changes: parsedChanges,
+        ipAddress: 'N/A',
+        userAgent: 'N/A'
+      };
+    });
     
     return convertedData;
   } catch (error) {
     console.error('❌ Erro ao buscar logs do ciclista:', error);
+    return [];
+  }
+}
+
+// Função para obter logs de uma fatura específica
+export async function getInvoiceAuditLogs(invoiceId: string): Promise<AuditLogEntry[]> {
+  try {
+    console.log('🔍 getInvoiceAuditLogs: Buscando logs para fatura:', invoiceId);
+    
+    // Buscar todos os logs relacionados a faturas
+    const { data, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .or('action.eq.Fatura Criada,action.eq.Fatura Atualizada,action.eq.Fatura Excluída,action.eq.Pagamento Recebido,action.eq.Pagamento Reembolsado')
+      .order('date', { ascending: false })
+      .limit(100); // Limitar para performance
+    
+    if (error) {
+      console.error('❌ Erro ao buscar logs da fatura:', error);
+      return [];
+    }
+    
+    console.log('✅ getInvoiceAuditLogs: Logs encontrados:', data?.length || 0);
+    
+    // Filtrar logs que sejam realmente relacionados à fatura específica
+    const filteredData = (data || []).filter(log => {
+      // Verificar se o log contém o ID da fatura nos detalhes
+      if (log.details && log.details.includes(invoiceId)) {
+        return true;
+      }
+      
+      // Verificar se é uma ação relacionada a faturas
+      if (log.action && log.action.includes('Fatura')) {
+        return true;
+      }
+      
+      // Verificar se é uma ação relacionada a pagamentos
+      if (log.action && (log.action.includes('Pagamento'))) {
+        return true;
+      }
+      
+      return false;
+    });
+    
+    console.log('✅ getInvoiceAuditLogs: Logs filtrados:', filteredData.length);
+    
+    // Converter dados para o formato esperado
+    const convertedData = filteredData.map(log => {
+      // Tentar fazer parse das mudanças se existirem
+      let parsedChanges = null;
+      if (log.changes) {
+        try {
+          parsedChanges = JSON.parse(log.changes);
+        } catch (error) {
+          console.warn('Erro ao fazer parse das mudanças:', error);
+        }
+      }
+      
+      return {
+        id: log.id,
+        timestamp: log.date,
+        userId: log.user || 'system',
+        userName: log.user || 'Sistema',
+        action: log.action as AuditAction,
+        entityType: 'invoice' as const,
+        entityId: invoiceId,
+        entityName: log.details?.split('"')[1] || 'Fatura',
+        details: log.details,
+        changes: parsedChanges,
+        ipAddress: 'N/A',
+        userAgent: 'N/A'
+      };
+    });
+    
+    return convertedData;
+  } catch (error) {
+    console.error('❌ Erro ao buscar logs da fatura:', error);
     return [];
   }
 }
@@ -527,20 +616,32 @@ export async function getUserAuditLogs(userId: string): Promise<AuditLogEntry[]>
     console.log('✅ getUserAuditLogs: Logs encontrados:', data?.length || 0);
     
     // Converter dados para o formato esperado
-    const convertedData = (data || []).map(log => ({
-      id: log.id,
-      timestamp: log.date,
-      userId: log.user || 'system',
-      userName: log.user || 'Sistema',
-      action: log.action as AuditAction,
-      entityType: 'user' as const,
-      entityId: userId,
-      entityName: log.user || 'Usuário',
-      details: log.details,
-      changes: null,
-      ipAddress: 'N/A',
-      userAgent: 'N/A'
-    }));
+    const convertedData = (data || []).map(log => {
+      // Tentar fazer parse das mudanças se existirem
+      let parsedChanges = null;
+      if (log.changes) {
+        try {
+          parsedChanges = JSON.parse(log.changes);
+        } catch (error) {
+          console.warn('Erro ao fazer parse das mudanças:', error);
+        }
+      }
+      
+      return {
+        id: log.id,
+        timestamp: log.date,
+        userId: log.user || 'system',
+        userName: log.user || 'Sistema',
+        action: log.action as AuditAction,
+        entityType: 'user' as const,
+        entityId: userId,
+        entityName: log.user || 'Usuário',
+        details: log.details,
+        changes: parsedChanges,
+        ipAddress: 'N/A',
+        userAgent: 'N/A'
+      };
+    });
     
     return convertedData;
   } catch (error) {
@@ -568,20 +669,32 @@ export async function getAllAuditLogs(limit: number = 50, offset: number = 0): P
     console.log('✅ getAllAuditLogs: Logs encontrados:', data?.length || 0);
     
     // Converter dados para o formato esperado
-    const convertedData = (data || []).map(log => ({
-      id: log.id,
-      timestamp: log.date,
-      userId: log.user || 'system',
-      userName: log.user || 'Sistema',
-      action: log.action as AuditAction,
-      entityType: getEntityTypeFromAction(log.action),
-      entityId: null,
-      entityName: getEntityNameFromDetails(log.details),
-      details: log.details,
-      changes: null,
-      ipAddress: 'N/A',
-      userAgent: 'N/A'
-    }));
+    const convertedData = (data || []).map(log => {
+      // Tentar fazer parse das mudanças se existirem
+      let parsedChanges = null;
+      if (log.changes) {
+        try {
+          parsedChanges = JSON.parse(log.changes);
+        } catch (error) {
+          console.warn('Erro ao fazer parse das mudanças:', error);
+        }
+      }
+      
+      return {
+        id: log.id,
+        timestamp: log.date,
+        userId: log.user || 'system',
+        userName: log.user || 'Sistema',
+        action: log.action as AuditAction,
+        entityType: getEntityTypeFromAction(log.action),
+        entityId: null,
+        entityName: getEntityNameFromDetails(log.details),
+        details: log.details,
+        changes: parsedChanges,
+        ipAddress: 'N/A',
+        userAgent: 'N/A'
+      };
+    });
     
     return convertedData;
   } catch (error) {

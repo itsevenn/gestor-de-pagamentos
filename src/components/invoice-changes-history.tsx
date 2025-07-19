@@ -81,8 +81,7 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
         const params = new URLSearchParams();
         
         // Filtrar apenas atividades relacionadas a faturas
-        params.append('entityType', 'invoice');
-        params.append('entityId', invoiceId);
+        params.append('invoiceId', invoiceId);
         params.append('limit', limit.toString());
         
         url += `?${params.toString()}`;
