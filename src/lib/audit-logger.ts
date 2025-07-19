@@ -1,4 +1,18 @@
-import { supabase } from './supabaseClient';
+import { createClient } from '@supabase/supabase-js';
+
+// Função para gerar UUID compatível com browser
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export type AuditAction = 
   | 'Ciclista Criado'
@@ -119,7 +133,7 @@ export class AuditLogger {
       
       // 4. Usar apenas os campos que existem na tabela audit_logs
       const logData = {
-        id: crypto.randomUUID(), // Gerar UUID automaticamente
+        id: generateUUID(), // Gerar UUID automaticamente
         date: new Date().toISOString(),
         user: profile?.email || user?.email || 'Admin',
         action: action,
@@ -148,7 +162,7 @@ export class AuditLogger {
         // 6. Tentar inserção com dados mínimos
         console.log('🔄 AuditLogger: Tentando inserção mínima...');
         const minimalData = {
-          id: crypto.randomUUID(), // Gerar UUID automaticamente
+          id: generateUUID(), // Gerar UUID automaticamente
           date: new Date().toISOString(),
           action: action,
           details: details
@@ -173,7 +187,7 @@ export class AuditLogger {
           const { error: dateOnlyError } = await supabase
             .from('audit_logs')
             .insert([{ 
-              id: crypto.randomUUID(), // Gerar UUID automaticamente
+              id: generateUUID(), // Gerar UUID automaticamente
               date: new Date().toISOString() 
             }]);
           
