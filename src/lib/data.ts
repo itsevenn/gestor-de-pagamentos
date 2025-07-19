@@ -186,17 +186,28 @@ export const updateInvoiceDb = async (invoice: Invoice) => {
 
 // AuditLog Functions
 export const getAuditLogs = async (): Promise<AuditLog[]> => {
-    const result = await supabase.from('audit_logs').select('*').order('date', { ascending: false });
-    return result.data as AuditLog[];
+    try {
+        const result = await supabase.from('audit_logs').select('*').order('date', { ascending: false });
+        if (result.error) {
+            console.error('Erro ao buscar logs de auditoria:', result.error);
+            return [];
+        }
+        return result.data as AuditLog[];
+    } catch (error) {
+        console.error('Erro ao buscar logs de auditoria:', error);
+        return [];
+    }
 };
 
 export const addAuditLogDb = async (logData: Omit<AuditLog, 'id'>) => {
-    const newId = uuidv4();
-    const newLog = { id: newId, ...logData };
-    const columns = Object.keys(newLog)
-      .map(col => col === 'user' ? '"user"' : col)
-      .join(', ');
-    const placeholders = Object.keys(newLog).map((_, i) => `$${i + 1}`).join(', ');
-    const values = Object.values(newLog);
-    await supabase.from('audit_logs').insert([{ id: newId, ...newLog }]);
+    try {
+        const newId = uuidv4();
+        const newLog = { id: newId, ...logData };
+        const result = await supabase.from('audit_logs').insert([newLog]);
+        if (result.error) {
+            console.error('Erro ao adicionar log de auditoria:', result.error);
+        }
+    } catch (error) {
+        console.error('Erro ao adicionar log de auditoria:', error);
+    }
 }
