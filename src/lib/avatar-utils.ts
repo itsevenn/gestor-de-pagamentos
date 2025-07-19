@@ -75,9 +75,28 @@ export function getAvatarFallback(name: string): string {
 
 export const uploadAvatar = async (file: File, ciclistaId: string): Promise<string> => {
   try {
+    console.log('Iniciando upload de avatar:', { fileName: file.name, size: file.size, type: file.type });
+    
     // Gerar nome único para o arquivo
     const fileExt = file.name.split('.').pop();
     const fileName = `${ciclistaId}-${Date.now()}.${fileExt}`;
+    
+    console.log('Nome do arquivo gerado:', fileName);
+    
+    // Verificar se o bucket existe
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    if (bucketsError) {
+      console.error('Erro ao listar buckets:', bucketsError);
+      throw new Error(`Erro de configuração do storage: ${bucketsError.message}`);
+    }
+    
+    const avatarsBucket = buckets?.find(bucket => bucket.name === 'avatars');
+    if (!avatarsBucket) {
+      console.error('Bucket "avatars" não encontrado');
+      throw new Error('Bucket de avatares não está configurado. Entre em contato com o administrador.');
+    }
+    
+    console.log('Bucket "avatars" encontrado, iniciando upload...');
     
     // Upload para o bucket 'avatars' no Supabase Storage
     const { data, error } = await supabase.storage
@@ -92,6 +111,8 @@ export const uploadAvatar = async (file: File, ciclistaId: string): Promise<stri
       throw new Error(`Falha no upload: ${error.message}`);
     }
 
+    console.log('Upload realizado com sucesso:', data);
+
     // Obter URL pública da imagem
     const { data: urlData } = supabase.storage
       .from('avatars')
@@ -101,9 +122,21 @@ export const uploadAvatar = async (file: File, ciclistaId: string): Promise<stri
       throw new Error('Não foi possível obter a URL pública da imagem');
     }
 
+    console.log('URL pública gerada:', urlData.publicUrl);
     return urlData.publicUrl;
   } catch (error) {
     console.error('Erro no upload de avatar:', error);
+    
+    // Verificar se é um erro de rede
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Erro de conexão. Verifique sua internet e tente novamente.');
+    }
+    
+    // Verificar se é um erro de autenticação
+    if (error instanceof Error && error.message.includes('JWT')) {
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+    
     throw error;
   }
 };
