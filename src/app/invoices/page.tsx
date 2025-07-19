@@ -43,6 +43,7 @@ import {
   } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import type { Invoice } from '@/lib/data';
 import { AuthGuard } from '@/components/auth-guard';
 
@@ -55,6 +56,8 @@ export default function InvoicesPage() {
   const { toast } = useToast();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
+  const [pendingReasonDialog, setPendingReasonDialog] = useState<{ open: boolean; invoiceId: string | null }>({ open: false, invoiceId: null });
+  const [pendingReason, setPendingReason] = useState('');
 
   const loading = loadingInvoices || loadingCiclistas;
 
@@ -103,14 +106,38 @@ export default function InvoicesPage() {
   };
 
   const handleMarkAsPending = (invoiceId: string) => {
-    const invoice = invoices.find(inv => inv.id === invoiceId);
+    setPendingReasonDialog({ open: true, invoiceId });
+    setPendingReason('');
+  };
+
+  const closePendingReasonDialog = () => {
+    setPendingReasonDialog({ open: false, invoiceId: null });
+    setPendingReason('');
+  };
+
+  const confirmMarkAsPending = () => {
+    if (!pendingReason.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Motivo obrigatório',
+        description: 'Por favor, informe o motivo para marcar a fatura como pendente.',
+      });
+      return;
+    }
+
+    const invoice = invoices.find(inv => inv.id === pendingReasonDialog.invoiceId);
     if(invoice) {
       const { paymentDate, ...invoiceWithoutPaymentDate } = invoice;
-      updateInvoice({ ...invoiceWithoutPaymentDate, status: 'pending' }, 'marcada como pendente.');
+      updateInvoice({ 
+        ...invoiceWithoutPaymentDate, 
+        status: 'pending' 
+      }, `marcada como pendente - Motivo: ${pendingReason.trim()}`);
+      
       toast({
         title: 'Status da Fatura Atualizado!',
         description: `A fatura ${invoice.id.toUpperCase()} foi marcada como pendente.`,
       });
+      closePendingReasonDialog();
     }
   };
   
@@ -298,6 +325,45 @@ export default function InvoicesPage() {
             <AlertDialogCancel onClick={closePaymentDialog} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleMarkAsPaid} className="bg-blue-600 hover:bg-blue-700 text-white">Confirmar Pagamento</AlertDialogAction>
             </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para solicitar motivo ao marcar como pendente */}
+      <AlertDialog open={pendingReasonDialog.open} onOpenChange={(open) => !open && closePendingReasonDialog()}>
+        <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-900 dark:text-white flex items-center gap-2">
+              <Clock className="w-5 h-5 text-yellow-600" />
+              Marcar como Pendente
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
+              Informe o motivo para marcar esta fatura como pendente. Este motivo será registrado no histórico.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="pending-reason" className="text-gray-700 dark:text-gray-300">
+              Motivo da Alteração <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="pending-reason"
+              placeholder="Ex: Erro no pagamento, cancelamento solicitado, problema técnico..."
+              value={pendingReason}
+              onChange={(e) => setPendingReason(e.target.value)}
+              className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[100px]"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              ⚠️ O motivo é obrigatório para marcar uma fatura paga como pendente.
+            </p>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={closePendingReasonDialog} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmMarkAsPending} className="bg-yellow-600 hover:bg-yellow-700 text-white">
+              <Clock className="mr-2 h-4 w-4" />
+              Marcar como Pendente
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </AuthGuard>
