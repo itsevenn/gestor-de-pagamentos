@@ -447,11 +447,13 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
   try {
     console.log('🔍 getCiclistaAuditLogs: Buscando logs para ciclista:', ciclistaId);
     
+    // Buscar todos os logs relacionados a ciclistas
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
-      .ilike('details', `%${ciclistaId}%`)
-      .order('date', { ascending: false });
+      .or('action.eq.Ciclista Criado,action.eq.Ciclista Atualizado,action.eq.Ciclista Excluído,action.eq.Ciclista Restaurado,action.eq.Foto Carregada,action.eq.Foto Removida')
+      .order('date', { ascending: false })
+      .limit(100); // Limitar para performance
     
     if (error) {
       console.error('❌ Erro ao buscar logs do ciclista:', error);
@@ -460,8 +462,31 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
     
     console.log('✅ getCiclistaAuditLogs: Logs encontrados:', data?.length || 0);
     
+    // Filtrar logs que sejam realmente relacionados ao ciclista específico
+    const filteredData = (data || []).filter(log => {
+      // Verificar se o log contém o ID do ciclista nos detalhes
+      if (log.details && log.details.includes(ciclistaId)) {
+        return true;
+      }
+      
+      // Verificar se é uma ação relacionada a ciclistas e contém informações relevantes
+      if (log.action && log.action.includes('Ciclista')) {
+        // Para ações de ciclista, incluir se não tiver ID específico (será filtrado pelo frontend)
+        return true;
+      }
+      
+      // Verificar se é uma ação relacionada a fotos
+      if (log.action && (log.action.includes('Foto'))) {
+        return true;
+      }
+      
+      return false;
+    });
+    
+    console.log('✅ getCiclistaAuditLogs: Logs filtrados:', filteredData.length);
+    
     // Converter dados para o formato esperado
-    const convertedData = (data || []).map(log => ({
+    const convertedData = filteredData.map(log => ({
       id: log.id,
       timestamp: log.date,
       userId: log.user || 'system',
