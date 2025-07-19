@@ -13,28 +13,11 @@ export function Logo() {
   const [clubName, setClubName] = useState(DEFAULT_CLUB_NAME);
 
   useEffect(() => {
-    const loadData = () => {
-      const storedClubLogo = localStorage.getItem(CLUB_LOGO_STORAGE_KEY);
-      const storedClubName = localStorage.getItem(CLUB_NAME_STORAGE_KEY);
-      
-      setLogoUrl(storedClubLogo);
-      setClubName(storedClubName || DEFAULT_CLUB_NAME);
-    };
-
-    // Carregar dados iniciais
-    loadData();
-
-    // Escutar mudanças no localStorage
-    const handleStorageChange = () => {
-      loadData();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('storage', handleStorageChange); // Para mudanças locais
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    const storedClubLogo = localStorage.getItem(CLUB_LOGO_STORAGE_KEY);
+    const storedClubName = localStorage.getItem(CLUB_NAME_STORAGE_KEY);
+    
+    setLogoUrl(storedClubLogo);
+    setClubName(storedClubName || DEFAULT_CLUB_NAME);
   }, []);
 
 
@@ -52,7 +35,7 @@ export function Logo() {
     <div className="flex flex-col items-center gap-6 p-6">
       {/* Título Principal com Destaque Absoluto */}
       <div className="text-center space-y-2 w-full">
-        <h1 className="text-4xl font-black tracking-widest text-white drop-shadow-2xl" style={{color: 'white'}}>
+        <h1 className="text-4xl font-black text-sidebar-foreground tracking-widest bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 bg-clip-text text-transparent drop-shadow-xl animate-pulse">
           GESTOR DO CICLISTA
         </h1>
       </div>
@@ -83,13 +66,13 @@ export function Logo() {
 
       {/* Nome do Clube */}
       <div className="text-center space-y-1 w-full">
-        <h2 className="text-sm font-semibold tracking-wide" style={{color: 'white'}}>
+        <h2 className="text-sm font-semibold text-sidebar-foreground/90 tracking-wide">
           {clubName}
         </h2>
       </div>
 
       {/* Separador */}
-      <div className="w-full h-px bg-white/20" />
+      <div className="w-full h-px bg-sidebar-foreground/10" />
     </div>
   );
 }

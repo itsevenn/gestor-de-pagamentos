@@ -76,9 +76,6 @@ export default function SettingsPage() {
         setClubLogo(result);
         localStorage.setItem('app-club-logo', result);
         setIsUploading(false);
-        
-        // Forçar atualização do componente Logo
-        window.dispatchEvent(new Event('storage'));
       };
       reader.readAsDataURL(file);
     } catch (error) {
