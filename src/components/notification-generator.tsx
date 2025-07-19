@@ -184,11 +184,49 @@ Equipe de Gestão de Pagamentos`;
 
   const handleCopy = () => {
     if (notification) {
-      navigator.clipboard.writeText(notification);
-      toast({
-        title: 'Copiado para a área de transferência!',
-        description: 'A mensagem de notificação foi copiada.',
-      });
+      try {
+        // Verificar se o clipboard está disponível
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(notification);
+          toast({
+            title: 'Copiado para a área de transferência!',
+            description: 'A mensagem de notificação foi copiada.',
+          });
+        } else {
+          // Fallback para navegadores mais antigos
+          const textArea = document.createElement('textarea');
+          textArea.value = notification;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          
+          try {
+            document.execCommand('copy');
+            toast({
+              title: 'Copiado para a área de transferência!',
+              description: 'A mensagem de notificação foi copiada.',
+            });
+          } catch (err) {
+            toast({
+              variant: 'destructive',
+              title: 'Erro ao copiar',
+              description: 'Não foi possível copiar para a área de transferência. Copie manualmente.',
+            });
+          } finally {
+            document.body.removeChild(textArea);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao copiar texto:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao copiar',
+          description: 'Não foi possível copiar para a área de transferência. Copie manualmente.',
+        });
+      }
     }
   };
 
