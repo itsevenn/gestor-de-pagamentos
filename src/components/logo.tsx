@@ -1,11 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Upload, Image as ImageIcon, Settings, Edit3, Save, X } from 'lucide-react';
-import { useAuth } from '@/context/auth-context';
 
 const LOGO_STORAGE_KEY = 'app-logo';
 const CLUB_NAME_STORAGE_KEY = 'app-club-name';
@@ -18,10 +14,6 @@ export function Logo() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [clubName, setClubName] = useState(DEFAULT_CLUB_NAME);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuth();
 
   useEffect(() => {
     const storedLogo = localStorage.getItem(LOGO_STORAGE_KEY);
@@ -31,46 +23,7 @@ export function Logo() {
     setClubName(storedClubName || DEFAULT_CLUB_NAME);
   }, []);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validação do arquivo
-      if (file.size > 5 * 1024 * 1024) { // 5MB
-        alert('Arquivo muito grande. Selecione uma imagem menor que 5MB.');
-        return;
-      }
 
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor, selecione apenas arquivos de imagem.');
-        return;
-      }
-
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setLogoUrl(result);
-        localStorage.setItem(LOGO_STORAGE_KEY, result);
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-  
-  const handleEditClick = () => {
-    setEditName(clubName);
-    setIsEditing(true);
-  };
-
-  const handleSaveName = () => {
-    setClubName(editName);
-    localStorage.setItem(CLUB_NAME_STORAGE_KEY, editName);
-    setIsEditing(false);
-  };
 
   if (logoUrl === null) {
     return (
@@ -83,6 +36,13 @@ export function Logo() {
 
   return (
     <div className="flex flex-col items-center gap-6 p-6">
+      {/* Título Principal com Destaque */}
+      <div className="text-center space-y-2 w-full">
+        <h1 className="text-xl font-bold text-sidebar-foreground tracking-wide bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+          GESTOR DO CICLISTA
+        </h1>
+      </div>
+
       {/* Logo Container */}
       <div className="relative group">
         <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
@@ -103,47 +63,15 @@ export function Logo() {
         </div>
       </div>
 
-      {/* Nome do Clube - Fixo */}
-      <div className="text-center space-y-2 w-full">
+      {/* Nome do Clube */}
+      <div className="text-center space-y-1 w-full">
         <h2 className="text-sm font-semibold text-sidebar-foreground/90 tracking-wide">
           {clubName}
         </h2>
-        <h1 className="text-lg font-bold text-sidebar-foreground tracking-wide">
-          GESTOR DO CICLISTA
-        </h1>
       </div>
-
-      {/* Botão de Upload */}
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={handleUploadClick} 
-        disabled={isUploading}
-        className="w-full bg-white/10 dark:bg-gray-800/50 border-sidebar-foreground/20 text-sidebar-foreground hover:bg-white/20 dark:hover:bg-gray-700/50 transition-all duration-200 rounded-lg"
-      >
-        {isUploading ? (
-          <>
-            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            Carregando...
-          </>
-        ) : (
-          <>
-            <Upload className="mr-2 h-4 w-4" />
-            Carregar Logo
-          </>
-        )}
-      </Button>
 
       {/* Separador */}
       <div className="w-full h-px bg-sidebar-foreground/10" />
-
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        accept="image/*"
-        className="hidden"
-      />
     </div>
   );
 }
