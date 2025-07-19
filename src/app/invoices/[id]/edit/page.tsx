@@ -45,18 +45,6 @@ const formSchema = z.object({
   paymentMethod: z.string().optional(),
   issueDate: z.string().min(1, 'Data de emissão é obrigatória'),
   changeReason: z.string().optional(),
-}).refine((data) => {
-  // Se o valor original ou atual mudou, o motivo é obrigatório
-  const originalAmountChanged = data.originalAmount !== (invoice?.originalAmount?.toString() || '');
-  const currentAmountChanged = data.currentAmount !== (invoice?.currentAmount?.toString() || '');
-  
-  if (originalAmountChanged || currentAmountChanged) {
-    return data.changeReason && data.changeReason.trim().length > 0;
-  }
-  return true;
-}, {
-  message: "Motivo da alteração é obrigatório quando há mudança no valor",
-  path: ["changeReason"]
 });
 
 export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
@@ -98,16 +86,29 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!invoice) return;
 
+    // Validar se motivo é obrigatório quando há mudança no valor
+    const originalAmountChanged = Number(values.originalAmount) !== invoice.originalAmount;
+    const currentAmountChanged = Number(values.currentAmount) !== invoice.currentAmount;
+    
+    if ((originalAmountChanged || currentAmountChanged) && (!values.changeReason || values.changeReason.trim().length === 0)) {
+      toast({
+        title: 'Motivo obrigatório',
+        description: 'Motivo da alteração é obrigatório quando há mudança no valor da fatura.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Detectar mudanças
     const changes = [];
-    if (Number(values.originalAmount) !== invoice.originalAmount) {
+    if (originalAmountChanged) {
       changes.push({
         field: 'originalAmount',
         oldValue: invoice.originalAmount,
         newValue: Number(values.originalAmount)
       });
     }
-    if (Number(values.currentAmount) !== invoice.currentAmount) {
+    if (currentAmountChanged) {
       changes.push({
         field: 'currentAmount',
         oldValue: invoice.currentAmount,
