@@ -32,39 +32,18 @@ export function Logo() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
-      {/* Bloco Principal - Retângulo cinza claro */}
-      <div className="w-full bg-gray-300 rounded-xl p-6 text-center">
-        {/* Título Principal */}
-        <h1 className="text-2xl font-black text-gray-800 tracking-widest mb-4">
+    <div className="flex flex-col items-center gap-4 p-4">
+      {/* Bloco Principal - Retângulo cinza vertical */}
+      <div className="w-32 h-48 bg-gray-300 rounded-lg flex flex-col items-center justify-center">
+        <h1 className="text-sm font-bold text-gray-800 text-center mb-2 px-2">
           GESTOR DO CICLISTA
         </h1>
-        
-        {/* Logo Container */}
-        <div className="w-[100px] h-[100px] bg-white rounded-lg mx-auto mb-4 shadow-sm">
-          {logoUrl ? (
-            <Image
-              src={logoUrl}
-              alt="Logo Sussuarana Clube de Desbravadores"
-              width={100}
-              height={100}
-              className="object-cover w-full h-full rounded-lg"
-              data-ai-hint="logo company"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-white rounded-lg">
-              <div className="text-center text-gray-400">
-                <div className="text-xs mb-1">100 x 100</div>
-                <div className="text-xs">Logo</div>
-              </div>
-            </div>
-          )}
-        </div>
+        <div className="w-16 h-16 bg-white rounded-lg mb-2"></div>
       </div>
 
-      {/* Bloco Secundário - Barra horizontal cinza */}
-      <div className="w-full bg-gray-300 rounded-xl p-3 text-center">
-        <h2 className="text-lg font-semibold text-gray-800">
+      {/* Barra horizontal cinza */}
+      <div className="w-32 h-8 bg-gray-300 rounded-lg flex items-center justify-center">
+        <h2 className="text-sm font-semibold text-gray-800">
           SUSSUARANA
         </h2>
       </div>
