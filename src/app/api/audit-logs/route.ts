@@ -9,22 +9,31 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    let logs;
+    let logs = [];
 
-    if (ciclistaId) {
-      logs = await getCiclistaAuditLogs(ciclistaId);
-    } else if (userId) {
-      logs = await getUserAuditLogs(userId);
-    } else {
-      logs = await getAllAuditLogs(limit, offset);
+    try {
+      if (ciclistaId) {
+        logs = await getCiclistaAuditLogs(ciclistaId);
+      } else if (userId) {
+        logs = await getUserAuditLogs(userId);
+      } else {
+        logs = await getAllAuditLogs(limit, offset);
+      }
+    } catch (dbError) {
+      console.error('Erro ao buscar logs do banco:', dbError);
+      // Retornar array vazio em caso de erro do banco
+      logs = [];
+    }
+
+    // Garantir que logs seja sempre um array
+    if (!Array.isArray(logs)) {
+      console.warn('Logs não é um array, convertendo:', logs);
+      logs = [];
     }
 
     return NextResponse.json(logs);
   } catch (error) {
     console.error('Erro ao buscar logs de auditoria:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json([], { status: 500 });
   }
 } 

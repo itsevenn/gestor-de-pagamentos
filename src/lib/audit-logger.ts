@@ -279,36 +279,63 @@ export function formatValue(value: any): string {
 
 // Função para obter logs de um ciclista específico
 export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLogEntry[]> {
-  const { data, error } = await supabase
-    .from('audit_logs')
-    .select('*')
-    .eq('entityId', ciclistaId)
-    .order('timestamp', { ascending: false });
-  
-  if (error) throw error;
-  return data as AuditLogEntry[];
+  try {
+    const { data, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .eq('entityId', ciclistaId)
+      .order('timestamp', { ascending: false });
+    
+    if (error) {
+      console.error('Erro ao buscar logs do ciclista:', error);
+      return [];
+    }
+    
+    return (data || []) as AuditLogEntry[];
+  } catch (error) {
+    console.error('Erro ao buscar logs do ciclista:', error);
+    return [];
+  }
 }
 
 // Função para obter logs de um usuário específico
 export async function getUserAuditLogs(userId: string): Promise<AuditLogEntry[]> {
-  const { data, error } = await supabase
-    .from('audit_logs')
-    .select('*')
-    .eq('userId', userId)
-    .order('timestamp', { ascending: false });
-  
-  if (error) throw error;
-  return data as AuditLogEntry[];
+  try {
+    const { data, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .eq('userId', userId)
+      .order('timestamp', { ascending: false });
+    
+    if (error) {
+      console.error('Erro ao buscar logs do usuário:', error);
+      return [];
+    }
+    
+    return (data || []) as AuditLogEntry[];
+  } catch (error) {
+    console.error('Erro ao buscar logs do usuário:', error);
+    return [];
+  }
 }
 
 // Função para obter todos os logs com paginação
 export async function getAllAuditLogs(limit: number = 50, offset: number = 0): Promise<AuditLogEntry[]> {
-  const { data, error } = await supabase
-    .from('audit_logs')
-    .select('*')
-    .order('timestamp', { ascending: false })
-    .range(offset, offset + limit - 1);
-  
-  if (error) throw error;
-  return data as AuditLogEntry[];
+  try {
+    const { data, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) {
+      console.error('Erro ao buscar todos os logs:', error);
+      return [];
+    }
+    
+    return (data || []) as AuditLogEntry[];
+  } catch (error) {
+    console.error('Erro ao buscar todos os logs:', error);
+    return [];
+  }
 } 
