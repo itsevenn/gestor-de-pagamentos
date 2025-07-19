@@ -103,6 +103,7 @@ export class AuditLogger {
       
       // 3. Criar dados básicos do log (apenas campos que existem na tabela)
       const logData = {
+        id: generateUUID(), // Gerar UUID manualmente para o campo id
         date: new Date().toISOString(),
         user: profile?.email || user?.email || 'Admin',
         action: action,
