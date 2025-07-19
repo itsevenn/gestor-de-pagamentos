@@ -199,6 +199,62 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // Função para gerar descrição específica baseada nas mudanças
+    const generateAuditDescription = (originalInvoice: Invoice, updatedInvoice: Invoice, changes: any[], auditDetails?: string) => {
+        if (auditDetails) {
+            return auditDetails;
+        }
+
+        const descriptions: string[] = [];
+        
+        // Verificar mudança de status
+        if (originalInvoice.status !== updatedInvoice.status) {
+            const statusLabels = {
+                'pending': 'Pendente',
+                'paid': 'Paga',
+                'overdue': 'Atrasada',
+                'refunded': 'Reembolsada'
+            };
+            const oldStatus = statusLabels[originalInvoice.status as keyof typeof statusLabels] || originalInvoice.status;
+            const newStatus = statusLabels[updatedInvoice.status as keyof typeof statusLabels] || updatedInvoice.status;
+            descriptions.push(`Status alterado de ${oldStatus} para ${newStatus}`);
+        }
+        
+        // Verificar mudança de valor
+        if (originalInvoice.currentAmount !== updatedInvoice.currentAmount) {
+            const difference = updatedInvoice.currentAmount - originalInvoice.currentAmount;
+            const changeType = difference > 0 ? 'aumentado' : 'reduzido';
+            descriptions.push(`Valor ${changeType} de R$ ${originalInvoice.currentAmount.toFixed(2)} para R$ ${updatedInvoice.currentAmount.toFixed(2)}`);
+        }
+        
+        // Verificar mudança de valor original
+        if (originalInvoice.originalAmount !== updatedInvoice.originalAmount) {
+            descriptions.push(`Valor original alterado de R$ ${originalInvoice.originalAmount.toFixed(2)} para R$ ${updatedInvoice.originalAmount.toFixed(2)}`);
+        }
+        
+        // Verificar mudança de data de vencimento
+        if (originalInvoice.dueDate !== updatedInvoice.dueDate) {
+            descriptions.push(`Data de vencimento alterada de ${originalInvoice.dueDate} para ${updatedInvoice.dueDate}`);
+        }
+        
+        // Verificar adição de método de pagamento
+        if (!originalInvoice.paymentMethod && updatedInvoice.paymentMethod) {
+            descriptions.push(`Método de pagamento definido: ${updatedInvoice.paymentMethod}`);
+        }
+        
+        // Verificar adição de data de pagamento
+        if (!originalInvoice.paymentDate && updatedInvoice.paymentDate) {
+            descriptions.push(`Data de pagamento registrada: ${updatedInvoice.paymentDate}`);
+        }
+        
+        // Se não há mudanças específicas detectadas, usar descrição genérica
+        if (descriptions.length === 0) {
+            return 'Fatura atualizada';
+        }
+        
+        return descriptions.join(', ');
+    };
+
     const updateInvoice = async (updatedInvoice: Invoice & { changeReason?: string, changes?: any[] }, auditDetails?: string) => {
         setLoading(true);
         try {
@@ -216,7 +272,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             if (originalInvoice) {
                 const changes = updatedInvoice.changes || detectChanges(originalInvoice, updatedInvoice);
                 const reason = updatedInvoice.changeReason ? ` - Motivo: ${updatedInvoice.changeReason}` : '';
-                const details = auditDetails ? `${auditDetails}${reason}` : `Fatura atualizada${reason}`;
+                const specificDescription = generateAuditDescription(originalInvoice, updatedInvoice, changes, auditDetails);
+                const details = `${specificDescription}${reason}`;
                 await AuditLogger.logInvoiceUpdated(updatedInvoice.id, ciclistaName, changes, details);
             }
             
