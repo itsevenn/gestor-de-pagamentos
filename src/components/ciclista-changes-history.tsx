@@ -5,12 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Clock, 
   User, 
   Search, 
-  Filter,
   Calendar,
   Edit,
   FileText,
@@ -69,7 +67,6 @@ export function CiclistaChangesHistory({ ciclistaId, limit = 20, showFilters = t
   const [activities, setActivities] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterAction, setFilterAction] = useState<string>('all');
 
   useEffect(() => {
     const fetchCiclistaActivities = async () => {
@@ -150,9 +147,7 @@ export function CiclistaChangesHistory({ ciclistaId, limit = 20, showFilters = t
     const matchesSearch = activity.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          activity.userName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesAction = filterAction === 'all' || activity.action === filterAction;
-    
-    return matchesSearch && matchesAction;
+    return matchesSearch;
   });
 
   const renderChanges = (changes: AuditLogEntry['changes']) => {
@@ -235,7 +230,35 @@ export function CiclistaChangesHistory({ ciclistaId, limit = 20, showFilters = t
                   <FileText className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                 </div>
                 <span className="font-semibold text-sm text-slate-700 dark:text-slate-300">
-                  {formatValue(change.field, change.field)}
+                  {(() => {
+                    // Formatar nomes de campos
+                    const fieldNames: Record<string, string> = {
+                      'nomeCiclista': 'Nome',
+                      'matricula': 'Matrícula',
+                      'dataNascimento': 'Data de Nascimento',
+                      'idade': 'Idade',
+                      'cpf': 'CPF',
+                      'rg': 'RG',
+                      'tipoSanguineo': 'Tipo Sanguíneo',
+                      'nacionalidade': 'Nacionalidade',
+                      'endereco': 'Endereço',
+                      'bairro': 'Bairro',
+                      'cidade': 'Cidade',
+                      'estado': 'Estado',
+                      'cep': 'CEP',
+                      'telefone': 'Telefone',
+                      'email': 'Email',
+                      'nomeConselheiro': 'Nome do Conselheiro',
+                      'dataAdvento': 'Data de Advento',
+                      'localData': 'Local e Data',
+                      'referencia': 'Referência',
+                      'observacoes': 'Observações',
+                      'photoUrl': 'Foto',
+                      'createdAt': 'Data de Criação',
+                      'updatedAt': 'Data de Atualização'
+                    };
+                    return fieldNames[change.field] || change.field;
+                  })()}
                 </span>
               </div>
               <Badge variant="secondary" className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
@@ -293,36 +316,18 @@ export function CiclistaChangesHistory({ ciclistaId, limit = 20, showFilters = t
 
   return (
     <div className="space-y-4">
-      {/* Filtros */}
+      {/* Filtro de busca */}
       {showFilters && (
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input
-                placeholder="Buscar modificações..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              placeholder="Buscar modificações..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-          <Select value={filterAction} onValueChange={setFilterAction}>
-            <SelectTrigger className="w-full sm:w-48">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filtrar por ação" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as ações</SelectItem>
-              <SelectItem value="Ciclista Criado">Ciclista Criado</SelectItem>
-              <SelectItem value="Ciclista Atualizado">Ciclista Atualizado</SelectItem>
-              <SelectItem value="Ciclista Excluído">Ciclista Excluído</SelectItem>
-              <SelectItem value="Ciclista Restaurado">Ciclista Restaurado</SelectItem>
-              <SelectItem value="Foto Carregada">Foto Carregada</SelectItem>
-              <SelectItem value="Foto Removida">Foto Removida</SelectItem>
-              <SelectItem value="Perfil Atualizado">Perfil Atualizado</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       )}
 
@@ -348,41 +353,34 @@ export function CiclistaChangesHistory({ ciclistaId, limit = 20, showFilters = t
                         {formatTimestamp(activity.timestamp)}
                       </span>
                     </div>
+                    {/* Descrição da atividade */}
                     <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
-                      {activity.action === 'Ciclista Criado' && `Ciclista criado com sucesso`}
-                      {activity.action === 'Ciclista Atualizado' && (
-                        (() => {
-                          if (activity.changes && Array.isArray(activity.changes) && activity.changes.length > 0) {
-                            // Verificar se há mudança de dados pessoais importantes
-                            const importantFields = ['nomeCiclista', 'cpf', 'rg', 'endereco', 'celular'];
-                            const importantChange = activity.changes.find(change => 
-                              importantFields.includes(change.field)
-                            );
-                            if (importantChange) {
-                              const fieldNames: Record<string, string> = {
-                                'nomeCiclista': 'Nome',
-                                'cpf': 'CPF',
-                                'rg': 'RG',
-                                'endereco': 'Endereço',
-                                'celular': 'Telefone'
-                              };
-                              const fieldName = fieldNames[importantChange.field] || importantChange.field;
-                              return `Dados pessoais do ciclista atualizados - ${fieldName} modificado`;
-                            }
-                            
-                            // Outras mudanças
-                            return `Perfil do ciclista atualizado - ${activity.changes.length} campo(s) modificado(s)`;
-                          }
-                          return `Perfil do ciclista atualizado`;
-                        })()
-                      )}
-                      {activity.action === 'Ciclista Excluído' && `Ciclista excluído`}
-                      {activity.action === 'Ciclista Restaurado' && `Ciclista restaurado`}
-                      {activity.action === 'Foto Carregada' && `Foto do perfil carregada`}
-                      {activity.action === 'Foto Removida' && `Foto do perfil removida`}
-                      {activity.action === 'Perfil Atualizado' && `Perfil atualizado`}
-                      {!['Ciclista Criado', 'Ciclista Atualizado', 'Ciclista Excluído', 'Ciclista Restaurado', 'Foto Carregada', 'Foto Removida', 'Perfil Atualizado'].includes(activity.action) && 
-                        (activity.details || `${activity.action} do ciclista`)}
+                      {(() => {
+                        // Se há uma descrição específica nos detalhes, usar ela
+                        if (activity.details) {
+                          // Remover o motivo da descrição principal (será mostrado separadamente)
+                          const detailsWithoutReason = activity.details.split(' - Motivo:')[0];
+                          return detailsWithoutReason;
+                        }
+                        
+                        // Fallback para ações específicas
+                        switch (activity.action) {
+                          case 'Ciclista Criado':
+                            return 'Ciclista criado com sucesso';
+                          case 'Ciclista Excluído':
+                            return 'Ciclista excluído';
+                          case 'Ciclista Restaurado':
+                            return 'Ciclista restaurado';
+                          case 'Foto Carregada':
+                            return 'Foto do perfil carregada';
+                          case 'Foto Removida':
+                            return 'Foto do perfil removida';
+                          case 'Perfil Atualizado':
+                            return 'Perfil atualizado';
+                          default:
+                            return `${activity.action} do ciclista`;
+                        }
+                      })()}
                     </p>
 
                     {/* Motivo da alteração */}
