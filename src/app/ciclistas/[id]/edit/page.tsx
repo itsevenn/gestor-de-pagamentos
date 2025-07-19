@@ -22,15 +22,14 @@ import {
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { ArrowLeft, Trash2, Upload, User, Calendar, MapPin, Phone, CreditCard, FileText, Users, Home, Bike, CheckCircle, UserCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Upload, User, Calendar, MapPin, Phone, CreditCard, FileText, Users, Home, Bike, CheckCircle, UserCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCiclistas } from '@/context/app-context';
 import { useEffect, use, useState, useRef } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import Cropper from 'react-easy-crop';
-import { getCroppedImg } from '@/lib/cropImageUtils';
+import { uploadAvatar, deleteAvatar, validateImageFile } from '@/lib/avatar-utils';
 
 const formSchema = z.object({
   photoUrl: z.any().optional(),
@@ -80,44 +79,9 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
   const ciclista = ciclistas.find((c) => c.id === id);
   
   const [photoPreview, setPhotoPreview] = useState<string | null>(ciclista?.photoUrl || null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showCrop, setShowCrop] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  const onCropComplete = (croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  };
-
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-        setShowCrop(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleCropSave = async () => {
-    if (!selectedImage || !croppedAreaPixels) return;
-    const croppedImg = await getCroppedImg(selectedImage, croppedAreaPixels);
-    setPhotoPreview(croppedImg);
-    setShowCrop(false);
-    setSelectedImage(null);
-  };
-
-  const handleRemovePhoto = () => {
-    setPhotoPreview(null);
-    form.setValue('photoUrl', '');
-     if(fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -164,34 +128,117 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
     }
   }, [ciclista, form]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        // Validar arquivo
+        validateImageFile(file);
+        
+        // Criar preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhotoPreview(reader.result as string);
+          setSelectedFile(file);
+        };
+        reader.readAsDataURL(file);
+        
+        toast({
+          title: 'Imagem selecionada',
+          description: 'Imagem carregada com sucesso. Clique em "Salvar Alterações" para fazer o upload.',
+        });
+      } catch (error) {
+        toast({
+          title: 'Erro na imagem',
+          description: error instanceof Error ? error.message : 'Erro ao processar imagem',
+          variant: 'destructive',
+        });
+        // Limpar input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoPreview(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    toast({
+      title: 'Foto removida',
+      description: 'A foto foi removida. Clique em "Salvar Alterações" para confirmar.',
+    });
+  };
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!ciclista) return;
     
-    const finalValues = { ...values };
+    setIsUploading(true);
     
-    // Check if a new file was selected (it will be a File object)
-    if (values.photoUrl && typeof values.photoUrl !== 'string') {
-      finalValues.photoUrl = photoPreview || '';
-    } 
-    // Check if photo was removed (it will be empty string)
-    else if (values.photoUrl === '' || values.photoUrl === null) {
-      finalValues.photoUrl = '';
-    }
-    // Otherwise, keep the old one
-    else {
-      finalValues.photoUrl = ciclista.photoUrl;
-    }
+    try {
+      let finalPhotoUrl = ciclista.photoUrl || '';
+      
+      // Se uma nova imagem foi selecionada, fazer upload
+      if (selectedFile) {
+        toast({
+          title: 'Fazendo upload...',
+          description: 'Enviando imagem para o servidor...',
+        });
+        
+        const uploadedUrl = await uploadAvatar(selectedFile, ciclista.id);
+        finalPhotoUrl = uploadedUrl;
+        
+        toast({
+          title: 'Upload concluído!',
+          description: 'Imagem enviada com sucesso.',
+        });
+      }
+      // Se a foto foi removida (photoPreview é null mas havia uma foto antes)
+      else if (photoPreview === null && ciclista.photoUrl) {
+        // Deletar imagem antiga do storage
+        try {
+          await deleteAvatar(ciclista.photoUrl);
+          toast({
+            title: 'Foto removida',
+            description: 'Foto antiga removida do servidor.',
+          });
+        } catch (error) {
+          console.error('Erro ao deletar foto antiga:', error);
+          // Continuar mesmo se falhar ao deletar
+        }
+        finalPhotoUrl = '';
+      }
 
-    updateCiclista({
-      id: ciclista.id,
-      ...finalValues,
-    });
+      // Atualizar ciclista no banco de dados
+      const finalValues = { 
+        ...values, 
+        photoUrl: finalPhotoUrl 
+      };
 
-    toast({
-      title: 'Ciclista Atualizado!',
-      description: `O ciclista ${values.nomeCiclista} foi atualizado com sucesso.`,
-    });
-    router.push('/ciclistas');
+      updateCiclista({
+        id: ciclista.id,
+        ...finalValues,
+      });
+
+      toast({
+        title: 'Ciclista Atualizado!',
+        description: `O ciclista ${values.nomeCiclista} foi atualizado com sucesso.`,
+      });
+      
+      router.push('/ciclistas');
+    } catch (error) {
+      console.error('Erro ao salvar ciclista:', error);
+      toast({
+        title: 'Erro ao salvar',
+        description: error instanceof Error ? error.message : 'Erro inesperado ao salvar ciclista',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   if (!ciclista) {
@@ -299,34 +346,43 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
                           <Button 
                             type="button" 
                             onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
                             className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
                           >
-                                <Upload className="mr-2 h-4 w-4" />
-                                Carregar Nova Foto
+                                {isUploading ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Processando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Carregar Nova Foto
+                                  </>
+                                )}
                             </Button>
                           <Button 
                             type="button" 
                             variant="outline" 
                             onClick={handleRemovePhoto}
+                            disabled={isUploading}
                             className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                           >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Remover Foto
                             </Button>
-                            <FormField control={form.control} name="photoUrl" render={({ field }) => (
-                                <FormItem>
-                                <FormControl>
-                                    <Input 
-                                      type="file" 
-                                      className="hidden" 
-                                      ref={fileInputRef} 
-                                      onChange={handlePhotoChange}
-                                      accept="image/*"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
+                            <Input 
+                              type="file" 
+                              className="hidden" 
+                              ref={fileInputRef} 
+                              onChange={handleFileSelect}
+                              accept="image/*"
+                            />
+                            {selectedFile && (
+                              <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                                ✓ Nova imagem selecionada: {selectedFile.name}
+                              </p>
+                            )}
                         </div>
                     </div>
                   </div>
@@ -766,43 +822,33 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
                     type="button" 
                     variant="outline" 
                     asChild
+                    disabled={isUploading}
                     className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300"
                   >
                     <Link href="/ciclistas">Cancelar</Link>
                   </Button>
                   <Button 
                     type="submit"
+                    disabled={isUploading}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Salvar Alterações
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Salvar Alterações
+                      </>
+                    )}
                 </Button>
               </div>
             </form>
           </Form>
         </CardContent>
       </Card>
-      {showCrop && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-    <div className="bg-white p-6 rounded-xl shadow-xl relative flex flex-col items-center" style={{ width: 360 }}>
-      <div style={{ width: 280, height: 280, position: 'relative' }}>
-        <Cropper
-          image={selectedImage!}
-          crop={crop}
-          zoom={zoom}
-          aspect={1}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onCropComplete={onCropComplete}
-        />
-      </div>
-      <div className="flex gap-4 mt-6 justify-center w-full">
-        <Button onClick={handleCropSave} className="bg-blue-600 text-white">Cortar e Salvar</Button>
-        <Button variant="outline" onClick={() => setShowCrop(false)}>Cancelar</Button>
-      </div>
-    </div>
-  </div>
-)}
       </div>
     </div>
   );
