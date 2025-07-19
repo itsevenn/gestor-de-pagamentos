@@ -137,9 +137,13 @@ export class AuditLogger {
         date: new Date().toISOString(),
         user: profile?.email || user?.email || 'Admin',
         action: action,
-        details: details,
-        changes: changes ? JSON.stringify(changes) : null
+        details: details
       };
+
+      // Se há mudanças, incluí-las nos detalhes
+      if (changes && changes.length > 0) {
+        logData.details = `${details} - ${JSON.stringify(changes)}`;
+      }
 
       console.log('📝 AuditLogger: Dados do log:', logData);
 
@@ -488,13 +492,21 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
     
     // Converter dados para o formato esperado
     const convertedData = filteredData.map(log => {
-      // Tentar fazer parse das mudanças se existirem
+      // Tentar fazer parse das mudanças dos detalhes
       let parsedChanges = null;
-      if (log.changes) {
-        try {
-          parsedChanges = JSON.parse(log.changes);
-        } catch (error) {
-          console.warn('Erro ao fazer parse das mudanças:', error);
+      let cleanDetails = log.details;
+      
+      // Verificar se há mudanças no final dos detalhes (formato: "detalhes - [JSON]")
+      if (log.details && log.details.includes(' - [')) {
+        const parts = log.details.split(' - ');
+        if (parts.length > 1) {
+          try {
+            const changesPart = parts.slice(1).join(' - '); // Juntar caso haja múltiplos ' - '
+            parsedChanges = JSON.parse(changesPart);
+            cleanDetails = parts[0]; // Usar apenas a primeira parte como detalhes limpos
+          } catch (error) {
+            console.warn('Erro ao fazer parse das mudanças dos detalhes:', error);
+          }
         }
       }
       
@@ -506,8 +518,8 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
         action: log.action as AuditAction,
         entityType: 'ciclista' as const,
         entityId: ciclistaId,
-        entityName: log.details?.split('"')[1] || 'Ciclista',
-        details: log.details,
+        entityName: cleanDetails?.split('"')[1] || 'Ciclista',
+        details: cleanDetails,
         changes: parsedChanges,
         ipAddress: 'N/A',
         userAgent: 'N/A'
@@ -565,13 +577,21 @@ export async function getInvoiceAuditLogs(invoiceId: string): Promise<AuditLogEn
     
     // Converter dados para o formato esperado
     const convertedData = filteredData.map(log => {
-      // Tentar fazer parse das mudanças se existirem
+      // Tentar fazer parse das mudanças dos detalhes
       let parsedChanges = null;
-      if (log.changes) {
-        try {
-          parsedChanges = JSON.parse(log.changes);
-        } catch (error) {
-          console.warn('Erro ao fazer parse das mudanças:', error);
+      let cleanDetails = log.details;
+      
+      // Verificar se há mudanças no final dos detalhes (formato: "detalhes - [JSON]")
+      if (log.details && log.details.includes(' - [')) {
+        const parts = log.details.split(' - ');
+        if (parts.length > 1) {
+          try {
+            const changesPart = parts.slice(1).join(' - '); // Juntar caso haja múltiplos ' - '
+            parsedChanges = JSON.parse(changesPart);
+            cleanDetails = parts[0]; // Usar apenas a primeira parte como detalhes limpos
+          } catch (error) {
+            console.warn('Erro ao fazer parse das mudanças dos detalhes:', error);
+          }
         }
       }
       
@@ -583,8 +603,8 @@ export async function getInvoiceAuditLogs(invoiceId: string): Promise<AuditLogEn
         action: log.action as AuditAction,
         entityType: 'invoice' as const,
         entityId: invoiceId,
-        entityName: log.details?.split('"')[1] || 'Fatura',
-        details: log.details,
+        entityName: cleanDetails?.split('"')[1] || 'Fatura',
+        details: cleanDetails,
         changes: parsedChanges,
         ipAddress: 'N/A',
         userAgent: 'N/A'
