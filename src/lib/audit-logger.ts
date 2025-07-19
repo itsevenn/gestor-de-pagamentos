@@ -133,12 +133,17 @@ export class AuditLogger {
       
       // 4. Usar apenas os campos que existem na tabela audit_logs
       const logData = {
+        id: generateUUID(), // Gerar UUID manualmente
         date: new Date().toISOString(),
         user: profile?.email || user?.email || 'Admin',
         action: action,
-        details: details,
-        changes: changes ? JSON.stringify(changes) : null
+        details: details
       };
+
+      // Adicionar changes apenas se existir na tabela
+      if (changes) {
+        logData.changes = JSON.stringify(changes);
+      }
 
       console.log('📝 AuditLogger: Dados do log:', logData);
 

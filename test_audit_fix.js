@@ -1,3 +1,6 @@
+// Carregar variáveis de ambiente
+require('dotenv').config();
+
 const { createClient } = require('@supabase/supabase-js');
 
 // Configuração do Supabase
@@ -6,6 +9,8 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Variáveis de ambiente não configuradas');
+  console.log('URL:', supabaseUrl);
+  console.log('Key:', supabaseKey ? 'Configurada' : 'Não configurada');
   process.exit(1);
 }
 
@@ -13,6 +18,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function testAuditFix() {
   console.log('🔍 Testando correção do sistema de auditoria...');
+  console.log('URL do Supabase:', supabaseUrl);
   
   try {
     // 1. Verificar se a tabela existe
@@ -24,6 +30,12 @@ async function testAuditFix() {
     
     if (checkError) {
       console.error('❌ Tabela audit_logs não existe ou não está acessível:', checkError);
+      console.error('Detalhes do erro:', {
+        message: checkError.message,
+        details: checkError.details,
+        hint: checkError.hint,
+        code: checkError.code
+      });
       console.log('💡 Execute o script SQL check_audit_table.sql primeiro!');
       return;
     }

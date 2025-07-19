@@ -1,4 +1,6 @@
+// Carregar variáveis de ambiente
 require('dotenv').config();
+
 const { createClient } = require('@supabase/supabase-js');
 
 // Configuração do Supabase
@@ -24,27 +26,20 @@ async function testSimpleAudit() {
       .limit(1);
     
     if (checkError) {
-      console.error('❌ Tabela audit_logs não existe ou não está acessível:', checkError);
-      console.log('💡 Execute o script SQL create_audit_logs_table.sql primeiro!');
+      console.error('❌ Tabela audit_logs não existe:', checkError);
       return;
     }
     
     console.log('✅ Tabela audit_logs existe');
 
-    // 2. Tentar inserção simples
+    // 2. Tentar inserção simples (sem changes)
     console.log('2. Tentando inserção simples...');
     const testLog = {
-      timestamp: new Date().toISOString(),
-      userId: 'test-user',
-      userName: 'Teste',
-      action: 'TEST_ACTION',
-      entityType: 'system',
-      details: 'Teste de inserção simples',
-      entityId: null,
-      entityName: null,
-      changes: null,
-      ipAddress: 'N/A',
-      userAgent: 'N/A'
+      id: crypto.randomUUID(), // Gerar UUID
+      date: new Date().toISOString(),
+      user: 'test@example.com',
+      action: 'TEST_SIMPLE',
+      details: 'Teste de inserção simples'
     };
 
     console.log('📝 Dados para inserção:', testLog);
@@ -56,52 +51,30 @@ async function testSimpleAudit() {
 
     if (insertError) {
       console.error('❌ Erro na inserção:', insertError);
-      console.error('Detalhes do erro:', {
+      console.error('Detalhes:', {
         message: insertError.message,
         details: insertError.details,
         hint: insertError.hint,
         code: insertError.code
       });
-      
-      // Tentar inserção mínima
-      console.log('3. Tentando inserção mínima...');
-      const minimalLog = {
-        timestamp: new Date().toISOString(),
-        userId: 'test-user',
-        userName: 'Teste',
-        action: 'TEST_ACTION',
-        entityType: 'system',
-        details: 'Teste mínimo'
-      };
-
-      const { data: minimalData, error: minimalError } = await supabase
-        .from('audit_logs')
-        .insert([minimalLog])
-        .select();
-
-      if (minimalError) {
-        console.error('❌ Erro também na inserção mínima:', minimalError);
-      } else {
-        console.log('✅ Inserção mínima funcionou:', minimalData);
-      }
     } else {
       console.log('✅ Inserção funcionou:', insertData);
     }
 
-    // 4. Verificar logs existentes
-    console.log('4. Verificando logs existentes...');
+    // 3. Verificar logs existentes
+    console.log('3. Verificando logs existentes...');
     const { data: allLogs, error: allError } = await supabase
       .from('audit_logs')
       .select('*')
-      .order('timestamp', { ascending: false })
+      .order('date', { ascending: false })
       .limit(5);
 
     if (allError) {
       console.error('❌ Erro ao buscar logs:', allError);
     } else {
-      console.log('✅ Logs encontrados:', allLogs?.length || 0);
+      console.log('✅ Total de logs:', allLogs?.length || 0);
       if (allLogs && allLogs.length > 0) {
-        console.log('Exemplo de log:', allLogs[0]);
+        console.log('Último log:', allLogs[0]);
       }
     }
 
@@ -110,9 +83,9 @@ async function testSimpleAudit() {
   }
 }
 
-// Executar teste
+// Executar o teste
 testSimpleAudit().then(() => {
-  console.log('\n🏁 Teste concluído');
+  console.log('\n🏁 Teste concluído!');
   process.exit(0);
 }).catch((error) => {
   console.error('❌ Erro no teste:', error);
