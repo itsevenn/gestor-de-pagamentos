@@ -140,11 +140,6 @@ export class AuditLogger {
         details: details
       };
 
-      // Se há mudanças, incluí-las nos detalhes
-      if (changes && changes.length > 0) {
-        logData.details = `${details} - ${JSON.stringify(changes)}`;
-      }
-
       console.log('📝 AuditLogger: Dados do log:', logData);
 
       // 5. Tentar inserção sem .select() primeiro
