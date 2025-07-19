@@ -350,9 +350,35 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
                     <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
                       {activity.action === 'Fatura Criada' && `Fatura criada com sucesso`}
                       {activity.action === 'Fatura Atualizada' && (
-                        activity.changes && Array.isArray(activity.changes) && activity.changes.length > 0
-                          ? `Fatura atualizada - ${activity.changes.length} campo(s) modificado(s)`
-                          : `Fatura atualizada`
+                        (() => {
+                          if (activity.changes && Array.isArray(activity.changes) && activity.changes.length > 0) {
+                            // Verificar se há mudança de status
+                            const statusChange = activity.changes.find(change => change.field === 'status');
+                            if (statusChange) {
+                              const statusMap: Record<string, string> = {
+                                'pending': 'Pendente',
+                                'paid': 'Paga',
+                                'overdue': 'Atrasada',
+                                'refunded': 'Reembolsada'
+                              };
+                              const oldStatus = statusMap[statusChange.oldValue] || statusChange.oldValue;
+                              const newStatus = statusMap[statusChange.newValue] || statusChange.newValue;
+                              return `Fatura alterada de ${oldStatus} para ${newStatus}`;
+                            }
+                            
+                            // Verificar se há mudança de valor
+                            const valueChange = activity.changes.find(change => 
+                              change.field === 'currentAmount' || change.field === 'originalAmount'
+                            );
+                            if (valueChange) {
+                              return `Valor da fatura alterado`;
+                            }
+                            
+                            // Outras mudanças
+                            return `Fatura atualizada - ${activity.changes.length} campo(s) modificado(s)`;
+                          }
+                          return `Fatura atualizada`;
+                        })()
                       )}
                       {activity.action === 'Fatura Excluída' && `Fatura excluída`}
                       {activity.action === 'Pagamento Recebido' && `Pagamento recebido`}

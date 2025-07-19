@@ -351,9 +351,30 @@ export function CiclistaChangesHistory({ ciclistaId, limit = 20, showFilters = t
                     <p className="text-sm text-slate-700 dark:text-slate-300 mb-2">
                       {activity.action === 'Ciclista Criado' && `Ciclista criado com sucesso`}
                       {activity.action === 'Ciclista Atualizado' && (
-                        activity.changes && Array.isArray(activity.changes) && activity.changes.length > 0
-                          ? `Perfil do ciclista atualizado - ${activity.changes.length} campo(s) modificado(s)`
-                          : `Perfil do ciclista atualizado`
+                        (() => {
+                          if (activity.changes && Array.isArray(activity.changes) && activity.changes.length > 0) {
+                            // Verificar se há mudança de dados pessoais importantes
+                            const importantFields = ['nomeCiclista', 'cpf', 'rg', 'endereco', 'celular'];
+                            const importantChange = activity.changes.find(change => 
+                              importantFields.includes(change.field)
+                            );
+                            if (importantChange) {
+                              const fieldNames: Record<string, string> = {
+                                'nomeCiclista': 'Nome',
+                                'cpf': 'CPF',
+                                'rg': 'RG',
+                                'endereco': 'Endereço',
+                                'celular': 'Telefone'
+                              };
+                              const fieldName = fieldNames[importantChange.field] || importantChange.field;
+                              return `Dados pessoais do ciclista atualizados - ${fieldName} modificado`;
+                            }
+                            
+                            // Outras mudanças
+                            return `Perfil do ciclista atualizado - ${activity.changes.length} campo(s) modificado(s)`;
+                          }
+                          return `Perfil do ciclista atualizado`;
+                        })()
                       )}
                       {activity.action === 'Ciclista Excluído' && `Ciclista excluído`}
                       {activity.action === 'Ciclista Restaurado' && `Ciclista restaurado`}
