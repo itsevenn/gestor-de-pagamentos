@@ -10,13 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useInvoices, useCiclistas, useAuditLogs } from '@/context/app-context';
 import Link from 'next/link';
-import { ArrowLeft, Receipt, User, Calendar, CreditCard, CheckCircle, Clock, AlertTriangle, DollarSign, FileText, Activity, History } from 'lucide-react';
+import { ArrowLeft, Receipt, User, Calendar, CreditCard, CheckCircle, Clock, AlertTriangle, DollarSign, FileText, Activity, History, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvoiceChangesHistory } from '@/components/invoice-changes-history';
+import { NotificationGenerator } from '@/components/notification-generator';
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -121,7 +122,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           {/* Conteúdo Principal com Abas */}
           <div className="lg:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
+              <TabsList className="grid w-full grid-cols-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
                 <TabsTrigger value="details" className="flex items-center gap-2">
                   <Receipt className="w-4 h-4" />
                   Detalhes
@@ -129,6 +130,10 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 <TabsTrigger value="history" className="flex items-center gap-2">
                   <History className="w-4 h-4" />
                   Histórico
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  IA
                 </TabsTrigger>
               </TabsList>
               
@@ -227,6 +232,25 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                   </CardHeader>
                   <CardContent className="p-6">
                     <InvoiceChangesHistory invoiceId={invoice.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="ai" className="mt-6">
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
+                  <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-slate-700 dark:to-slate-600">
+                    <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-full">
+                        <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      Gerador de Notificações IA
+                    </CardTitle>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">
+                      Gere mensagens personalizadas para esta fatura usando inteligência artificial
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <NotificationGenerator invoice={invoice} client={ciclista} />
                   </CardContent>
                 </Card>
               </TabsContent>

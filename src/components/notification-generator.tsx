@@ -17,12 +17,12 @@ import {
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Copy } from 'lucide-react';
-import type { Invoice, Client } from '@/lib/data';
+import type { Invoice, Ciclista } from '@/lib/data';
 import { useCiclistas } from '@/context/app-context';
 
 interface NotificationGeneratorProps {
   invoice: Invoice;
-  client: Client;
+  client: Ciclista;
 }
 
 export function NotificationGenerator({ invoice }: NotificationGeneratorProps) {
