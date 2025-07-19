@@ -288,7 +288,6 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
             variant="outline"
             onClick={onClose}
             disabled={isProcessing}
-            className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium"
           >
             <X className="w-4 h-4 mr-2" />
             Cancelar
@@ -296,7 +295,6 @@ export function ImageCropper({ isOpen, onClose, onCropComplete, imageFile }: Ima
           <Button
             onClick={handleCropComplete}
             disabled={!completedCrop || isProcessing}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
           >
             {isProcessing ? (
               <>
