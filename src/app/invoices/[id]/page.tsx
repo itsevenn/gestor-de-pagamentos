@@ -8,18 +8,21 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useInvoices, useCiclistas } from '@/context/app-context';
+import { useInvoices, useCiclistas, useAuditLogs } from '@/context/app-context';
 import Link from 'next/link';
-import { ArrowLeft, Receipt, User, Calendar, CreditCard, CheckCircle, Clock, AlertTriangle, DollarSign, FileText, Activity } from 'lucide-react';
+import { ArrowLeft, Receipt, User, Calendar, CreditCard, CheckCircle, Clock, AlertTriangle, DollarSign, FileText, Activity, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ActivityHistory } from '@/components/activity-history';
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { invoices } = useInvoices();
   const { ciclistas } = useCiclistas();
+  const { auditLogs } = useAuditLogs();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('details');
 
@@ -115,85 +118,119 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
         {/* Conteúdo Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Informações da Fatura */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
-              <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-slate-700 dark:to-slate-600">
-                <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-full">
-                    <Receipt className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  Informações da Fatura
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                      <div className="text-blue-500">
-                        <CreditCard className="w-4 h-4" />
+          {/* Conteúdo Principal com Abas */}
+          <div className="lg:col-span-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
+                <TabsTrigger value="details" className="flex items-center gap-2">
+                  <Receipt className="w-4 h-4" />
+                  Detalhes
+                </TabsTrigger>
+                <TabsTrigger value="history" className="flex items-center gap-2">
+                  <History className="w-4 h-4" />
+                  Histórico
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="details" className="mt-6">
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
+                  <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-slate-700 dark:to-slate-600">
+                    <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-full">
+                        <Receipt className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">ID da Fatura</p>
-                        <p className="text-base font-semibold text-slate-900 dark:text-white">{invoice.id.toUpperCase()}</p>
+                      Informações da Fatura
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                          <div className="text-blue-500">
+                            <CreditCard className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">ID da Fatura</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">{invoice.id.toUpperCase()}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-green-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                          <div className="text-green-500">
+                            <DollarSign className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Valor</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">R$ {Number(invoice.currentAmount).toFixed(2)}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-orange-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                          <div className="text-orange-500">
+                            <Calendar className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Data de Vencimento</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">{invoice.dueDate}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-purple-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                          <div className="text-purple-500">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ciclista</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">{ciclista?.nomeCiclista || 'N/A'}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                          <div className="text-indigo-500">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Status</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">{currentStatus.label}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-pink-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                          <div className="text-pink-500">
+                            <Calendar className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Data de Criação</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">{invoice.createdAt || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-green-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                      <div className="text-green-500">
-                        <DollarSign className="w-4 h-4" />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="history" className="mt-6">
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg">
+                  <CardHeader className="pb-4 bg-gradient-to-r from-slate-50 to-gray-100 dark:from-slate-700 dark:to-slate-600">
+                    <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+                        <History className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Valor</p>
-                        <p className="text-base font-semibold text-slate-900 dark:text-white">R$ {Number(invoice.currentAmount).toFixed(2)}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-orange-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                      <div className="text-orange-500">
-                        <Calendar className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Data de Vencimento</p>
-                        <p className="text-base font-semibold text-slate-900 dark:text-white">{invoice.dueDate}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-purple-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                      <div className="text-purple-500">
-                        <User className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ciclista</p>
-                        <p className="text-base font-semibold text-slate-900 dark:text-white">{ciclista?.nomeCiclista || 'N/A'}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                      <div className="text-indigo-500">
-                        <FileText className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Status</p>
-                        <p className="text-base font-semibold text-slate-900 dark:text-white">{currentStatus.label}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-pink-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                      <div className="text-pink-500">
-                        <Calendar className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Data de Criação</p>
-                        <p className="text-base font-semibold text-slate-900 dark:text-white">{invoice.createdAt || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                      Histórico de Atividades da Fatura
+                    </CardTitle>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">
+                      Todas as ações realizadas nesta fatura
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <ActivityHistory invoiceId={invoice.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Sidebar com Ações */}
