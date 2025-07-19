@@ -80,6 +80,9 @@ export class AuditLogger {
       const user = await this.getCurrentUser();
       const profile = user ? await this.getUserProfile(user.id) : null;
       
+      console.log('🔍 AuditLogger: Usuário atual:', user?.email);
+      console.log('🔍 AuditLogger: Perfil:', profile?.email);
+      
       // Usar apenas os campos que existem na tabela audit_logs
       const logData = {
         date: new Date().toISOString(),
@@ -90,23 +93,62 @@ export class AuditLogger {
 
       console.log('📝 AuditLogger: Dados do log:', logData);
 
-      const { data, error } = await supabase
+      // Tentar inserção sem .select() primeiro
+      console.log('🔍 AuditLogger: Tentando inserção simples...');
+      const { error: simpleError } = await supabase
         .from('audit_logs')
-        .insert([logData])
-        .select();
+        .insert([logData]);
 
-      if (error) {
-        console.error('❌ Erro ao inserir log de auditoria:', error);
-        console.error('Dados que falharam:', logData);
+      if (simpleError) {
+        console.error('❌ Erro na inserção simples:', simpleError);
         console.error('Detalhes completos do erro:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-          fullError: error
+          message: simpleError.message,
+          details: simpleError.details,
+          hint: simpleError.hint,
+          code: simpleError.code,
+          fullError: simpleError
         });
+        
+        // Tentar inserção com dados mínimos
+        console.log('🔄 AuditLogger: Tentando inserção mínima...');
+        const minimalData = {
+          date: new Date().toISOString(),
+          action: action,
+          details: details
+        };
+        
+        const { error: minimalError } = await supabase
+          .from('audit_logs')
+          .insert([minimalData]);
+        
+        if (minimalError) {
+          console.error('❌ Erro também na inserção mínima:', minimalError);
+          console.error('Detalhes do erro mínimo:', {
+            message: minimalError.message,
+            details: minimalError.details,
+            hint: minimalError.hint,
+            code: minimalError.code
+          });
+        } else {
+          console.log('✅ Log inserido com dados mínimos');
+        }
       } else {
-        console.log('✅ Log de auditoria registrado com sucesso:', data);
+        console.log('✅ Log de auditoria registrado com sucesso (inserção simples)');
+        
+        // Se a inserção simples funcionou, tentar buscar o registro
+        const { data: insertedData, error: selectError } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .eq('action', action)
+          .eq('details', details)
+          .order('date', { ascending: false })
+          .limit(1);
+        
+        if (selectError) {
+          console.warn('⚠️ Erro ao buscar registro inserido:', selectError);
+        } else {
+          console.log('✅ Registro inserido encontrado:', insertedData);
+        }
       }
     } catch (error) {
       console.error('❌ Erro geral ao registrar log de auditoria:', error);
