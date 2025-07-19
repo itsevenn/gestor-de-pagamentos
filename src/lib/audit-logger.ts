@@ -133,11 +133,11 @@ export class AuditLogger {
       
       // 4. Usar apenas os campos que existem na tabela audit_logs
       const logData = {
-        id: generateUUID(), // Gerar UUID automaticamente
         date: new Date().toISOString(),
         user: profile?.email || user?.email || 'Admin',
         action: action,
-        details: details
+        details: details,
+        changes: changes ? JSON.stringify(changes) : null
       };
 
       console.log('📝 AuditLogger: Dados do log:', logData);
@@ -162,7 +162,6 @@ export class AuditLogger {
         // 6. Tentar inserção com dados mínimos
         console.log('🔄 AuditLogger: Tentando inserção mínima...');
         const minimalData = {
-          id: generateUUID(), // Gerar UUID automaticamente
           date: new Date().toISOString(),
           action: action,
           details: details
@@ -187,7 +186,6 @@ export class AuditLogger {
           const { error: dateOnlyError } = await supabase
             .from('audit_logs')
             .insert([{ 
-              id: generateUUID(), // Gerar UUID automaticamente
               date: new Date().toISOString() 
             }]);
           
