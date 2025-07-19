@@ -338,6 +338,23 @@ export function CiclistaChangesHistory({ ciclistaId, limit = 20, showFilters = t
                       {!['Ciclista Criado', 'Ciclista Atualizado', 'Ciclista Excluído', 'Ciclista Restaurado', 'Foto Carregada', 'Foto Removida', 'Perfil Atualizado'].includes(activity.action) && 
                         (activity.details || `${activity.action} do ciclista`)}
                     </p>
+
+                    {/* Motivo da alteração */}
+                    {activity.details && activity.details.includes('Motivo:') && (
+                      <div className="mb-2">
+                        <div className="inline-flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-2">
+                          <FileText className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                          <div>
+                            <span className="text-xs font-medium text-orange-800 dark:text-orange-300 uppercase tracking-wide">
+                              Motivo da Alteração:
+                            </span>
+                            <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">
+                              {activity.details.split('Motivo:')[1]?.trim() || 'Motivo não especificado'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                       <User className="w-3 h-3" />
                       <span>{activity.userName}</span>
