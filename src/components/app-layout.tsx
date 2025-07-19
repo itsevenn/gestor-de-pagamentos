@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { useCiclistas } from '@/context/app-context';
 import { useInvoices } from '@/context/app-context';
 import { useState } from 'react';
+import { useInactivityLogout } from '@/hooks/use-inactivity-logout';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -33,6 +34,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Hook para logout por inatividade (10 minutos)
+  const { WarningComponent } = useInactivityLogout(10);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
@@ -86,51 +90,56 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Se está autenticado, renderiza o layout da aplicação com sidebar
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader className="p-4 flex flex-col gap-4">
-          <Logo />
-        </SidebarHeader>
-        <SidebarContent>
-          <MainNav />
-        </SidebarContent>
-        <SidebarFooter className="p-4">
-          {/* UserNav was moved to the header */}
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-20 items-center justify-between px-6 border-b bg-slate-800 shadow-lg border-b-0">
-          {/* Lado esquerdo - Botão Nova Fatura */}
-          <div className="flex items-center">
-            <Link href="/invoices/new" passHref>
-              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Nova Fatura
-              </Button>
-            </Link>
-          </div>
-
-          {/* Centro - Barra de busca */}
-          <div className="flex-1 flex justify-center max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors duration-200" />
-              <Input
-                placeholder="Buscar..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                onKeyDown={handleSearch}
-                className="pl-11 pr-4 h-12 w-full rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-md focus:border-blue-500 focus:ring-2 focus:ring-blue-400 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 transition-all duration-200 outline-none text-base"
-              />
+    <>
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarHeader className="p-4 flex flex-col gap-4">
+            <Logo />
+          </SidebarHeader>
+          <SidebarContent>
+            <MainNav />
+          </SidebarContent>
+          <SidebarFooter className="p-4">
+            {/* UserNav was moved to the header */}
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>
+          <header className="sticky top-0 z-10 flex h-20 items-center justify-between px-6 border-b bg-slate-800 shadow-lg border-b-0">
+            {/* Lado esquerdo - Botão Nova Fatura */}
+            <div className="flex items-center">
+              <Link href="/invoices/new" passHref>
+                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  Nova Fatura
+                </Button>
+              </Link>
             </div>
-          </div>
 
-          {/* Lado direito - Avatar do usuário */}
-          <div className="flex items-center">
-            <UserNav />
-          </div>
-        </header>
-        <main className="flex-1 p-8 sm:p-10 md:p-12 bg-slate-50 dark:bg-slate-900">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+            {/* Centro - Barra de busca */}
+            <div className="flex-1 flex justify-center max-w-md mx-8">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors duration-200" />
+                <Input
+                  placeholder="Buscar..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  onKeyDown={handleSearch}
+                  className="pl-11 pr-4 h-12 w-full rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-md focus:border-blue-500 focus:ring-2 focus:ring-blue-400 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 transition-all duration-200 outline-none text-base"
+                />
+              </div>
+            </div>
+
+            {/* Lado direito - Avatar do usuário */}
+            <div className="flex items-center">
+              <UserNav />
+            </div>
+          </header>
+          <main className="flex-1 p-8 sm:p-10 md:p-12 bg-slate-50 dark:bg-slate-900">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+      
+      {/* Componente de aviso de inatividade */}
+      {WarningComponent}
+    </>
   );
 } 
