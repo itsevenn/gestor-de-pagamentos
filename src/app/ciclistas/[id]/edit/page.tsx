@@ -64,6 +64,7 @@ const formSchema = z.object({
   observacoes: z.string().optional(),
   nomeConselheiro: z.string().min(1, 'Nome do conselheiro é obrigatório'),
   localData: z.string().min(1, 'Local e data são obrigatórios'),
+  changeReason: z.string().optional(),
 });
 
 // Função auxiliar para garantir que valores sejam strings
@@ -120,6 +121,7 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
       observacoes: '',
       nomeConselheiro: '',
       localData: '',
+      changeReason: '',
     },
     mode: 'onChange',
   });
@@ -226,6 +228,18 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
         finalPhotoUrl = '';
       }
 
+      // Detectar mudanças
+      const changes = [];
+      Object.keys(values).forEach(key => {
+        if (key !== 'photoUrl' && key !== 'changeReason' && values[key as keyof typeof values] !== ciclista[key as keyof typeof ciclista]) {
+          changes.push({
+            field: key,
+            oldValue: ciclista[key as keyof typeof ciclista],
+            newValue: values[key as keyof typeof values]
+          });
+        }
+      });
+
       // Atualizar ciclista no banco de dados
       const finalValues = { 
         ...values, 
@@ -235,6 +249,8 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
       updateCiclista({
         id: ciclista.id,
         ...finalValues,
+        changeReason: values.changeReason,
+        changes: changes.length > 0 ? changes : undefined
       });
 
       toast({
@@ -829,6 +845,37 @@ export default function EditCiclistaPage({ params }: { params: Promise<{ id: str
                     )} />
                  </div>
                </div>
+
+                <Separator className="bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent" />
+
+                {/* Motivo da Alteração */}
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg">
+                      <FileText className="h-4 w-4 text-white" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Motivo da Alteração</h2>
+                  </div>
+                  <FormField control={form.control} name="changeReason" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                        <FileText className="h-4 w-4 text-orange-500" />
+                        Motivo da Alteração
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Ex: Correção de dados pessoais, atualização de endereço, mudança de contato..."
+                          className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[80px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        💡 Informe o motivo das alterações para manter um histórico detalhado
+                      </p>
+                    </FormItem>
+                  )} />
+                </div>
 
                 {/* Botões de ação */}
                 <div className="flex justify-end gap-3 pt-8 border-t border-slate-200 dark:border-slate-700">

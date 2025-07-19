@@ -45,6 +45,18 @@ const formSchema = z.object({
   paymentMethod: z.string().optional(),
   issueDate: z.string().min(1, 'Data de emissão é obrigatória'),
   changeReason: z.string().optional(),
+}).refine((data) => {
+  // Se o valor original ou atual mudou, o motivo é obrigatório
+  const originalAmountChanged = data.originalAmount !== (invoice?.originalAmount?.toString() || '');
+  const currentAmountChanged = data.currentAmount !== (invoice?.currentAmount?.toString() || '');
+  
+  if (originalAmountChanged || currentAmountChanged) {
+    return data.changeReason && data.changeReason.trim().length > 0;
+  }
+  return true;
+}, {
+  message: "Motivo da alteração é obrigatório quando há mudança no valor",
+  path: ["changeReason"]
 });
 
 export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
@@ -373,22 +385,39 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                 <FormField
                   control={form.control}
                   name="changeReason"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                        <CreditCard className="h-4 w-4 text-orange-500" />
-                        Motivo da Alteração
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ex: Ajuste de valor, correção de erro, desconto aplicado..."
-                          className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const originalAmountChanged = form.watch('originalAmount') !== (invoice?.originalAmount?.toString() || '');
+                    const currentAmountChanged = form.watch('currentAmount') !== (invoice?.currentAmount?.toString() || '');
+                    const isRequired = originalAmountChanged || currentAmountChanged;
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                          <CreditCard className="h-4 w-4 text-orange-500" />
+                          Motivo da Alteração
+                          {isRequired && <span className="text-red-500">*</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={isRequired 
+                              ? "Motivo obrigatório para alteração de valor (Ex: Ajuste de valor, correção de erro, desconto aplicado...)"
+                              : "Ex: Ajuste de valor, correção de erro, desconto aplicado..."
+                            }
+                            className={`bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                              isRequired ? 'border-orange-300 focus:border-orange-500 focus:ring-orange-500' : ''
+                            }`}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        {isRequired && (
+                          <p className="text-sm text-orange-600 dark:text-orange-400">
+                            ⚠️ Motivo obrigatório quando há alteração no valor da fatura
+                          </p>
+                        )}
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <Separator className="bg-slate-200 dark:bg-slate-600" />
