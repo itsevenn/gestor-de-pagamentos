@@ -208,7 +208,14 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                           </div>
                           <div className="flex-1">
                             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Data de Criação</p>
-                            <p className="text-base font-semibold text-slate-900 dark:text-white">{invoice.createdAt || 'N/A'}</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">
+                              {invoice.createdAt 
+                                ? new Date(invoice.createdAt).toLocaleDateString('pt-BR')
+                                : invoice.issueDate 
+                                  ? new Date(invoice.issueDate).toLocaleDateString('pt-BR')
+                                  : 'N/A'
+                              }
+                            </p>
                           </div>
                         </div>
                       </div>

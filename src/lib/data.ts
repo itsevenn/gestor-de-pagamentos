@@ -52,6 +52,8 @@ export type Invoice = {
   status: 'pending' | 'paid' | 'overdue' | 'refunded';
   paymentHistory?: string;
   observations?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type AuditLog = {
