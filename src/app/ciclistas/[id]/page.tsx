@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useInvoices, useCiclistas, useAuditLogs } from '@/context/app-context';
 import Link from 'next/link';
 import { ArrowLeft, UserX, User, Calendar, MapPin, Phone, CreditCard, FileText, Users, Home, Bike, Activity, Clock, Receipt, CheckCircle, UserCircle } from 'lucide-react';
+import { ActivityHistory } from '@/components/activity-history';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { use, useEffect, useState } from 'react';
@@ -372,44 +373,7 @@ export default function CiclistaDetailPage({ params }: { params: Promise<{ id: s
 
           {/* Conteúdo do Histórico */}
           <TabsContent value="historico" className="space-y-6">
-            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
-              <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-700 dark:to-slate-600">
-                <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-full">
-                    <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  Histórico de Atividades
-                </CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-400">
-                  Registro de todas as ações realizadas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                {ciclistaAuditLogs.length > 0 ? (
-                  <div className="space-y-4">
-                    {ciclistaAuditLogs.map((log, index) => (
-                      <div key={index} className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                          <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-white">{log.action}</p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">{log.timestamp}</p>
-                          {log.details && (
-                            <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">{log.details}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Clock className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-600 dark:text-slate-400">Nenhum histórico encontrado.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ActivityHistory ciclistaId={ciclista.id} showFilters={false} />
           </TabsContent>
 
           {/* Conteúdo das Ações */}

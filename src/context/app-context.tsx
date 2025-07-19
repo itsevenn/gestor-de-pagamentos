@@ -17,6 +17,7 @@ import {
     type Invoice,
     type AuditLog
 } from '@/lib/data';
+import { AuditLogger, detectChanges } from '@/lib/audit-logger';
 import { v4 as uuidv4 } from 'uuid';
 
 interface AppContextType {
@@ -83,10 +84,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             const newCiclistaId = await addCiclistaDb(ciclistaData);
             const newCiclista = { ...ciclistaData, id: newCiclistaId };
             setCiclistas(prevCiclistas => [...prevCiclistas, newCiclista]);
-            await addAuditLog({
-                action: 'Ciclista Criado',
-                details: `Ciclista ${newCiclista.nomeCiclista} foi adicionado.`,
-            });
+            
+            // Registrar no sistema de auditoria
+            await AuditLogger.logCiclistaCreated(newCiclistaId, newCiclista.nomeCiclista);
+            
+            // Atualizar logs locais
+            const auditLogs = await getAuditLogs();
+            setAuditLogs(auditLogs);
         } catch (error) {
             console.error("Erro ao adicionar ciclista:", error);
         } finally {
@@ -97,14 +101,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const updateCiclista = async (updatedCiclista: Ciclista) => {
         setLoading(true);
         try {
+            const originalCiclista = ciclistas.find(c => c.id === updatedCiclista.id);
             await updateCiclistaDb(updatedCiclista);
             setCiclistas(prevCiclistas => 
                 prevCiclistas.map(ciclista => ciclista.id === updatedCiclista.id ? updatedCiclista : ciclista)
             );
-            await addAuditLog({
-                action: 'Ciclista Atualizado',
-                details: `Dados do ciclista ${updatedCiclista.nomeCiclista} foram atualizados.`,
-            });
+            
+            // Detectar mudanças e registrar no sistema de auditoria
+            if (originalCiclista) {
+                const changes = detectChanges(originalCiclista, updatedCiclista);
+                await AuditLogger.logCiclistaUpdated(updatedCiclista.id, updatedCiclista.nomeCiclista, changes);
+            }
+            
+            // Atualizar logs locais
+            const auditLogs = await getAuditLogs();
+            setAuditLogs(auditLogs);
         } catch (error) {
             console.error("Erro ao atualizar ciclista:", error);
         } finally {
@@ -125,10 +136,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 };
                 setCiclistas(prevCiclistas => prevCiclistas.filter(ciclista => ciclista.id !== ciclistaId));
                 setDeletedCiclistas(prevDeleted => [...prevDeleted, deletedCiclista]);
-                await addAuditLog({
-                    action: 'Ciclista Excluído',
-                    details: `Ciclista ${ciclistaToDelete.nomeCiclista} foi excluído. Motivo: ${reason}`,
-                });
+                
+                // Registrar no sistema de auditoria
+                await AuditLogger.logCiclistaDeleted(ciclistaId, ciclistaToDelete.nomeCiclista, reason);
+                
+                // Atualizar logs locais
+                const auditLogs = await getAuditLogs();
+                setAuditLogs(auditLogs);
             }
         } catch (error) {
             console.error("Erro ao excluir ciclista:", error);
@@ -146,10 +160,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 const { deletionReason, deletionDate, ...restoredCiclista } = ciclistaToRestore;
                 setDeletedCiclistas(prevDeleted => prevDeleted.filter(ciclista => ciclista.id !== ciclistaId));
                 setCiclistas(prevCiclistas => [...prevCiclistas, restoredCiclista as Ciclista]);
-                await addAuditLog({
-                    action: 'Ciclista Restaurado',
-                    details: `Ciclista ${ciclistaToRestore.nomeCiclista} foi restaurado.`,
-                });
+                
+                // Registrar no sistema de auditoria
+                await AuditLogger.logCiclistaRestored(ciclistaId, ciclistaToRestore.nomeCiclista);
+                
+                // Atualizar logs locais
+                const auditLogs = await getAuditLogs();
+                setAuditLogs(auditLogs);
             }
         } catch (error) {
             console.error("Erro ao restaurar ciclista:", error);
