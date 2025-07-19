@@ -229,7 +229,21 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
                   <FileText className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                 </div>
                 <span className="font-semibold text-sm text-slate-700 dark:text-slate-300">
-                  {formatValue(change.field, change.field)}
+                  {(() => {
+                    // Formatar nomes de campos
+                    const fieldNames: Record<string, string> = {
+                      'currentAmount': 'Valor',
+                      'amount': 'Valor',
+                      'dueDate': 'Data de Vencimento',
+                      'status': 'Status',
+                      'ciclistaId': 'Ciclista',
+                      'createdAt': 'Data de Criação',
+                      'updatedAt': 'Data de Atualização',
+                      'paymentMethod': 'Método de Pagamento',
+                      'paymentDate': 'Data de Pagamento'
+                    };
+                    return fieldNames[change.field] || change.field;
+                  })()}
                 </span>
               </div>
               <Badge variant="secondary" className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
