@@ -33,20 +33,11 @@ export function Logo() {
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      {/* Bloco Principal - Retângulo cinza vertical */}
-      <div className="w-32 h-48 bg-gray-300 rounded-lg flex flex-col items-center justify-center">
-        <h1 className="text-sm font-bold text-gray-800 text-center mb-2 px-2">
-          GESTOR DO CICLISTA
-        </h1>
-        <div className="w-16 h-16 bg-white rounded-lg mb-2"></div>
-      </div>
+      {/* Retângulo cinza escuro grande - sem texto */}
+      <div className="w-32 h-48 bg-gray-600 rounded-lg"></div>
 
-      {/* Barra horizontal cinza */}
-      <div className="w-32 h-8 bg-gray-300 rounded-lg flex items-center justify-center">
-        <h2 className="text-sm font-semibold text-gray-800">
-          SUSSUARANA
-        </h2>
-      </div>
+      {/* Barra horizontal cinza escura - sem texto */}
+      <div className="w-32 h-8 bg-gray-600 rounded-lg"></div>
     </div>
   );
 }
