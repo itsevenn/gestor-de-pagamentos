@@ -33,46 +33,40 @@ export function Logo() {
 
   return (
     <div className="flex flex-col items-center gap-6 p-6">
-      {/* Título Principal com Destaque Absoluto */}
+      {/* Título Principal - Igual à imagem */}
       <div className="text-center space-y-2 w-full">
-        <h1 className="text-4xl font-black text-sidebar-foreground tracking-widest bg-gradient-to-r from-blue-200 via-blue-400 to-blue-600 bg-clip-text text-transparent drop-shadow-xl animate-pulse">
+        <h1 className="text-4xl font-black text-white tracking-widest">
           GESTOR DO CICLISTA
         </h1>
       </div>
 
-      {/* Logo Container */}
-      <div className="relative group">
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
-        <div className="relative w-[120px] h-[120px] rounded-xl overflow-hidden border-4 border-white dark:border-gray-700 shadow-xl bg-white dark:bg-gray-800">
-          {logoUrl ? (
-            <Image
-              src={logoUrl}
-              alt="Logo Sussuarana Clube de Desbravadores"
-              width={120}
-              height={120}
-              className="object-cover w-full h-full"
-              data-ai-hint="logo company"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-              <div className="text-center text-gray-500 dark:text-gray-400">
-                <div className="text-xs mb-1">120 x 120</div>
-                <div className="text-xs">Logo</div>
-              </div>
+      {/* Logo Container - Quadrado branco grande */}
+      <div className="w-[140px] h-[140px] bg-white rounded-xl shadow-lg">
+        {logoUrl ? (
+          <Image
+            src={logoUrl}
+            alt="Logo Sussuarana Clube de Desbravadores"
+            width={140}
+            height={140}
+            className="object-cover w-full h-full rounded-xl"
+            data-ai-hint="logo company"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-white rounded-xl">
+            <div className="text-center text-gray-400">
+              <div className="text-xs mb-1">140 x 140</div>
+              <div className="text-xs">Logo</div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Nome do Clube */}
+      {/* Nome do Clube - Apenas "SUSSUARANA" */}
       <div className="text-center space-y-1 w-full">
-        <h2 className="text-sm font-semibold text-sidebar-foreground/90 tracking-wide">
-          {clubName}
+        <h2 className="text-lg font-semibold text-white">
+          SUSSUARANA
         </h2>
       </div>
-
-      {/* Separador */}
-      <div className="w-full h-px bg-sidebar-foreground/10" />
     </div>
   );
 }
