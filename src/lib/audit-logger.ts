@@ -533,11 +533,12 @@ export async function getInvoiceAuditLogs(invoiceId: string): Promise<AuditLogEn
   try {
     console.log('🔍 getInvoiceAuditLogs: Buscando logs para fatura:', invoiceId);
     
-    // Buscar todos os logs relacionados a faturas
+    // Buscar logs que contenham o ID da fatura nos detalhes
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
       .or('action.eq.Fatura Criada,action.eq.Fatura Atualizada,action.eq.Fatura Excluída,action.eq.Pagamento Recebido,action.eq.Pagamento Reembolsado')
+      .ilike('details', `%${invoiceId}%`)
       .order('date', { ascending: false })
       .limit(100); // Limitar para performance
     
@@ -552,16 +553,6 @@ export async function getInvoiceAuditLogs(invoiceId: string): Promise<AuditLogEn
     const filteredData = (data || []).filter(log => {
       // Verificar se o log contém o ID da fatura nos detalhes
       if (log.details && log.details.includes(invoiceId)) {
-        return true;
-      }
-      
-      // Verificar se é uma ação relacionada a faturas
-      if (log.action && log.action.includes('Fatura')) {
-        return true;
-      }
-      
-      // Verificar se é uma ação relacionada a pagamentos
-      if (log.action && (log.action.includes('Pagamento'))) {
         return true;
       }
       
