@@ -24,6 +24,7 @@ import { useCiclistas } from '@/context/app-context';
 import { useInvoices } from '@/context/app-context';
 import { useState } from 'react';
 import { useInactivityLogout } from '@/hooks/use-inactivity-logout';
+import { InactivityWarning } from '@/components/inactivity-warning';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -36,7 +37,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Hook para logout por inatividade (10 minutos)
-  const { WarningComponent } = useInactivityLogout(10);
+  const { showWarning, handleStayLoggedIn, handleLogoutNow } = useInactivityLogout(10);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
@@ -139,7 +140,12 @@ export function AppLayout({ children }: AppLayoutProps) {
       </SidebarProvider>
       
       {/* Componente de aviso de inatividade */}
-      {WarningComponent}
+      <InactivityWarning
+        isOpen={showWarning}
+        onStayLoggedIn={handleStayLoggedIn}
+        onLogout={handleLogoutNow}
+        countdown={60} // 1 minuto de countdown
+      />
     </>
   );
 } 

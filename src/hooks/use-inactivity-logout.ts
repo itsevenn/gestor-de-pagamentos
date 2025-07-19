@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-import { InactivityWarning } from '@/components/inactivity-warning';
 
 export const useInactivityLogout = (timeoutMinutes: number = 10) => {
   const { isAuthenticated, logout } = useAuth();
@@ -102,15 +101,10 @@ export const useInactivityLogout = (timeoutMinutes: number = 10) => {
     };
   }, [isAuthenticated, timeoutMinutes, logout, router]);
 
-  // Renderizar componente de aviso
-  const WarningComponent = showWarning ? (
-    <InactivityWarning
-      isOpen={showWarning}
-      onStayLoggedIn={handleStayLoggedIn}
-      onLogout={handleLogoutNow}
-      countdown={60} // 1 minuto de countdown
-    />
-  ) : null;
-
-  return { resetTimer, WarningComponent };
+  return { 
+    resetTimer, 
+    showWarning, 
+    handleStayLoggedIn, 
+    handleLogoutNow 
+  };
 }; 
