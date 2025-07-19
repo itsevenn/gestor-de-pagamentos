@@ -139,7 +139,7 @@ export class AuditLogger {
     await this.log(
       'Ciclista Criado',
       'ciclista',
-      details || `Ciclista "${ciclistaName}" foi criado`,
+      details || `Ciclista "${ciclistaName}" (ID: ${ciclistaId}) foi criado`,
       ciclistaId,
       ciclistaName
     );
@@ -154,7 +154,7 @@ export class AuditLogger {
     await this.log(
       'Ciclista Atualizado',
       'ciclista',
-      details || `Dados do ciclista "${ciclistaName}" foram atualizados`,
+      details || `Dados do ciclista "${ciclistaName}" (ID: ${ciclistaId}) foram atualizados`,
       ciclistaId,
       ciclistaName,
       changes
@@ -165,7 +165,7 @@ export class AuditLogger {
     await this.log(
       'Ciclista Excluído',
       'ciclista',
-      `Ciclista "${ciclistaName}" foi excluído. Motivo: ${reason}`,
+      `Ciclista "${ciclistaName}" (ID: ${ciclistaId}) foi excluído. Motivo: ${reason}`,
       ciclistaId,
       ciclistaName
     );
@@ -175,7 +175,7 @@ export class AuditLogger {
     await this.log(
       'Ciclista Restaurado',
       'ciclista',
-      `Ciclista "${ciclistaName}" foi restaurado`,
+      `Ciclista "${ciclistaName}" (ID: ${ciclistaId}) foi restaurado`,
       ciclistaId,
       ciclistaName
     );
@@ -205,7 +205,7 @@ export class AuditLogger {
     await this.log(
       'Foto Carregada',
       'ciclista',
-      `Foto de perfil foi carregada para "${ciclistaName}"`,
+      `Foto de perfil foi carregada para "${ciclistaName}" (ID: ${ciclistaId})`,
       ciclistaId,
       ciclistaName
     );
@@ -215,7 +215,7 @@ export class AuditLogger {
     await this.log(
       'Foto Removida',
       'ciclista',
-      `Foto de perfil foi removida de "${ciclistaName}"`,
+      `Foto de perfil foi removida de "${ciclistaName}" (ID: ${ciclistaId})`,
       ciclistaId,
       ciclistaName
     );
@@ -358,11 +358,12 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
   try {
     console.log('🔍 getCiclistaAuditLogs: Buscando logs para ciclista:', ciclistaId);
     
-    // Buscar todos os logs relacionados a ciclistas
+    // Buscar logs que contenham o ID do ciclista nos detalhes
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
       .or('action.eq.Ciclista Criado,action.eq.Ciclista Atualizado,action.eq.Ciclista Excluído,action.eq.Ciclista Restaurado,action.eq.Foto Carregada,action.eq.Foto Removida')
+      .ilike('details', `%${ciclistaId}%`)
       .order('date', { ascending: false })
       .limit(100); // Limitar para performance
     
@@ -380,14 +381,8 @@ export async function getCiclistaAuditLogs(ciclistaId: string): Promise<AuditLog
         return true;
       }
       
-      // Verificar se é uma ação relacionada a ciclistas e contém informações relevantes
-      if (log.action && log.action.includes('Ciclista')) {
-        // Para ações de ciclista, incluir se não tiver ID específico (será filtrado pelo frontend)
-        return true;
-      }
-      
-      // Verificar se é uma ação relacionada a fotos
-      if (log.action && (log.action.includes('Foto'))) {
+      // Verificar se é uma ação relacionada a fotos e contém o ID do ciclista
+      if (log.action && (log.action.includes('Foto')) && log.details && log.details.includes(ciclistaId)) {
         return true;
       }
       
