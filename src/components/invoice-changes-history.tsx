@@ -5,12 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Clock, 
   Receipt, 
   Search, 
-  Filter,
   Calendar,
   Edit,
   FileText,
@@ -69,7 +67,6 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
   const [activities, setActivities] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterAction, setFilterAction] = useState<string>('all');
 
   useEffect(() => {
     const fetchInvoiceActivities = async () => {
@@ -149,9 +146,7 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
     const matchesSearch = activity.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          activity.userName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesAction = filterAction === 'all' || activity.action === filterAction;
-    
-    return matchesSearch && matchesAction;
+    return matchesSearch;
   });
 
   const renderChanges = (changes: AuditLogEntry['changes']) => {
@@ -292,34 +287,18 @@ export function InvoiceChangesHistory({ invoiceId, limit = 20, showFilters = tru
 
   return (
     <div className="space-y-4">
-      {/* Filtros */}
+      {/* Filtro de busca */}
       {showFilters && (
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input
-                placeholder="Buscar modificações..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
+              placeholder="Buscar modificações..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-          <Select value={filterAction} onValueChange={setFilterAction}>
-            <SelectTrigger className="w-full sm:w-48">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filtrar por ação" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as ações</SelectItem>
-              <SelectItem value="Fatura Criada">Fatura Criada</SelectItem>
-              <SelectItem value="Fatura Atualizada">Fatura Atualizada</SelectItem>
-              <SelectItem value="Fatura Excluída">Fatura Excluída</SelectItem>
-              <SelectItem value="Pagamento Recebido">Pagamento Recebido</SelectItem>
-              <SelectItem value="Pagamento Reembolsado">Pagamento Reembolsado</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       )}
 
