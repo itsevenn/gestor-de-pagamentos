@@ -1,18 +1,21 @@
 
 'use client';
 
-import { useAuth } from '@/context/auth-context';
-import { useCallback } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useCallback, useContext } from 'react';
+import { AuthContext } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
+import { AuditLogger } from '@/lib/audit-logger';
 
 export function useUser() {
-  const { user: authUser, setUser } = useAuth();
+  const { user: authUser, setUser } = useContext(AuthContext);
   const { toast } = useToast();
 
   const updateUser = useCallback(async (newDetails: { name: string; email: string }) => {
     try {
       console.log('🔍 useUser: Iniciando atualização...', newDetails);
+      
+      const oldName = authUser?.name || '';
       
       // Atualiza diretamente no Supabase Auth
       const { data: updateData, error: updateError } = await supabase.auth.updateUser({
@@ -43,6 +46,17 @@ export function useUser() {
         console.log('🔍 useUser: Atualizando contexto com:', updatedUser);
         setUser(updatedUser);
         
+        // Registrar no sistema de auditoria
+        try {
+          if (oldName !== updatedUser.name) {
+            await AuditLogger.logProfileUpdated(updateData.user.id, updatedUser.name, {
+              name: { from: oldName, to: updatedUser.name }
+            });
+          }
+        } catch (auditError) {
+          console.warn('Erro ao registrar auditoria de perfil:', auditError);
+        }
+        
         toast({
           title: 'Perfil atualizado com sucesso!',
           description: 'Suas informações foram salvas.'
@@ -60,15 +74,25 @@ export function useUser() {
       });
       return false;
     }
-  }, [setUser, toast, authUser?.photoUrl, authUser?.role]);
+  }, [setUser, toast, authUser?.photoUrl, authUser?.role, authUser?.name]);
 
   const updatePhoto = useCallback(async (photoUrl: string) => {
     try {
       console.log('🔍 useUser: Iniciando updatePhoto com:', photoUrl ? 'URL fornecida' : 'removendo foto');
       
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: 'Erro',
+          description: 'Usuário não autenticado.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+      
       // Se a foto foi removida (string vazia), apenas atualiza os metadados
       if (!photoUrl) {
-        const { data: { user }, error } = await supabase.auth.updateUser({
+        const { data: { user: updatedUser }, error } = await supabase.auth.updateUser({
           data: { avatar_url: null }
         });
 
@@ -81,31 +105,28 @@ export function useUser() {
           return false;
         }
 
-        if (user) {
+        if (updatedUser) {
           const updatedUserData = {
-            name: user.user_metadata?.name || user.email || 'Usuário',
-            email: user.email || '',
+            name: updatedUser.user_metadata?.name || updatedUser.email || 'Usuário',
+            email: updatedUser.email || '',
             photoUrl: undefined,
             role: authUser?.role,
           };
           console.log('🔍 useUser: Atualizando contexto após remoção:', updatedUserData);
           setUser(updatedUserData);
+          
+          // Registrar no sistema de auditoria
+          try {
+            await AuditLogger.logProfilePhotoRemoved(user.id, updatedUserData.name);
+          } catch (auditError) {
+            console.warn('Erro ao registrar auditoria de remoção de foto:', auditError);
+          }
         }
         return true;
       }
 
       // Se é uma nova foto (data URL), faz upload para o Supabase Storage
       if (photoUrl.startsWith('data:')) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          toast({
-            title: 'Erro',
-            description: 'Usuário não autenticado.',
-            variant: 'destructive'
-          });
-          return false;
-        }
-
         // Converte data URL para blob
         const response = await fetch(photoUrl);
         const blob = await response.blob();
@@ -159,12 +180,19 @@ export function useUser() {
           };
           console.log('🔍 useUser: Atualizando contexto após upload:', updatedUserData);
           setUser(updatedUserData);
+          
+          // Registrar no sistema de auditoria
+          try {
+            await AuditLogger.logProfilePhotoUploaded(user.id, updatedUserData.name);
+          } catch (auditError) {
+            console.warn('Erro ao registrar auditoria de upload de foto:', auditError);
+          }
         }
         return true;
       }
 
       // Se já é uma URL, apenas atualiza os metadados
-      const { data: { user }, error } = await supabase.auth.updateUser({
+      const { data: { user: updatedUser }, error } = await supabase.auth.updateUser({
         data: { avatar_url: photoUrl }
       });
 
@@ -177,13 +205,21 @@ export function useUser() {
         return false;
       }
 
-      if (user) {
-        setUser({
-          name: user.user_metadata?.name || user.email || 'Usuário',
-          email: user.email || '',
+      if (updatedUser) {
+        const updatedUserData = {
+          name: updatedUser.user_metadata?.name || updatedUser.email || 'Usuário',
+          email: updatedUser.email || '',
           photoUrl: photoUrl,
           role: authUser?.role,
-        });
+        };
+        setUser(updatedUserData);
+        
+        // Registrar no sistema de auditoria
+        try {
+          await AuditLogger.logProfilePhotoUpdated(user.id, updatedUserData.name);
+        } catch (auditError) {
+          console.warn('Erro ao registrar auditoria de atualização de foto:', auditError);
+        }
       }
       return true;
 

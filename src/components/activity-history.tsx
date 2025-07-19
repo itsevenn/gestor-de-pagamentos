@@ -102,24 +102,6 @@ export function ActivityHistory({ ciclistaId, userId, limit = 50, showFilters = 
     const fetchActivities = async () => {
       setLoading(true);
       try {
-        // Temporariamente, usar dados mock até a tabela ser criada
-        const mockActivities = [
-          {
-            id: '1',
-            timestamp: new Date().toISOString(),
-            userId: 'system',
-            userName: 'Sistema',
-            action: 'SYSTEM_ACTION' as any,
-            entityType: 'system' as any,
-            details: 'Sistema de auditoria inicializado',
-            changes: undefined
-          }
-        ];
-        
-        setActivities(mockActivities);
-        
-        // TODO: Descomentar quando a tabela audit_logs for criada
-        /*
         let url = '/api/audit-logs';
         const params = new URLSearchParams();
         
@@ -152,7 +134,6 @@ export function ActivityHistory({ ciclistaId, userId, limit = 50, showFilters = 
           console.warn('API retornou dados que não são um array:', data);
           setActivities([]);
         }
-        */
       } catch (error) {
         console.error('Erro ao carregar atividades:', error);
         setActivities([]);

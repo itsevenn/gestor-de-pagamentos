@@ -181,11 +181,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             const newInvoiceId = await addInvoiceDb(invoiceData);
             const newInvoice = { ...invoiceData, id: newInvoiceId };
             setInvoices(prevInvoices => [newInvoice, ...prevInvoices]);
+            
             const ciclistaName = ciclistas.find(c => c.id === newInvoice.ciclistaId)?.nomeCiclista || 'Desconhecido';
-            await addAuditLog({
-                action: 'Fatura Criada',
-                details: `Fatura ${newInvoice.id.toUpperCase()} criada para ${ciclistaName}.`,
-            });
+            
+            // Registrar no sistema de auditoria
+            await AuditLogger.logInvoiceCreated(newInvoiceId, ciclistaName, newInvoice.currentAmount);
+            
+            // Atualizar logs locais
+            const auditLogs = await getAuditLogs();
+            setAuditLogs(auditLogs);
         } catch (error) {
             console.error("Erro ao adicionar fatura:", error);
         } finally {
@@ -196,25 +200,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const updateInvoice = async (updatedInvoice: Invoice, auditDetails?: string) => {
         setLoading(true);
         try {
+            const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
             await updateInvoiceDb(updatedInvoice);
             setInvoices(prevInvoices => 
                 prevInvoices.map(invoice => invoice.id === updatedInvoice.id ? updatedInvoice : invoice)
             );
 
-            const originalInvoice = invoices.find(inv => inv.id === updatedInvoice.id);
             const allCiclistas = [...ciclistas, ...deletedCiclistas];
             const ciclista = allCiclistas.find(c => c.id === updatedInvoice.ciclistaId);
+            const ciclistaName = ciclista?.nomeCiclista || 'Desconhecido';
             
-            let details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${ciclista?.nomeCiclista || 'Desconhecido'} foi atualizada.`;
-            if (auditDetails) {
-                details = `Fatura ${updatedInvoice.id.toUpperCase()} para ${ciclista?.nomeCiclista || 'Desconhecido'} ${auditDetails}`;
-            } else if (originalInvoice && originalInvoice.status !== updatedInvoice.status) {
-                details = `Status da fatura ${updatedInvoice.id.toUpperCase()} para ${ciclista?.nomeCiclista || 'Desconhecido'} alterado para ${updatedInvoice.status}.`;
+            // Detectar mudanças e registrar no sistema de auditoria
+            if (originalInvoice) {
+                const changes = detectChanges(originalInvoice, updatedInvoice);
+                await AuditLogger.logInvoiceUpdated(updatedInvoice.id, ciclistaName, changes, auditDetails);
             }
-            await addAuditLog({
-                action: 'Fatura Atualizada',
-                details: details,
-            });
+            
+            // Atualizar logs locais
+            const auditLogs = await getAuditLogs();
+            setAuditLogs(auditLogs);
         } catch (error) {
             console.error("Erro ao atualizar fatura:", error);
         } finally {

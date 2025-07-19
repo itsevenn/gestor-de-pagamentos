@@ -142,32 +142,6 @@ export class AuditLogger {
     );
   }
 
-  static async logInvoiceCreated(invoiceId: string, ciclistaName: string, amount: number) {
-    await this.log(
-      'INVOICE_CREATED',
-      'invoice',
-      `Fatura de R$ ${amount.toFixed(2)} foi criada para "${ciclistaName}"`,
-      invoiceId,
-      ciclistaName
-    );
-  }
-
-  static async logInvoiceUpdated(
-    invoiceId: string, 
-    ciclistaName: string, 
-    changes: AuditLogEntry['changes'],
-    details?: string
-  ) {
-    await this.log(
-      'INVOICE_UPDATED',
-      'invoice',
-      details || `Fatura de "${ciclistaName}" foi atualizada`,
-      invoiceId,
-      ciclistaName,
-      changes
-    );
-  }
-
   static async logPaymentReceived(invoiceId: string, ciclistaName: string, amount: number, method: string) {
     await this.log(
       'PAYMENT_RECEIVED',
@@ -208,6 +182,80 @@ export class AuditLogger {
     );
   }
 
+  static async logProfileUpdated(userId: string, userName: string, changes?: any) {
+    await this.log(
+      'PROFILE_UPDATED',
+      'user',
+      `Perfil do usuário "${userName}" foi atualizado`,
+      userId,
+      userName,
+      changes
+    );
+  }
+
+  static async logProfilePhotoUploaded(userId: string, userName: string) {
+    await this.log(
+      'PROFILE_PHOTO_UPLOADED',
+      'user',
+      `Foto de perfil foi carregada para o usuário "${userName}"`,
+      userId,
+      userName
+    );
+  }
+
+  static async logProfilePhotoUpdated(userId: string, userName: string) {
+    await this.log(
+      'PROFILE_PHOTO_UPDATED',
+      'user',
+      `Foto de perfil foi atualizada para o usuário "${userName}"`,
+      userId,
+      userName
+    );
+  }
+
+  static async logProfilePhotoRemoved(userId: string, userName: string) {
+    await this.log(
+      'PROFILE_PHOTO_REMOVED',
+      'user',
+      `Foto de perfil foi removida do usuário "${userName}"`,
+      userId,
+      userName
+    );
+  }
+
+  static async logInvoiceCreated(invoiceId: string, ciclistaName: string, amount: number) {
+    await this.log(
+      'INVOICE_CREATED',
+      'invoice',
+      `Fatura ${invoiceId.toUpperCase()} criada para "${ciclistaName}" - R$ ${amount.toFixed(2)}`,
+      invoiceId,
+      ciclistaName
+    );
+  }
+
+  static async logInvoiceUpdated(invoiceId: string, ciclistaName: string, changes?: any, details?: string) {
+    const changeText = details || (changes ? this.formatChanges(changes) : 'Fatura atualizada');
+    await this.log(
+      'INVOICE_UPDATED',
+      'invoice',
+      `Fatura ${invoiceId.toUpperCase()} para "${ciclistaName}" - ${changeText}`,
+      invoiceId,
+      ciclistaName,
+      changes
+    );
+  }
+
+  static async logInvoiceDeleted(invoiceId: string, ciclistaName: string, reason?: string) {
+    const reasonText = reason ? ` - Motivo: ${reason}` : '';
+    await this.log(
+      'INVOICE_DELETED',
+      'invoice',
+      `Fatura ${invoiceId.toUpperCase()} para "${ciclistaName}" foi excluída${reasonText}`,
+      invoiceId,
+      ciclistaName
+    );
+  }
+
   static async logUserLogin(userEmail: string) {
     await this.log(
       'USER_LOGIN',
@@ -225,17 +273,6 @@ export class AuditLogger {
       `Usuário "${userEmail}" fez logout do sistema`,
       undefined,
       userEmail
-    );
-  }
-
-  static async logProfileUpdated(userId: string, userEmail: string, changes: AuditLogEntry['changes']) {
-    await this.log(
-      'PROFILE_UPDATED',
-      'user',
-      `Perfil do usuário "${userEmail}" foi atualizado`,
-      userId,
-      userEmail,
-      changes
     );
   }
 

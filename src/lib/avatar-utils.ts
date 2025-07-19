@@ -3,6 +3,7 @@
  */
 
 import { supabase } from './supabaseClient';
+import { AuditLogger } from './audit-logger';
 
 // Função para gerar avatar baseado nas iniciais usando DiceBear API
 export function getAvatarUrl(name: string, email: string, size: number = 200): string {
@@ -108,6 +109,24 @@ export const uploadAvatar = async (file: File, ciclistaId: string): Promise<stri
     }
 
     console.log('URL pública gerada:', urlData.publicUrl);
+    
+    // Registrar no sistema de auditoria
+    try {
+      // Buscar nome do ciclista para o log
+      const { data: ciclistaData } = await supabase
+        .from('ciclistas')
+        .select('nomeCiclista')
+        .eq('id', ciclistaId)
+        .single();
+      
+      if (ciclistaData) {
+        await AuditLogger.logPhotoUploaded(ciclistaId, ciclistaData.nomeCiclista);
+      }
+    } catch (auditError) {
+      console.warn('Erro ao registrar auditoria de upload:', auditError);
+      // Não falhar o upload por causa do erro de auditoria
+    }
+    
     return urlData.publicUrl;
   } catch (error) {
     console.error('Erro no upload de avatar:', error);
@@ -128,21 +147,54 @@ export const uploadAvatar = async (file: File, ciclistaId: string): Promise<stri
 
 export const deleteAvatar = async (photoUrl: string): Promise<void> => {
   try {
-    // Extrair o nome do arquivo da URL
+    console.log('Iniciando remoção de avatar:', photoUrl);
+    
+    // Extrair nome do arquivo da URL
     const urlParts = photoUrl.split('/');
     const fileName = urlParts[urlParts.length - 1];
     
-    // Deletar arquivo do storage
+    if (!fileName) {
+      throw new Error('URL da imagem inválida');
+    }
+    
+    console.log('Nome do arquivo a ser removido:', fileName);
+    
+    // Remover arquivo do Supabase Storage
     const { error } = await supabase.storage
       .from('avatars')
       .remove([fileName]);
-
+    
     if (error) {
-      console.error('Erro ao deletar avatar:', error);
-      throw new Error(`Falha ao deletar imagem: ${error.message}`);
+      console.error('Erro ao remover arquivo:', error);
+      throw new Error(`Falha ao remover arquivo: ${error.message}`);
     }
+    
+    console.log('Arquivo removido com sucesso');
+    
+    // Registrar no sistema de auditoria
+    try {
+      // Extrair ciclistaId do nome do arquivo (formato: ciclistaId-timestamp.ext)
+      const ciclistaId = fileName.split('-')[0];
+      
+      if (ciclistaId && ciclistaId !== 'temp') {
+        // Buscar nome do ciclista para o log
+        const { data: ciclistaData } = await supabase
+          .from('ciclistas')
+          .select('nomeCiclista')
+          .eq('id', ciclistaId)
+          .single();
+        
+        if (ciclistaData) {
+          await AuditLogger.logPhotoDeleted(ciclistaId, ciclistaData.nomeCiclista);
+        }
+      }
+    } catch (auditError) {
+      console.warn('Erro ao registrar auditoria de remoção:', auditError);
+      // Não falhar a remoção por causa do erro de auditoria
+    }
+    
   } catch (error) {
-    console.error('Erro ao deletar avatar:', error);
+    console.error('Erro ao remover avatar:', error);
     throw error;
   }
 };
